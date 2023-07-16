@@ -68,7 +68,7 @@ export default function MainLayout({
         {/* Static sidebar for desktop */}
         <div className="md:fixed md:inset-y-0 md:z-50 md:flex md:w-72 md:flex-col hidden">
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6">
+          <div className="flex flex-col gap-y-5 overflow-y-auto  bg-white px-6">
             <div className="flex h-16 shrink-0 items-center">
               <img
                 className="h-8 w-auto"
@@ -164,14 +164,14 @@ export default function MainLayout({
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16">
                   <div className="flex relative w-full">
-                    <div className="flex flex-shrink-0 items-center pr-6">
+                    <div className="flex flex-shrink-0 items-center pr-6 ">
                       <img
                         className="h-8 w-auto"
                         src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
                         alt="Your Company"
                       />
                     </div>
-                    <div className="flex space-x-4 snap-x overflow-scroll">
+                    <div className="flex space-x-4 snap-x overflow-scroll scroll-ml-4">
                       {navigation.map((item) => (
                         <a
                           key={item.name}
@@ -180,7 +180,7 @@ export default function MainLayout({
                             item.current
                               ? 'border-indigo-500 text-gray-900'
                               : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                            `inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium`,
+                            `inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium first:ml-10 last:pr-10`,
                           )}
                           aria-current={item.current ? 'page' : undefined}
                         >
@@ -246,25 +246,36 @@ export default function MainLayout({
           )}
         </Disclosure>
 
-        <div className="py-10">
+        {/* <div className="py-10 rounded">
           <header>
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
               <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">Dashboard</h1>
             </div>
           </header>
-          <main>
-            <div className="mx-auto max-w-7xl sm:px-6 lg:px-8">{children}</div>
+          <main className='p-3'>
+            <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 bg-red-500 rounded-lg">{children}</div>
           </main>
-        </div>
+        </div> */}
       </div>
-    </>
 
-        <main className="md:pl-72">
+
+      <main className="md:pl-72 bg-white">
           <div className="xl:pr-96">
-            <div className="px-4 py-10 sm:px-6 md:px-8 md:py-6">{children}</div>
+          {/* <div className="py-10 rounded">
+          <header>
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+              <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">Dashboard</h1>
+            </div>
+          </header>
+          </div> */}
+
+          <main className='p-3'>
+            <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 bg-content-body rounded-lg">{children}</div>
+          </main>
           </div>
         </main>
 
-    </>
+        </>
+        </>
   )
 }
