@@ -1,0 +1,34 @@
+log:
+  level: DEBUG
+  
+pilot:
+    token: '{{ env "TRAEFIK_PILOT_TOKEN" }}'
+
+api:
+  insecure: false
+  dashboard: true
+  debug: true
+
+entryPoints:
+  websecure:
+    address: ':443'
+  web:
+    address: ':80'
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: true
+
+certificatesResolvers:
+  myresolver:
+    acme:
+      email: james.cockshott@pm.me
+      storage: /etc/traefik/acme.json
+      # caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      dnsChallenge:
+        provider: cloudflare
+        delayBeforeCheck: 0
+        resolvers:
+          - "1.1.1.1:53"
+          - "1.0.0.1:53"

@@ -1,0 +1,4 @@
+psutil
+fastapi==0.70.1
+uvicorn[standard]
+cachetools

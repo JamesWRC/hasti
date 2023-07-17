@@ -1,0 +1,8 @@
+Keeping this file here for documentation.
+This file is actually created by ElasticBeanstalk in the .ebextensions/ssl.config file.
+Only reason why we do this is because we need to set the permissions to 600.
+
+If deploying this to a standalone ec2, make sure to manually create a blank acme.json and set it to 600 permissions like so:
+sudo chmod 600 acme.json
+
+MAKE SURE acme.json IS EMPTY! Any value in it will cause traefik to NOT request or validate your certificate.

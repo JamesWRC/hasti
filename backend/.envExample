@@ -1,0 +1,12 @@
+API_KEY=<Cloudflare API KEY scoped to read and write ZONES>
+SUBDOMAIN=<your subdomain example 'hello' >
+ZONE=<Your root domain 'example.com' When you combine SUBDOMAIN with ZONE in this example it will be 'hello.example.com'>
+TRAEFIK_PILOT_TOKEN=<Optional if you want to use traefik pilot>
+PROXIED=<true or false | if true then Cloudflare will proxy your domain.>
+CLOUDFLARE_DNS_API_TOKEN=<Cloudflare token scoped to editing DNS settings. Used for doing a DNS challenge for Lets Encrypt.>
+CFA_CACHE_CF_API_KEY=<Optional if not using CFA docker container. Cloudflare token scoped to editing KV storage>
+CFA_CACHE_ACCOUNT_ID=<Optional if not using CFA docker container. Your cloudflare account ID>
+CFA_CACHE_KV_NAMESPACE=<Optional if not using CFA docker container. setting for the apps KV namespace>
+CFA_CACHE_ACME_FILEPATH=<Optional if not using CFA docker container. Wherever Traefik stores the acme file. This is set in the services/traefik/traefik.yml file. Default is /etc/traefik/acme.json >
+CFA_CACHE_KV_NAME=<Optional if not using CFA docker container. The app specific key to hold the certificates. This must be unique to all other apps and instances of this app.>
+CFA_CACHE_ACME_ENCRYPTION_KEY=<Optional if not using CFA docker container. A password used to encrypt and decrypt your certificate file.>
