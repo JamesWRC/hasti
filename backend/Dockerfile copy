@@ -1,0 +1,15 @@
+FROM node:18.16.0-alpine
+
+RUN mkdir -p /hasti_api
+RUN chown -R node:node /hasti_api
+
+USER node
+
+WORKDIR /hasti_api
+ENV NODE_ENV=production
+ENV PORT=3000
+COPY ./codebase/hasti_api .
+
+# RUN yarn install --production --prefer-offline && yarn build
+
+CMD [ "yarn", "start" ]

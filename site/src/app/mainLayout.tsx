@@ -13,15 +13,20 @@ import {
   HomeIcon,
   UsersIcon,
   XMarkIcon,
+  RectangleGroupIcon,
+  SquaresPlusIcon,
+  SwatchIcon,
+  
 } from '@heroicons/react/24/outline'
 
 const navigation = [
-  { name: 'Dashboard', href: '#', icon: HomeIcon, current: true },
-  { name: 'Team', href: '#', icon: UsersIcon, current: false },
-  { name: 'Projects', href: '#', icon: FolderIcon, current: false },
-  { name: 'Calendar', href: '#', icon: CalendarIcon, current: false },
-  { name: 'Documents', href: '#', icon: DocumentDuplicateIcon, current: false },
-  { name: 'Reports', href: '#', icon: ChartPieIcon, current: false },
+  { name: 'Store', href: '#', icon: HomeIcon, current: true },
+  { name: 'Themes', href: '#', icon: SwatchIcon, current: false },
+  { name: 'Integrations', href: '#', icon: SquaresPlusIcon , current: false },
+  { name: 'Store', href: '#', icon: HomeIcon, current: true },
+  { name: 'Themes', href: '#', icon: SwatchIcon, current: false },
+  { name: 'Integrations', href: '#', icon: SquaresPlusIcon , current: false },
+
 
 ]
 const teams = [
@@ -59,7 +64,7 @@ export default function MainLayout({
         This example requires updating your template:
 
         ```
-        <html class="h-full bg-white">
+        <html class="h-full bg-dark">
         <body class="h-full">
         ```
       */}
@@ -68,14 +73,14 @@ export default function MainLayout({
         {/* Static sidebar for desktop */}
         <div className="md:fixed md:inset-y-0 md:z-50 md:flex md:w-72 md:flex-col hidden">
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex flex-col gap-y-5 overflow-y-auto  bg-white px-6">
-            <div className="flex h-16 shrink-0 items-center">
+          <div className="flex flex-col gap-y-5 overflow-y-auto  bg-dark px-6">
+            <div className="my-10 -ml-4 flex h-16 shrink-0 items-center">
               <img
-                className="h-8 w-auto"
-                src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
+                className="h-28 w-auto"
+                src="/white_ha_cube_RIGHT_hasti_splled_out_op4.png"
                 alt="Your Company"
               />
-              <div className="mt-4 max-w-[36rem] text-5xl font-extrabold tracking-tight text-slate-900 xl:max-w-[43.5rem]">
+              <div className="mt-4 max-w-[36rem] text-5xl font-extrabold tracking-tight text-white xl:max-w-[43.5rem]">
               HASTI
               </div>
             </div>
@@ -89,14 +94,14 @@ export default function MainLayout({
                           href={item.href}
                           className={classNames(
                             item.current
-                              ? 'bg-gray-50 text-indigo-600'
-                              : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50',
+                              ? 'bg-zinc-50 text-indigo-600'
+                              : 'text-gray-100 hover:text-indigo-600 hover:bg-gray-50',
                             'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
                           )}
                         >
                           {item.icon ? <item.icon
                             className={classNames(
-                              item.current ? 'text-indigo-600' : 'text-gray-400 group-hover:text-indigo-600',
+                              item.current ? 'text-indigo-600' : 'text-white group-hover:text-indigo-600',
                               'h-6 w-6 shrink-0'
                             )}
                             aria-hidden="true"
@@ -126,7 +131,7 @@ export default function MainLayout({
                               team.current
                                 ? 'text-indigo-600 border-indigo-600'
                                 : 'text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600',
-                              'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-white'
+                              'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-dark'
                             )}
                           >
                             {team.initial}
@@ -137,10 +142,10 @@ export default function MainLayout({
                     ))}
                   </ul>
                 </li>
-                <li className="-mx-6 mt-auto">
+                <li className="absolute -mx-6 mt-auto bottom-0 p-2 w-full rounded-2xl">
                   <a
                     href="#"
-                    className="flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-900 hover:bg-gray-50"
+                    className="rounded-md flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-100 hover:bg-gray-50"
                   >
                     <img
                       className="h-8 w-8 rounded-full bg-gray-50"
@@ -158,18 +163,18 @@ export default function MainLayout({
         {/* ---========== MOBILE NAV BAR ==========--- */}
         <>
       <div className="min-h-full block md:hidden">
-        <Disclosure as="nav" className="border-b border-gray-200 bg-white">
+        <Disclosure as="nav" className=" bg-dark">
           {({ open }) => (
             <>
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16">
                   <div className="flex relative w-full">
-                    <div className="flex flex-shrink-0 items-center pr-6 ">
-                      <img
-                        className="h-8 w-auto"
-                        src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
-                        alt="Your Company"
-                      />
+                    <div className="flex flex-shrink-0 items-center -ml-3 ">
+                    <img
+                className="h-[4rem] w-auto pt-2"
+                src="/white_ha_cube_RIGHT_hasti_splled_out_op4.png"
+                alt="Your Company"
+              />
                     </div>
                     <div className="flex space-x-4 snap-x overflow-scroll scroll-ml-4">
                       {navigation.map((item) => (
@@ -193,20 +198,19 @@ export default function MainLayout({
                         className="h-8 w-6 mx-6"
                       />
                     </div>
-                  </div>
-                  <div className="ml-6 flex items-center pr-2 absolute right-0 top-4">
+                    <div className="ml-6 flex items-center pr-2 absolute right-0 top-4">
                     <button
                       type="button"
-                      className="rounded-full bg-white p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                      className="rounded-full bg-dark p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
                     >
                       <span className="sr-only">View notifications</span>
                       <BellIcon className="h-6 w-6" aria-hidden="true" />
                     </button>
 
-                    {/* Profile dropdown */}
+                    {/* Profile dropdown also used in mobile layout*/}
                     <Menu as="div" className="relative ml-3">
                       <div>
-                        <Menu.Button className="flex max-w-xs items-center rounded-full bg-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        <Menu.Button className="flex max-w-xs items-center rounded-full bg-dark text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                           <span className="sr-only">Open user menu</span>
                           <img className="h-8 w-8 rounded-full" src={user.imageUrl} alt="" />
                         </Menu.Button>
@@ -220,7 +224,7 @@ export default function MainLayout({
                         leaveFrom="transform opacity-100 scale-100"
                         leaveTo="transform opacity-0 scale-95"
                       >
-                        <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-dark py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                           {userNavigation.map((item) => (
                             <Menu.Item key={item.name}>
                               {({ active }) => (
@@ -240,6 +244,8 @@ export default function MainLayout({
                       </Transition>
                     </Menu>
                   </div>
+                  </div>
+
                 </div>
               </div>
             </>
@@ -259,20 +265,8 @@ export default function MainLayout({
       </div>
 
 
-      <main className="md:pl-72 bg-white">
-          <div className="xl:pr-96">
-          {/* <div className="py-10 rounded">
-          <header>
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-              <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">Dashboard</h1>
-            </div>
-          </header>
-          </div> */}
-
-          <main className='p-3'>
-            <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 bg-content-body rounded-lg">{children}</div>
-          </main>
-          </div>
+      <main className="md:pl-72 bg-dark w-screen h-screen p-2">
+            <div className="p-3 bg-white rounded-2xl w-full h-full ">{children}</div>
         </main>
 
         </>

@@ -1,0 +1,33 @@
+# Add "AS build" for later use
+FROM node:20.5.0-alpine AS build
+
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# This is exactly what you had before
+WORKDIR /usr/src
+
+# RUN chown -R node:node /usr/src
+# USER node
+
+COPY ./codebase/hasti_api/package.json ./package.json
+COPY ./codebase/hasti_api/yarn.lock ./yarn.lock
+
+RUN yarn install --production --prefer-offline
+COPY ./codebase/hasti_api .
+
+RUN yarn build
+
+# Now build the actual image, starting over.
+FROM node:20.5.0-alpine AS app
+WORKDIR /usr/app
+
+# RUN chown -R node:node /usr/app
+# USER node
+
+COPY --from=build /usr/src/.next ./.next
+COPY --from=build /usr/src/node_modules ./node_modules
+COPY --from=build /usr/src/package.json ./package.json
+# RUN yarn install --production --prefer-offline && yarn build
+
+CMD ["yarn", "start" ]

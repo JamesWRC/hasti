@@ -12,7 +12,6 @@ module.exports = {
         colors: {
             current: 'currentColor',
             transparent: 'transparent',
-            white: '#FFFFFF',
             black: '#1C2434',
             'black-2': '#010101',
             body: '#64748B',
@@ -44,18 +43,20 @@ module.exports = {
             success: '#219653',
             danger: '#D34053',
             warning: '#FFA70B',
-            white: '#26282B',
-            'content-body': '#FFFFFF',
+            dark: '#26282B',
+            'content-body': '#323232',
             'dark-text': '#000000',
         },
         screens: {
           'xs': '530px',
+          '3xl': '1850px',
         },
       },
     },
     plugins: [
       '@tailwindcss/aspect-ratio',
       '@tailwindcss/typography',
+      '@tailwindcss/line-clamp',
     ],
   }
   
