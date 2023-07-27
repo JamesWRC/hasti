@@ -1,7 +1,7 @@
 'use strict'
 'use client'
 
-import { Fragment, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Dialog, Disclosure, Menu, Transition } from '@headlessui/react'
 import {
   Bars3Icon,
@@ -18,6 +18,8 @@ import {
   SwatchIcon,
   
 } from '@heroicons/react/24/outline'
+
+
 
 const navigation = [
   { name: 'Store', href: '#', icon: HomeIcon, current: true },
@@ -58,8 +60,12 @@ export default function MainLayout({
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false)
 
+
+
   return (
-    <>
+    <div className='overflow-hidden scrollbar'>
+
+
       {/*
         This example requires updating your template:
 
@@ -72,6 +78,7 @@ export default function MainLayout({
 
         {/* Static sidebar for desktop */}
         <div className="md:fixed md:inset-y-0 md:z-50 md:flex md:w-72 md:flex-col hidden">
+          
           {/* Sidebar component, swap this element with another sidebar if you like */}
           <div className="flex flex-col gap-y-5 overflow-y-auto  bg-dark px-6">
             <div className="my-10 -ml-4 flex h-16 shrink-0 items-center">
@@ -168,7 +175,7 @@ export default function MainLayout({
             <>
               <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16">
-                  <div className="flex relative w-full">
+                  <div className="flex relative w-full ">
                     <div className="flex flex-shrink-0 items-center -ml-3 ">
                     <img
                 className="h-[4rem] w-auto pt-2"
@@ -176,9 +183,10 @@ export default function MainLayout({
                 alt="Your Company"
               />
                     </div>
-                    <div className="flex space-x-4 snap-x overflow-scroll scroll-ml-4">
+                    <div className="flex space-x-4 snap-x overflow-scroll overflow-y-hidden scroll-ml-4 scrollbar parent">
                       {navigation.map((item) => (
                         <a
+                          id='child'
                           key={item.name}
                           href={item.href}
                           className={classNames(
@@ -265,11 +273,11 @@ export default function MainLayout({
       </div>
 
 
-      <main className="md:pl-72 bg-dark w-screen h-screen p-2">
-            <div className="p-3 bg-white rounded-2xl w-full h-full ">{children}</div>
+      <main className="md:pl-72 bg-dark w-screen h-screen max-h-[95vh] md:max-h-screen p-2 overflow-y-hidden">
+            <div className="p-3 bg-white rounded-2xl w-full h-full overflow-y-scroll">{children}</div>
         </main>
 
         </>
-        </>
+        </div>
   )
 }

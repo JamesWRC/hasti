@@ -3,7 +3,6 @@ import './globals.css'
 
 
 import MainLayout from '@/app/mainLayout'
-import Example from './mobileLayout'
 export default function RootLayout({
   children,
 }: {
