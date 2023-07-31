@@ -74,9 +74,9 @@ const navigation = {
   
   export default function Footer() {
     return (
-      <footer className="rounded-2xl  ">
+      <footer className="md:pl-72 ">
         <div className="mx-auto  overflow-hidden px-6 py-20 sm:py-24 lg:px-8">
-          <nav className="bg-white -mb-6 columns-2 sm:flex sm:justify-center sm:space-x-12" aria-label="Footer">
+          <nav className=" -mb-6 columns-2 sm:flex sm:justify-center sm:space-x-12" aria-label="Footer">
             {navigation.main.map((item) => (
               <div key={item.name} className="pb-6">
                 <a href={item.href} className="text-sm leading-6 text-gray-600 hover:text-gray-900">

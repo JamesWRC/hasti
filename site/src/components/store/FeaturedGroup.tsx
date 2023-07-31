@@ -5,11 +5,6 @@ import {
 export default function FeaturedGroup({
     groupTitle,
     groupPosts,
-    product,
-    isDisabled,
-    selectedSession,
-    sessionTimeSlot,
-    selectedProduct,
   }: {
     groupTitle: string, 
     groupPosts: any[],
@@ -26,7 +21,7 @@ export default function FeaturedGroup({
                     </div>
                     <div className="ml-6 flex items-center">
                         <div className="flex space-x-1 rounded-lg bg-slate-100 p-0.5" role="tablist" aria-orientation="horizontal">
-                            <button className="flex items-center rounded-md py-[0.4375rem] pl-2 pr-2 text-sm font-semibold lg:pr-3" id="headlessui-tabs-tab-11" role="tab" type="button" aria-selected="false" tabindex="-1" data-headlessui-state="" aria-controls="headlessui-tabs-panel-13" control-id="ControlID-13">
+                            <button className="flex items-center rounded-md py-[0.4375rem] pl-2 pr-2 text-sm font-semibold lg:pr-3" id="headlessui-tabs-tab-11" role="tab" type="button" aria-selected="false" tabIndex={-1} data-headlessui-state="" aria-controls="headlessui-tabs-panel-13" control-id="ControlID-13">
                                 <span className="sr-only lg:not-sr-only lg:ml-2 text-slate-600">more</span>
                                 <ArrowRightIcon className="ml-2 h-4 w-4 text-slate-600" aria-hidden="true" />
 
@@ -37,11 +32,11 @@ export default function FeaturedGroup({
                     <div className="">
                     <div className="overflow-x-scroll scrollbar">
                     {/* <div className="mx-auto mt-4 grid max-w-2xl auto-rows-fr grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5"> */}
-                    <div className="min-w-[250%] mt-4 grid grid-cols-12 col gap-4 sm:gap-8">
+                    <div className="min-w-[250%] mt-4 grid grid-cols-15 md:grid-cols-12 xl:grid-cols-8 gap-4 sm:gap-8">
                             {groupPosts.map((post) => (
                                 <article
                                     key={post.id}
-                                    className="col-span-3 md:col-span-2 relative isolate flex flex-col justify-end overflow-hidden rounded-2xl bg-gray-900 px-8 pb-8 pt-80 sm:pt-48 lg:pt-80 mb-4"
+                                    className="col-span-3 md:col-span-2 xl:col-span-1 relative isolate flex flex-col justify-end overflow-hidden rounded-2xl bg-gray-900 px-8 pb-8 pt-80 sm:pt-48 lg:pt-80 mb-4"
                                 >
                                     <img src={post.imageUrl} alt="" className="absolute inset-0 -z-10 h-full w-full object-cover" />
                                     <div className="absolute inset-0 -z-10 bg-gradient-to-t from-gray-900 via-gray-900/40" />

@@ -10,13 +10,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className='bg-dark'>
+    <html lang="en" className='bg-dark h-screen '>
       {/*
         <head /> will contain the components returned by the nearest parent
         head.tsx. Find out more at https://beta.nextjs.org/docs/api-reference/file-conventions/head
       */}
       <Head/>
-        <body className='bg-blue'>
+        <body className='bg-blue '>
           <MainLayout >
             {children}
         </MainLayout>
