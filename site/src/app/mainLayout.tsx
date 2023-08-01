@@ -26,6 +26,7 @@ const navigation = [
   { name: 'Store', href: '/store', icon: HomeIcon, current: true },
   { name: 'Themes', href: '/themes', icon: SwatchIcon, current: false },
   { name: 'Integrations', href: '/integrations', icon: SquaresPlusIcon, current: false },
+  
 ]
 const teams = [
   { id: 1, name: 'Heroicons', href: '#', initial: 'H', current: false },
@@ -104,7 +105,7 @@ export default function MainLayout({
                                 selectedNav === item.name
                                   ? 'bg-zinc-50 text-indigo-600'
                                   : 'text-gray-100 hover:text-indigo-600 hover:bg-gray-50',
-                                'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
+                                'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold '
                               )}
                               onClick={() => setSelectedNav(item.name)}
                             >
@@ -179,7 +180,7 @@ export default function MainLayout({
               <>
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                   <div className="flex h-16">
-                    <div className="flex relative w-full ">
+                    <div className="flex justify-between w-full ">
                       <div className="flex flex-shrink-0 items-center -ml-3 ">
                         <img
                           className="h-[4rem] w-auto pt-2"
@@ -187,7 +188,7 @@ export default function MainLayout({
                           alt="Your Company"
                         />
                       </div>
-                      <div className="flex space-x-4 snap-x overflow-scroll overflow-y-hidden scroll-ml-4 scrollbar parent">
+                      <div className="flex space-x-4 snap-x overflow--x-scroll overflow-y-hidden scroll-ml-4 scrollbar parent">
                         {navigation.map((item) => (
                           <a
                             id='child'
@@ -195,9 +196,9 @@ export default function MainLayout({
                             href={item.href}
                             className={classNames(
                               item.current
-                                ? 'border-indigo-500 text-gray-900'
-                                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700',
-                              `inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium first:ml-10 last:pr-10`,
+                                ? 'border-indigo-500 text-gray-50'
+                                : 'border-transparent text-gray-50 hover:border-gray-300 hover:text-gray-400',
+                              `inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium first:ml-10 last:mr-10`,
                             )}
                             aria-current={item.current ? 'page' : undefined}
                             onClick={() => setSelectedNav(item.name)}
@@ -279,7 +280,7 @@ export default function MainLayout({
 
 
 
-        <main className="md:pl-72 bg-dark w-screen h-full md:h-screen p-2 ">
+        <main className="md:pl-72 bg-dark w-screen h-full md:h-screen p-2 md:pr-6">
           <div className="p-3 bg-white rounded-2xl w-full h-full md:h-full overflow-y-scroll scrollbar">
             {children}
 

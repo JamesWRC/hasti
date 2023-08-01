@@ -29,7 +29,7 @@ export default function FeaturedGroup({
                         </div>
                     </div> 
                     <div className="col-span-2 row-start-2 min-w-0">
-                    <div className="">
+                    <div className="md:-mx-4">
                     <div className="overflow-x-scroll scrollbar">
                     {/* <div className="mx-auto mt-4 grid max-w-2xl auto-rows-fr grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5"> */}
                     <div className="min-w-[250%] mt-4 grid grid-cols-15 md:grid-cols-12 xl:grid-cols-8 gap-4 sm:gap-8">
