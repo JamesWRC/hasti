@@ -280,7 +280,7 @@ export default function MainLayout({
 
 
 
-        <main className="md:pl-72 bg-dark w-screen h-full md:h-screen p-2 md:pr-6">
+        <main className="md:pl-72 bg-dark h-full md:h-screen p-2">
           <div className="p-3 bg-white rounded-2xl w-full h-full md:h-full overflow-y-scroll scrollbar">
             {children}
 
