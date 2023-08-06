@@ -3,7 +3,7 @@ ArrowRightIcon
     
   } from '@heroicons/react/24/outline'
 import FeaturedGroup from '@/components/store/FeaturedGroup'
-import { groupPosts } from '@/components/placeholders'
+import { groupPosts } from '@/interfaces/placeholders'
   export default function StorePage() {
     return (
       <div className="bg-white py-24 sm:py-28">
