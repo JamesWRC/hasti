@@ -19,6 +19,7 @@ import {
 
 } from '@heroicons/react/24/outline'
 import Footer from '@/components/Footer'
+import { usePathname } from 'next/navigation';
 
 
 
@@ -55,7 +56,9 @@ export default function MainLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [selectedNav, setSelectedNav] = useState<string>(navigation.filter((item) => item.href.includes(window.location.pathname))[0].name)
+  const pathname = usePathname();
+  
+  const [selectedNav, setSelectedNav] = useState<string>(navigation.filter((item) => item.href.includes(pathname ?? ''))[0].name)
 
 
   function renderNavContent() {

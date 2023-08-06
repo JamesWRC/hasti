@@ -1,3 +1,5 @@
+'use strict'
+'use Client'
 import { groupPosts } from "@/interfaces/placeholders";
 import AuthorDescription from "@/components/store/AuthorDescription";
 import DescriptionItem from "@/components/store/DescriptionItem";
