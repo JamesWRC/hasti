@@ -57,35 +57,9 @@ export default function MainLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname();
-  
-  const [selectedNav, setSelectedNav] = useState<string>(navigation.filter((item) => item.href.includes(pathname ?? ''))[0].name)
 
+  const [selectedNav, setSelectedNav] = useState<string>(navigation.filter((item) =>  pathname?.toUpperCase().includes(item.name.toUpperCase()) ?? '')[0]?.name ?? 'Store')
 
-  function renderNavContent() {
-    return navigation.map((item) => (
-      <li key={item.name}>
-        <a
-          href={item.href}
-          className={classNames(
-            selectedNav === item.name
-              ? 'bg-zinc-50 text-indigo-600'
-              : 'text-gray-100 hover:text-indigo-600 hover:bg-gray-50',
-            'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold '
-          )}
-          onClick={() => setSelectedNav(item.name)}
-        >
-          {item.icon ? <item.icon
-            className={classNames(
-              selectedNav === item.name ? 'text-indigo-600' : 'text-white group-hover:text-indigo-600',
-              'h-6 w-6 shrink-0'
-            )}
-            aria-hidden="true"
-          /> : null}
-          {item.name}
-        </a>
-      </li>
-    ))
-  }
 
   return (
     <>

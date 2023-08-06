@@ -44,7 +44,7 @@ export default function FeaturedGroup({
                         <div className="md:-mx-4 ">
                             <div className="overflow-x-scroll scrollbar ">
                                 {/* <div className="mx-auto mt-4 grid max-w-2xl auto-rows-fr grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5"> */}
-                                <div className="min-w-[250%] mt-4 grid grid-cols-10 gap-[11.35rem] sm:gap-[12rem] md:gap-[12rem] lg:gap-[12rem] xl:gap-12">
+                                <div className="min-w-[250%] mt-4 grid grid-cols-10 gap-[11.35rem] sm:gap-[12rem] md:gap-[12rem] lg:gap-[9rem] xl:gap-12">
                                     {groupPosts.map((post) => (
 
                                         <article
@@ -54,7 +54,7 @@ export default function FeaturedGroup({
                                         >
                                             <img src={post.imageUrl} alt="" className="absolute inset-0 -z-10 h-full w-full object-cover" />
                                             <div className="absolute inset-0 -z-10 bg-gradient-to-t from-gray-900 via-gray-900/40 " />
-                                            <div className="absolute inset-0 -z-10 rounded-2xl ring-1 ring-inset ring-gray-900/0" onClick={() => location.replace(getProjectLink(post) ?? '')}/>
+                                            <div className="absolute inset-0 -z-10 rounded-2xl ring-1 ring-inset ring-gray-900/0 cursor-pointer" onClick={() => location.href = getProjectLink(post) ?? ''}/>
                                             <div className='-mx-4 sm:-mx-2'>
                                               
                                                 <AuthorDescription name={post.author.name} imageUrl={post.author.imageUrl} link={post.author.link} />

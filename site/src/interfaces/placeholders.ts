@@ -10,10 +10,10 @@ const projectLink = "Boost-your-conversion-rate"
 
 
 export let groupPosts: any = []
-
-for(let i = 0; i < 10; i++){
+let i;
+for(i = 0; i < 10; i++){
   groupPosts.push({
-    id: 1,
+    id: i,
     title: 'Boost your conversion rate',
     shortDesc: shortDesc,
     href: projectLink,
