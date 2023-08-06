@@ -23,9 +23,9 @@ import Footer from '@/components/Footer'
 
 
 const navigation = [
-  { name: 'Store', href: '/store', icon: HomeIcon, current: true },
-  { name: 'Themes', href: '/themes', icon: SwatchIcon, current: false },
-  { name: 'Integrations', href: '/integrations', icon: SquaresPlusIcon, current: false },
+  { name: 'Store', href: '/', icon: HomeIcon},
+  { name: 'Themes', href: '/themes', icon: SwatchIcon},
+  { name: 'Integrations', href: '/integrations', icon: SquaresPlusIcon},
   
 ]
 const teams = [
@@ -55,9 +55,34 @@ export default function MainLayout({
 }: {
   children: React.ReactNode
 }) {
-  const [selectedNav, setSelectedNav] = useState<string>(navigation[0].name)
+  const [selectedNav, setSelectedNav] = useState<string>(navigation.filter((item) => item.href.includes(window.location.pathname))[0].name)
 
 
+  function renderNavContent() {
+    return navigation.map((item) => (
+      <li key={item.name}>
+        <a
+          href={item.href}
+          className={classNames(
+            selectedNav === item.name
+              ? 'bg-zinc-50 text-indigo-600'
+              : 'text-gray-100 hover:text-indigo-600 hover:bg-gray-50',
+            'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold '
+          )}
+          onClick={() => setSelectedNav(item.name)}
+        >
+          {item.icon ? <item.icon
+            className={classNames(
+              selectedNav === item.name ? 'text-indigo-600' : 'text-white group-hover:text-indigo-600',
+              'h-6 w-6 shrink-0'
+            )}
+            aria-hidden="true"
+          /> : null}
+          {item.name}
+        </a>
+      </li>
+    ))
+  }
 
   return (
     <>
@@ -195,12 +220,12 @@ export default function MainLayout({
                             key={item.name}
                             href={item.href}
                             className={classNames(
-                              item.current
+                              selectedNav === item.name
                                 ? 'border-indigo-500 text-gray-50'
                                 : 'border-transparent text-gray-50 hover:border-gray-300 hover:text-gray-400',
                               `inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium first:ml-10 last:mr-10`,
                             )}
-                            aria-current={item.current ? 'page' : undefined}
+                            aria-current={selectedNav === item.name ? 'page' : undefined}
                             onClick={() => setSelectedNav(item.name)}
                           >
                             {item.name}
