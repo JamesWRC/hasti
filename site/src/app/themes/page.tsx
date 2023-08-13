@@ -4,10 +4,10 @@ import { groupPosts } from "@/interfaces/placeholders";
 import AuthorDescription from "@/components/store/AuthorDescription";
 import DescriptionItem from "@/components/store/DescriptionItem";
 import FeaturedGroup from "@/components/store/FeaturedGroup";
-
+import PaginationPanel from "@/components/store/PaginationPanel";
 
 function renderThemesGrid(){
-  return (<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-9">
+  return (<div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 px-8">
     <DescriptionItem/>
     <DescriptionItem/>
     <DescriptionItem/>
@@ -28,8 +28,9 @@ export default function Page() {
     return (
       <>
         <FeaturedGroup groupTitle={"Popular Themes"} groupPosts={groupPosts} />
-
-      {renderThemesGrid()}
+      
+      {/* {renderThemesGrid()} */}
+      <PaginationPanel/>
       <button
         type="button"
         className="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"

@@ -10,7 +10,7 @@ export default function AuthorDescription({ name, link, imageUrl }: { name: stri
                 </svg>
                 <div className="flex gap-x-2.5">
                     <img src={imageUrl} alt="" className="h-6 w-6 flex-none rounded-full bg-white/10" />
-                    <div className="hover:underline underline-offset-4">{name}</div>
+                    <div className="hover:underline underline-offset-4 line-clamp-1">{name}</div>
                 </div>
             </a>
         </div>

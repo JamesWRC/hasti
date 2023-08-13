@@ -44,7 +44,7 @@ export default function FeaturedGroup({
                         <div className="md:-mx-4 ">
                             <div className="overflow-x-scroll scrollbar ">
                                 {/* <div className="mx-auto mt-4 grid max-w-2xl auto-rows-fr grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5"> */}
-                                <div className="min-w-[250%] mt-4 grid grid-cols-10 gap-[11.35rem] sm:gap-[12rem] md:gap-[12rem] lg:gap-[9rem] xl:gap-12">
+                                <div className="min-w-[250%] mt-4 grid grid-cols-10 gap-[11.35rem] sm:gap-[12rem] md:gap-[12rem] lg:gap-[12rem] xl:gap-12">
                                     {groupPosts.map((post) => (
 
                                         <article
