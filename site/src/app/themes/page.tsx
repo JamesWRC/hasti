@@ -1,10 +1,11 @@
 'use strict'
-'use Client'
+'use client'
 import { groupPosts } from "@/interfaces/placeholders";
 import AuthorDescription from "@/components/store/AuthorDescription";
 import DescriptionItem from "@/components/store/DescriptionItem";
 import FeaturedGroup from "@/components/store/FeaturedGroup";
 import PaginationPanel from "@/components/store/PaginationPanel";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 function renderThemesGrid(){
   return (<div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 px-8">
@@ -25,9 +26,26 @@ function renderThemesGrid(){
 }
 
 export default function Page() {
+
+  const searchParams = useSearchParams()
+  // If a page number is specified in the query string, then we are on a paginated page,
+  // otherwise we are on the front page and should show the featured group.
+  const pageNumber = searchParams?.get('page')
+  let isFrontPage = false
+  if(pageNumber){
+    if(parseInt(pageNumber) > 1){
+      isFrontPage = false
+    } else {
+      isFrontPage = true
+    }
+  } else {
+    isFrontPage = true
+  }
+
+
     return (
       <>
-        <FeaturedGroup groupTitle={"Popular Themes"} groupPosts={groupPosts} />
+        {isFrontPage ? <FeaturedGroup groupTitle={"Popular Themes"} groupPosts={groupPosts} /> : null}
       
       {/* {renderThemesGrid()} */}
       <PaginationPanel/>

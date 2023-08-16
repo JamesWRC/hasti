@@ -25,7 +25,7 @@ export default function FeaturedGroup({
     return (
         <div className="bg-white py-4">
             <div className="mx-auto max-w-[150%] -px-0 md:px-6 lg:px-8 py-4 rounded-xl">
-                <div className="grid grid-cols-[1fr,auto] items-center gap-4 mt-8">
+                <div className="grid grid-cols-[1fr,auto] items-center gap-4">
                     <div className="flex min-w-0">
                         <h2 className="inline-block text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight dark:text-slate-900">
                             <a href="#Themes">{groupTitle}</a>
