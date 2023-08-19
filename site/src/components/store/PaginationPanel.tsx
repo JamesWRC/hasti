@@ -71,32 +71,32 @@ export default function PaginationPanel() {
 
     return <div className="mx-auto max-w-7xl 3xl:max-w-full sm:px-6 lg:px-8">
         {/* ------------- CONTENT  -------------*/}
-        <div className="mx-auto grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 gap-12 px-8 md:px-0">
+        <div className="mx-auto grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 gap-12 px-8 xs:px-8 md:px-0">
         {pageContent.map((item: any) => {
             return item;
         })}
         
         </div>
         {/* ------------- PAGINATION BAR  -------------*/}
-        <nav className="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0 overflow-hidden">
-            <div className="-mt-px flex w-0 flex-1 justify-start">
+        <nav className="flex items-center justify-between border-t border-gray-200 px-4 md:px-0 overflow-hidden -mx-2">
+            <div className="-mt-px flex w-0 flex-1 justify-start bg-white">
                 <a
                     href="#"
-                    className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                    className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 bg-inherit bg-white z-10"
                     onClick={(e) => handlePageChange(pageNumber - 1)}
                 >
                     <ArrowLongLeftIcon className="mr-3 h-5 w-5 text-gray-400" aria-hidden="true" />
                     Previous
                 </a>
             </div>
-            <div className="hidden md:-mt-px md:flex overflow-x-hidden">
-                <div className="grid lg:grid-cols-9 min-w-[150%]">
+            <div className="hidden md:-mt-px xs:flex overflow-x-hidden">
+                <div className="">
                 {pageNumber < 10 ? arrayRange(1, 10, 1).map((i) => {
                     return (<a
                         key={'paginationPrev#' + i}
                         href="#"
                         className={classNames("inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:text-gray-700", 
-                        i == pageNumber ? "inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 border-dark" : "hover:border-gray-300")}
+                        i == pageNumber ? "inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 border-grey-900" : "hover:border-gray-300")}
                         onClick={(e) => handlePageChange(i)}
                     >
                         {i}
@@ -107,7 +107,7 @@ export default function PaginationPanel() {
                     return (<a
                         key={'paginationPrev#' + i}
                         href="#"
-                        className={classNames("inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:text-gray-700", 
+                        className={classNames("first:hidden lg:first:inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:text-gray-700", 
                         i == pageNumber ? "inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 border-dark" : "hover:border-gray-300")}
                         onClick={(e) => handlePageChange(i)}
                         >
@@ -122,8 +122,8 @@ export default function PaginationPanel() {
                     return (<a
                         key={'paginationPrev#' + i}
                         href="#"
-                        className={classNames("inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:text-gray-700", 
-                        i == pageNumber ? "inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 border-gray-700" : "hover:border-gray-300")}
+                        className={classNames("last:hidden lg:last:inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:text-gray-700", 
+                        i == pageNumber ? "inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 border-dark" : "hover:border-gray-300")}
                         onClick={(e) => handlePageChange(i)}
                         >
                         {i}
@@ -131,10 +131,10 @@ export default function PaginationPanel() {
                 }) : null}
                 </div>
             </div>
-            <div className="-mt-px flex w-0 flex-1 justify-end">
+            <div className="-mt-px flex w-0 flex-1 justify-end bg-white">
                 <a
                     href="#"
-                    className="inline-flex items-center border-t-2 border-transparent pl-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
+                    className="inline-flex items-center border-t-2 border-transparent pl-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 bg-white z-10"
                     onClick={(e) => handlePageChange(pageNumber + 1)}
                 >
                     Next

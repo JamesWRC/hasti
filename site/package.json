@@ -24,6 +24,7 @@
     "jquery": "^3.7.0",
     "jquery-ui": "^1.13.2",
     "jquery-ui-dist": "^1.13.2",
+    "lorem-ipsum": "^2.0.8",
     "next": "13.4.10",
     "postcss": "^8.4.26",
     "react": "18.2.0",
