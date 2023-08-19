@@ -7,23 +7,23 @@ import FeaturedGroup from "@/components/store/FeaturedGroup";
 import PaginationPanel from "@/components/store/PaginationPanel";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-function renderThemesGrid(){
-  return (<div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 px-8">
-    <DescriptionItem/>
-    <DescriptionItem/>
-    <DescriptionItem/>
-    <DescriptionItem/>
-    <DescriptionItem/>
-    <DescriptionItem/>
-    <DescriptionItem/>
-    <DescriptionItem/>
-    <DescriptionItem/>
-    <DescriptionItem/>
-    <DescriptionItem/>
-    <DescriptionItem/>
-  </div>
-  )
-}
+// function renderThemesGrid(){
+//   return (<div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 px-8">
+//     <DescriptionItem/>
+//     <DescriptionItem/>
+//     <DescriptionItem/>
+//     <DescriptionItem/>
+//     <DescriptionItem/>
+//     <DescriptionItem/>
+//     <DescriptionItem/>
+//     <DescriptionItem/>
+//     <DescriptionItem/>
+//     <DescriptionItem/>
+//     <DescriptionItem/>
+//     <DescriptionItem/>
+//   </div>
+//   )
+// }
 
 export default function Page() {
 

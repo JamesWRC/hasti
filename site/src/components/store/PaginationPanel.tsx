@@ -43,17 +43,23 @@ export default function PaginationPanel() {
 
     // use useEffect to make a call to the api/store/themes api and get the total number of pages
     useEffect(() => {
-        var tempPageContent = [];
+        var tempPageContent:any[] = [];
 
-        for (var i = 1; i <= MAX_PAGE_NUMBER; i++) {
-            tempPageContent.push(<DescriptionItem />);
-        }
-        setPageContent(tempPageContent);
-
+        // for (var i = 1; i <= MAX_PAGE_NUMBER; i++) {
+        //     tempPageContent.push(<DescriptionItem title={''} description={''} author={''} authorImageUrl={''} authorLink={''} loaded={false} animateDelayCount={0}/> );
+        // }
+        // setPageContent(tempPageContent);
+        const timer = setTimeout(() => {}, 2000);
+        tempPageContent = []
         fetch('api/store/themes')
             .then(response => response.json())
             .then(data => {
-                console.log(data);
+                console.log(data.themes);
+                for(var i = 0; i < data.themes.length && i <= MAX_PAGE_NUMBER; i++){
+                    const delay = 100 * i
+                    tempPageContent.push(<DescriptionItem title={data.themes[i].title} description={data.themes[i].description} author={data.themes[i].author.name} authorImageUrl={data.themes[i].author.imageUrl} authorLink={data.themes[i].author.link} loaded={true} animateDelayCount={delay}/>);
+                }
+                setPageContent(tempPageContent);
                 // setPageNumber(data.totalPages);
             })
             .catch(error => console.error(error));
@@ -72,8 +78,8 @@ export default function PaginationPanel() {
         
         </div>
         {/* ------------- PAGINATION BAR  -------------*/}
-        <nav className="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0">
-            <div className="-mt-px flex w-0 flex-1">
+        <nav className="flex items-center justify-between border-t border-gray-200 px-4 sm:px-0 overflow-hidden">
+            <div className="-mt-px flex w-0 flex-1 justify-start">
                 <a
                     href="#"
                     className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700"
@@ -83,34 +89,36 @@ export default function PaginationPanel() {
                     Previous
                 </a>
             </div>
-            <div className="hidden md:-mt-px md:flex">
+            <div className="hidden md:-mt-px md:flex overflow-x-hidden">
+                <div className="grid lg:grid-cols-9 min-w-[150%]">
                 {pageNumber < 10 ? arrayRange(1, 10, 1).map((i) => {
                     return (<a
                         key={'paginationPrev#' + i}
                         href="#"
                         className={classNames("inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:text-gray-700", 
-                        i == pageNumber ? "inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 border-gray-700" : "hover:border-gray-300")}
+                        i == pageNumber ? "inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 border-dark" : "hover:border-gray-300")}
                         onClick={(e) => handlePageChange(i)}
                     >
                         {i}
                     </a>)
                 }) : null}
-                {pageNumber >= 10 ? arrayRange(pageNumber - 4, pageNumber, 1).map((i) => {
+
+                {pageNumber >= 10 ? arrayRange(pageNumber - 5, pageNumber, 1).map((i) => {
                     return (<a
                         key={'paginationPrev#' + i}
                         href="#"
                         className={classNames("inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:text-gray-700", 
-                        i == pageNumber ? "inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 border-gray-700" : "hover:border-gray-300")}
+                        i == pageNumber ? "inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 border-dark" : "hover:border-gray-300")}
                         onClick={(e) => handlePageChange(i)}
                         >
                         {i}
                     </a>)
                 }) : null}
-
+                
                 {/* <span className="inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500">
                     ...
                 </span> */}
-                {pageNumber >= 10 ? arrayRange(pageNumber+1, pageNumber + 4, 1).map((i) => {
+                {pageNumber >= 10 ? arrayRange(pageNumber+1, pageNumber + 5, 1).map((i) => {
                     return (<a
                         key={'paginationPrev#' + i}
                         href="#"
@@ -121,6 +129,7 @@ export default function PaginationPanel() {
                         {i}
                     </a>)
                 }) : null}
+                </div>
             </div>
             <div className="-mt-px flex w-0 flex-1 justify-end">
                 <a

@@ -22,10 +22,9 @@ function generateSkeletonLines(){
   return (lineArray)
 }
 
-export default function DescriptionItem() {
-    const loaded = true
+export default function DescriptionItem({title, description, author, authorImageUrl, authorLink, loaded, animateDelayCount}:{title: string, description: string, author: string, authorImageUrl: string, authorLink: string, loaded: boolean, animateDelayCount: number}) {
     return (
-      <div className="flex">
+      <div className={classNames('flex', loaded ? `flex animate-fade-up animate-once animate-duration-500`: '')}>
         <div className={classNames("mr-4 flex-shrink-0 self-center", loaded ? "" : "bg-gray-200 animate-pulse rounded-2xl")}>
           {/* <svg
             className="h-16 w-16 border border-gray-300 bg-white text-gray-300"
@@ -40,11 +39,10 @@ export default function DescriptionItem() {
           <img src="https://www.freepnglogos.com/uploads/512x512-logo/512x512-transparent-instagram-logo-icon-5.png" alt="Theme Icon" className="h-12 w-12" />
         </div>
         <div className="w-full min-h-full">
-          <h4 className={classNames("text-md font-bold min-w-full text-black", loaded ? "" : "bg-gray-200 animate-pulse rounded-2xl")}>Lorem ipsum</h4>
+          <h4 className={classNames("text-md font-bold min-w-full text-black", loaded ? "" : "bg-gray-200 animate-pulse rounded-2xl")}>{title}</h4>
 
           {loaded ? <p className="mt-1 line-clamp-3 text-xs min-h-fit text-gray-800">
-            Repudiandae sint consequuntur vel. Amet ut nobis explicabo numquam expedita quia omnis voluptatem. Minus
-            quidem ipsam quia iusto.
+            {description}
           </p> : generateSkeletonLines()}
 
           <div className={loaded ? "pt-1 -ml-4" : "hidden"}>
