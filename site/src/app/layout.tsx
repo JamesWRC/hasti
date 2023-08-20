@@ -3,20 +3,20 @@ import './globals.css'
 
 
 import MainLayout from '@/app/mainLayout'
-import Example from './mobileLayout'
+import Head from './head'
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className='bg-dark'>
+    <html lang="en" className='bg-dark h-screen'>
       {/*
         <head /> will contain the components returned by the nearest parent
         head.tsx. Find out more at https://beta.nextjs.org/docs/api-reference/file-conventions/head
       */}
-      <head />
-        <body className='bg-blue'>
+      <Head/>
+        <body className='bg-blue '>
           <MainLayout >
             {children}
         </MainLayout>

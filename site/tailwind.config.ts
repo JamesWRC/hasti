@@ -51,12 +51,16 @@ module.exports = {
           'xs': '530px',
           '3xl': '1850px',
         },
+        gridTemplateColumns: {
+          '15': 'repeat(16, minmax(0, 1fr))',
       },
     },
-    plugins: [
-      '@tailwindcss/aspect-ratio',
-      '@tailwindcss/typography',
-      '@tailwindcss/line-clamp',
-    ],
-  }
+  },
+  plugins: [
+    '@tailwindcss/aspect-ratio',
+    '@tailwindcss/typography',
+    '@tailwindcss/line-clamp',
+    require('tailwindcss-animated')
+  ],
+}
   
