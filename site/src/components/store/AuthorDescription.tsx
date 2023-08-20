@@ -1,6 +1,6 @@
 
 
-export default function AuthorDescription({ name, link, imageUrl }: { name: string, link: string, imageUrl: string }) {
+export default function AuthorDescription({ name, link, imageUrl, loaded }: { name: string, link: string, imageUrl: string, loaded:boolean }) {
     return (
 
         <div className="flex flex-wrap items-center gap-y-1 overflow-hidden text-sm leading-6 text-gray-300">
@@ -9,8 +9,8 @@ export default function AuthorDescription({ name, link, imageUrl }: { name: stri
                     <circle cx={1} cy={1} r={1} />
                 </svg>
                 <div className="flex gap-x-2.5">
-                    <img src={imageUrl} alt="" className="h-6 w-6 flex-none rounded-full bg-white/10" />
-                    <div className="hover:underline underline-offset-4 line-clamp-1">{name}</div>
+                    <img src={imageUrl} alt="" className={loaded ? "h-6 w-6 flex-none rounded-full bg-white/10" : "hidden"} />
+                    <div className="hover:underline underline-offset-4 line-clamp-1">{loaded ? name: <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</>}</div>
                 </div>
             </a>
         </div>

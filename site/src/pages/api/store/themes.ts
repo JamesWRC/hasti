@@ -24,7 +24,7 @@ export default function handler(
     for(let i = 0; i < 999; i++) {
         responseBody.push({
             id: i,
-            title: 'John Doe',
+            title: 'John Doe' + i,
             description: lorem.generateSentences(5),
             author: 'John Doe',
         })

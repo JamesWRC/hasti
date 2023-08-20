@@ -17,7 +17,7 @@ function generateSkeletonLines(){
   widthArray.sort((a, b) => (a > b) ? 1 : -1);
   // widthArray.reverse();
   for(let i = 0; i < lines; i++){
-    lineArray.push(<p className={`bg-gray-200 animate-pulse rounded-xl h-4 my-1 w-${widthArray[i] == 999 ? "full" : widthArray[i]}`}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>)
+    lineArray.push(<p className={`bg-gray-200 animate-pulse rounded-xl h-4 my-1 mt-1 w-${widthArray[i] == 999 ? "full" : widthArray[i]}`}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>)
   }
   return (lineArray)
 }
@@ -39,14 +39,14 @@ export default function DescriptionItem({title, description, author, authorImage
           <img src="https://www.freepnglogos.com/uploads/512x512-logo/512x512-transparent-instagram-logo-icon-5.png" alt="Theme Icon" className="h-12 w-12" />
         </div>
         <div className="w-full min-h-full">
-          <h4 className={classNames("text-md font-bold min-w-full text-black", loaded ? "" : "bg-gray-200 animate-pulse rounded-2xl")}>{title}</h4>
+          <h4 className={classNames("text-md xl:text-lg font-bold min-w-full text-black", loaded ? "" : "bg-gray-200 animate-pulse rounded-2xl")}>{loaded ? title : <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</>}</h4>
 
-          {loaded ? <p className="mt-1 line-clamp-3 text-xs min-h-fit text-gray-800">
+          {loaded ? <p className="mt-1 line-clamp-3 text-xs xl:text-base min-h-fit text-gray-800">
             {description}
           </p> : generateSkeletonLines()}
 
-          <div className={loaded ? "pt-1 -ml-4" : "hidden"}>
-            <AuthorDescription name={'post.author.name'} imageUrl={'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'} link={'www.github.com'} />
+          <div className={loaded ? "pt-1 -ml-4" : "bg-gray-200 animate-pulse rounded-xl pt-1 -ml-4 mt-2"}>
+            <AuthorDescription name={'post.author.name'} imageUrl={'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'} link={'www.github.com'} loaded={loaded}/>
           </div>
 
         </div>

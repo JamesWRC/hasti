@@ -23,7 +23,7 @@ export default function FeaturedGroup({
 
 
     return (
-        <div className="bg-white py-4">
+        <div className="bg-white">
             <div className="mx-auto max-w-[150%] -px-0 md:px-6 lg:px-8 py-4 rounded-xl">
                 <div className="grid grid-cols-[1fr,auto] items-center gap-4">
                     <div className="flex min-w-0">
@@ -57,7 +57,7 @@ export default function FeaturedGroup({
                                             <div className="absolute inset-0 -z-10 rounded-2xl ring-1 ring-inset ring-gray-900/0 cursor-pointer" onClick={() => location.href = getProjectLink(post) ?? ''}/>
                                             <div className='-mx-4 sm:-mx-2'>
                                               
-                                                <AuthorDescription name={post.author.name} imageUrl={post.author.imageUrl} link={post.author.link} />
+                                                <AuthorDescription name={post.author.name} imageUrl={post.author.imageUrl} link={post.author.link} loaded={true}/>
                                                 <h3 className="mt-3 text-lg font-semibold leading-6 text-white">
                                                     <a href={getProjectLink(post)}>
                                                         {/* <span className="absolute inset-0" /> */}
