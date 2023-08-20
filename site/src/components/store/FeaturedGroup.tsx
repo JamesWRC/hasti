@@ -40,11 +40,11 @@ export default function FeaturedGroup({
                             </button>
                         </div>
                     </div>
-                    <div className="col-span-2 row-start-2 min-w-0">
+                    <div className="col-span-2 row-start-2 min-w-0 -mx-6 md:-mx-0">
                         <div className="md:-mx-4 ">
                             <div className="overflow-x-scroll scrollbar ">
                                 {/* <div className="mx-auto mt-4 grid max-w-2xl auto-rows-fr grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5"> */}
-                                <div className="min-w-[250%] mt-4 grid grid-cols-10 gap-[11.35rem] sm:gap-[12rem] md:gap-[12rem] lg:gap-[12rem] xl:gap-12">
+                                <div className="mt-4 pl-3 min-w-[250%] grid grid-cols-10 gap-[11.35rem] sm:gap-[12rem] md:gap-[12rem] lg:gap-[12rem] xl:gap-12">
                                     {groupPosts.map((post) => (
 
                                         <article

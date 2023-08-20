@@ -45,7 +45,10 @@ export default function Page() {
 
     return (
       <>
-        {isFrontPage ? <FeaturedGroup groupTitle={"Popular Themes"} groupPosts={groupPosts} /> : null}
+        {isFrontPage ? 
+        <div className="pl-6">
+          <FeaturedGroup groupTitle={"Popular Themes"} groupPosts={groupPosts} /> 
+        </div>: null}
       
       {/* {renderThemesGrid()} */}
       <PaginationPanel/>

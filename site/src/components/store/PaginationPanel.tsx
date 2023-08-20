@@ -115,7 +115,6 @@ export default function PaginationPanel() {
 
     }, [numItemsDisplayed, pageNumber]);
 
-
     useEffect(() => {
         console.log(pageNumber)
     }, [pageNumber])
