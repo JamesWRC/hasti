@@ -31,7 +31,7 @@ export default function PaginationPanel() {
     const [numItemsDisplayed, setNumItemsDisplayed] = useState<number>(initPageNumber === 1 ? MAX_ITEMS_PER_PAGE_FIRST_PAGE : MAX_ITEMS_PER_PAGE);
     const [pageContent, setPageContent] = useState<any>([]);
     const [windowSize, setWindowSize] = useState({
-        width: window ? window.innerWidth : -1,
+        width: window ? window.outerWidth : -1,
         height: window ? window.innerHeight : -1,
       });
     function handlePageChange(pageNumber: number) {
@@ -57,8 +57,8 @@ export default function PaginationPanel() {
 
     useEffect(()=> {
         window.addEventListener('resize', ()=> {
-            setWindowSize({width: window.innerWidth, height: window.innerHeight})
-            console.log(window.innerHeight, window.innerWidth)
+            setWindowSize({width: window.outerWidth, height: window.innerHeight})
+            console.log(window.innerHeight, window.outerWidth)
         })
      }, [])
 
@@ -84,12 +84,35 @@ export default function PaginationPanel() {
     //         })
     //         .catch(error => console.error(error));
     // }, []);
-
+    
     useEffect(() => {
+
+        function evenOutRow(numItemInRow: number, currNumItemsDisplayed: number){
+            while (currNumItemsDisplayed % numItemInRow != 0){
+                currNumItemsDisplayed++;
+            }
+            return currNumItemsDisplayed
+        }
+        
+
         var tempPageContent: any[] = [];
         let currNumItemsDisplayed = numItemsDisplayed
+
         if(windowSize.width > 2000){
-            currNumItemsDisplayed*= 1.825
+            currNumItemsDisplayed *= 2
+            currNumItemsDisplayed = evenOutRow(5, currNumItemsDisplayed)
+
+    }else if(windowSize.width <= 2000 && windowSize.width > 1425){
+        currNumItemsDisplayed *= 1
+        currNumItemsDisplayed = evenOutRow(4, currNumItemsDisplayed)
+
+    // Handle devices that have a max row of 2 items
+    }else if(windowSize.width <= 1025){
+        currNumItemsDisplayed *= 1
+        currNumItemsDisplayed = evenOutRow(2, currNumItemsDisplayed)
+
+        }else{
+            currNumItemsDisplayed *= 1
         }
         for (var i = 0; i < currNumItemsDisplayed; i++) {
             tempPageContent.push(<DescriptionItem title={''} description={''} author={''} authorImageUrl={''} authorLink={''} loaded={false} animateDelayCount={0} />);
@@ -123,20 +146,18 @@ export default function PaginationPanel() {
         <>
         
             <div className="mx-auto max-w-7xl 3xl:max-w-full sm:px-6 lg:px-8 ">
-            <div className="flex min-w-0">
+            <div className="flex min-w-0 px-6 md:px-0">
                         <h1 className="inline-block text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight dark:text-slate-900 py-3">
                             <a href="#Themes">{pageNumber !== 1 ? "Themes" : null}</a>
                         </h1>
                     </div>
                 {/* ------------- CONTENT  -------------*/}
-                <div className="mx-auto grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 gap-12 lg:gap-9 px-8 xs:px-8 md:px-0 pb-2 md:pb-14">
+                <div className="mx-auto grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 gap-12 lg:gap-9 px-8 xs:px-8 md:px-0 pb-2 md:pb-14 gap-y-auto">
                     {pageContent.map((item: any) => {
                         return item;
                     })}
-
                 </div>
                 {/* ------------- PAGINATION BAR  -------------*/}
-
             </div>
 
             <div className="rounded-2xl lg:absolute lg:bottom-2 lg:left-72 lg:right-4 bg-white px-8 lg:pb-4">
@@ -158,12 +179,12 @@ export default function PaginationPanel() {
                                     return (<a
                                         key={'paginationPrev#' + i}
                                         href="#"
-                                        className={classNames("first:hidden lg:first:inline-flex items-center border-t-2 border-transparent px-3 pt-4 text-sm lg:text-base font-medium text-gray-500 hover:text-gray-700",
-                                            i == pageNumber ? "inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 border-gray-900" : "hover:border-gray-300")}
+                                        className={classNames("first:hidden lg:first:inline-flex items-center border-t-2 border-transparent px-3 pt-3.5 text-sm lg:text-base font-medium text-gray-500 hover:text-gray-700",
+                                            i == pageNumber ? "inline-flex items-center border-t-4 border-transparent px-4 text-sm font-medium text-gray-500 border-gray-500" : "hover:border-gray-600")}
                                         onClick={(e) => handlePageChange(i)}
                                     >
                                         {i}
-                                    </a>)
+                                    </a>) 
                                 })}
 
                                 {/* // keeping the 5 (in pageNumber < 5 ? 10 ) means the selected number will stay in the center when scrolling to higher numbers */}
@@ -171,8 +192,8 @@ export default function PaginationPanel() {
                                     return (<a
                                         key={'paginationPrev#' + i}
                                         href="#"
-                                        className={classNames("last:hidden lg:last:inline-flex items-center border-t-2 border-transparent px-3 pt-4 text-sm lg:text-base font-medium text-gray-500 hover:text-gray-700",
-                                            i == pageNumber ? "inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 border-gray-900" : "hover:border-gray-300")}
+                                        className={classNames("first:hidden lg:first:inline-flex items-center border-t-2 border-transparent px-3 pt-3.5 text-sm lg:text-base font-medium text-gray-500 hover:text-gray-700",
+                                            i == pageNumber ? "inline-flex items-center border-t-4 border-transparent px-4 text-sm font-medium text-gray-500 border-gray-900" : "hover:border-gray-600")}
                                         onClick={(e) => handlePageChange(i)}
                                     >
                                         {i}
