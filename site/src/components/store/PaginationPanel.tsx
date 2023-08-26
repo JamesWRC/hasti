@@ -184,7 +184,7 @@ export default function PaginationPanel() {
                                         onClick={(e) => handlePageChange(i)}
                                     >
                                         {i}
-                                    </a>)
+                                    </a>) 
                                 })}
 
                                 {/* // keeping the 5 (in pageNumber < 5 ? 10 ) means the selected number will stay in the center when scrolling to higher numbers */}
