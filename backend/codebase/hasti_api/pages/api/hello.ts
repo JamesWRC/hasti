@@ -22,7 +22,7 @@ const total = await prisma.user.count()
   await prisma.user.create({
     data: {
       name: `Alice ${total}`,
-      email: `a@a.com ${last[0].name}`,
+      email: `${Math.random() * (99999999 - 1) + 1}a@a.com ${last[0].name} `,
       posts: {
         create: { title: 'Hello World' },
       },
