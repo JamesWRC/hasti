@@ -4,7 +4,8 @@ import prisma from '@/prisma/client'
 
 type Data = {
   name: string,
-  time: number
+  time: number,
+  sample: any,
 }
 
 export default async function handler(
@@ -19,6 +20,14 @@ export default async function handler(
     take: 1,
 })
 const total = await prisma.user.count()
+const skip = Math.floor(Math.random() * total);
+const randSample = await prisma.user.findMany({
+    take: 1000,
+    skip: skip,
+    orderBy: {
+        id: 'desc',
+    },
+});
   await prisma.user.create({
     data: {
       name: `Alice ${total}`,
@@ -32,6 +41,6 @@ const total = await prisma.user.count()
     },
   })
 
-  return res.status(200).json({ name: last[0].name || 'John Doe', time: new Date().getTime() - startTime})
+  return res.status(200).json({ name: last[0].name || 'John Doe', time: new Date().getTime() - startTime, sample: randSample})
 
 }
