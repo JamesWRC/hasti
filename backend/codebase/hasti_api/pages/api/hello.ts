@@ -22,7 +22,7 @@ export default async function handler(
 const total = await prisma.user.count()
 const skip = Math.floor(Math.random() * total);
 const randSample = await prisma.user.findMany({
-    take: 1000,
+    take: 100,
     skip: skip,
     orderBy: {
         id: 'desc',
