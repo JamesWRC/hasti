@@ -23,7 +23,11 @@ const total = 1383663
 const skip = Math.floor(Math.random() * total);
 const randSample = await prisma.user.findMany({
     take: 50,
-    skip: skip,
+    where: {
+      email: {
+        startsWith: skip.toString().substring(0, 3)
+      },
+    },
     orderBy: {
         id: 'desc',
     },
