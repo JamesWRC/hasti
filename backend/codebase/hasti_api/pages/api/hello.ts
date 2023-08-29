@@ -19,7 +19,7 @@ export default async function handler(
     },
     take: 1,
 })
-const total = await prisma.user.count()
+const total = 1383663
 const skip = Math.floor(Math.random() * total);
 const randSample = await prisma.user.findMany({
     take: 50,
