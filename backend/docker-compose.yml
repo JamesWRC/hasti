@@ -5,6 +5,8 @@ services:
     container_name: hastidb
     ports:
       - 5432:5432
+    networks:
+      - hastinet
     volumes:
       - ~/postgres/data:/var/lib/postgresql/data
     env_file:
@@ -23,6 +25,7 @@ services:
       - 3117:3000
     networks:
       - traefik_default_network
+      - hastinet
     labels:
       - traefik.enable=true
       - traefik.http.routers.hastibackend.rule=Host(`${SUBDOMAIN}.${ZONE}`)
@@ -35,3 +38,4 @@ services:
 networks:
   traefik_default_network:
     driver: bridge
+  hastinet:
