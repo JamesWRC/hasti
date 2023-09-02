@@ -1,11 +1,23 @@
 version: "3.8"  # optional since v1.27.0
 services:
+  postgres:
+    image: postgres:14-alpine
+    ports:
+      - 5432:5432
+    volumes:
+      - ~/postgres/data:/var/lib/postgresql/data
+    env_file:
+      - .env
+    #environment:
+    #  - POSTGRES_PASSWORD=S3cret
+    #  - POSTGRES_USER=citizix_user
+    #  - POSTGRES_DB=citizix_db
 
   hastibackend:
     container_name: hastibackend
     restart: always
     depends_on:
-      - traefik
+      - postgres
     image: jameswrc/hastibackend
     # env_file Will be overriden by the environment variables in elasticbeanstalk configuration.
     env_file:
