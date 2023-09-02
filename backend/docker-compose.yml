@@ -1,13 +1,6 @@
 version: "3.8"  # optional since v1.27.0
 services:
 
-  cloudflare-ddns:
-    container_name: cloudflare-ddns
-    image: oznu/cloudflare-ddns:latest
-    # env_file Will be overriden by the environment variables in elasticbeanstalk configuration.
-    env_file:
-      - .env
-
   hastibackend:
     container_name: hastibackend
     restart: always
@@ -29,60 +22,6 @@ services:
       - traefik.http.routers.hastibackend.entrypoints=websecure
       - traefik.http.services.hastibackend.loadbalancer.server.port=3000
       - traefik.docker.network=traefik_default_network
-
-  traefik:
-    container_name: traefik
-    restart: always
-    depends_on:
-      - cf_acme_kv_cache
-    image: traefik:v2.5
-    ports:
-      - 8080:8080
-      - 80:80
-      - 443:443
-    expose:
-      - 8080
-      - 80
-      - 443
-    networks:
-      - traefik_default_network
-    env_file:
-      - .env
-    # Any command for Traefik should be appended in the entrypoint below in the 'entrypoint'.
-    command:
-      - "--api=true"
-    entrypoint: sh -c "sleep 30 && ./entrypoint.sh --api=true"
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.dashboard.rule=Host(`traefik-${SUBDOMAIN}.${ZONE}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))"
-      - "traefik.http.routers.dashboard.entrypoints=websecure"
-      - "traefik.http.routers.dashboard.tls=true"
-      - "traefik.http.routers.dashboard.tls.certresolver=myresolver"
-      - "traefik.http.routers.dashboard.service=api@internal"
-      - "traefik.http.routers.dashboard.middlewares=auth"
-
-      - "traefik.http.middlewares.auth.basicauth.users=soc1:$$2y$$10$$ojFNU//NrF4dMMHUryWzpuIGc/nhiW8LJX7F/t4tYNDQH1WhZr8im"
-
-      # - "traefik.http.routers.dashboard.middlewares: basic-auth-global"
-      # Can use a single user like below, Uncomment line below, follow details here #https://doc.traefik.io/traefik/v2.0/middlewares/basicauth/
-      # - "traefik.http.middlewares.basic-auth-global.basicauth.users: soc1:$2y$10$ojFNU//NrF4dMMHUryWzpuIGc/nhiW8LJX7F/t4tYNDQH1WhZr8im"
-      # - "traefik.http.middlewares.basic-auth-global.basicauth.usersfile=/etc/traefik/userfile"
-
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro        # So that Traefik can listen to the Docker events
-      - /var/app/current/services/traefik/:/etc/traefik/    # Traefik configuration files
-
-  # Used to keep the acme.json certificated across the different spot ec2 instances.
-  # If you are not useing ec2 spot instances then you can remove this container.
-  cf_acme_kv_cache:
-    container_name: cf_acme_kv_cache
-    restart: always
-    image: jameswrc/cfacmekvcache:arm64
-    env_file:
-      - .env
-    volumes:
-      - /var/app/current/services/traefik/:/etc/traefik/    # Traefik certificates
-
 
 networks:
   traefik_default_network:
