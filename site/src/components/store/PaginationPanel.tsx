@@ -179,8 +179,8 @@ export default function PaginationPanel() {
                                     return (<a
                                         key={'paginationPrev#' + i}
                                         href="#"
-                                        className={classNames("first:hidden lg:first:inline-flex items-center border-t-2 border-transparent px-3 pt-3.5 text-sm lg:text-base font-medium text-gray-500 hover:text-gray-700",
-                                            i == pageNumber ? "inline-flex items-center border-t-4 border-transparent px-4 text-sm font-medium text-gray-500 border-gray-500" : "hover:border-gray-600")}
+                                        className={classNames("first:hidden lg:first:inline-flex items-center border-t-2 px-3 pt-3.5 text-sm lg:text-base font-medium text-gray-500 hover:text-gray-700",
+                                            i == pageNumber ? "border-t-4 border-gray-900 text-gray-800" : "hover:border-gray-600")}
                                         onClick={(e) => handlePageChange(i)}
                                     >
                                         {i}
@@ -192,8 +192,8 @@ export default function PaginationPanel() {
                                     return (<a
                                         key={'paginationPrev#' + i}
                                         href="#"
-                                        className={classNames("first:hidden lg:first:inline-flex items-center border-t-2 border-transparent px-3 pt-3.5 text-sm lg:text-base font-medium text-gray-500 hover:text-gray-700",
-                                            i == pageNumber ? "inline-flex items-center border-t-4 border-transparent px-4 text-sm font-medium text-gray-500 border-gray-900" : "hover:border-gray-600")}
+                                        className={classNames("first:hidden lg:first:inline-flex items-center border-t-2 px-3 pt-3.5 text-sm lg:text-base font-medium text-gray-500 hover:text-gray-700",
+                                            i == pageNumber ? "border-t-4 border-gray-900 text-gray-800" : "hover:border-gray-600")}
                                         onClick={(e) => handlePageChange(i)}
                                     >
                                         {i}
