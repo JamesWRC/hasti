@@ -105,15 +105,15 @@ export default function MainLayout({
                               href={item.href}
                               className={classNames(
                                 selectedNav === item.name
-                                  ? 'bg-zinc-50 text-indigo-600'
-                                  : 'text-gray-100 hover:text-indigo-600 hover:bg-gray-50',
+                                  ? 'bg-zinc-50 text-cyan-500'
+                                  : 'text-gray-100 hover:text-cyan-500 hover:bg-gray-50',
                                 'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold '
                               )}
                               onClick={() => setSelectedNav(item.name)}
                             >
                               {item.icon ? <item.icon
                                 className={classNames(
-                                  selectedNav === item.name ? 'text-indigo-600' : 'text-white group-hover:text-indigo-600',
+                                  selectedNav === item.name ? 'text-cyan-500' : 'text-white group-hover:text-cyan-500',
                                   'h-6 w-6 shrink-0'
                                 )}
                                 aria-hidden="true"
@@ -138,16 +138,16 @@ export default function MainLayout({
                           href={team.href}
                           className={classNames(
                             team.current
-                              ? 'bg-gray-50 text-indigo-600'
-                              : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50',
+                              ? 'bg-gray-50 text-cyan-500'
+                              : 'text-gray-700 hover:text-cyan-500 hover:bg-gray-50',
                             'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
                           )}
                         >
                           <span
                             className={classNames(
                               team.current
-                                ? 'text-indigo-600 border-indigo-600'
-                                : 'text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600',
+                                ? 'text-cyan-500 border-cyan-500'
+                                : 'text-gray-400 border-gray-200 group-hover:border-cyan-500 group-hover:text-cyan-500',
                               'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-dark'
                             )}
                           >
@@ -198,7 +198,7 @@ export default function MainLayout({
                             href={item.href}
                             className={classNames(
                               selectedNav === item.name
-                                ? 'border-indigo-500 text-gray-50'
+                                ? 'border-cyan-500 text-gray-50'
                                 : 'border-transparent text-gray-50 hover:border-gray-300 hover:text-gray-400',
                               `inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium first:ml-10 last:mr-10`,
                             )}
@@ -217,7 +217,7 @@ export default function MainLayout({
                       <div className="ml-6 flex items-center pr-2 absolute right-0 top-4">
                         <button
                           type="button"
-                          className="rounded-full bg-dark p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                          className="rounded-full bg-dark p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
                         >
                           <span className="sr-only">View notifications</span>
                           <BellIcon className="h-6 w-6" aria-hidden="true" />
@@ -226,7 +226,7 @@ export default function MainLayout({
                         {/* Profile dropdown also used in mobile layout*/}
                         <Menu as="div" className="relative ml-3">
                           <div>
-                            <Menu.Button className="flex max-w-xs items-center rounded-full bg-dark text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                            <Menu.Button className="flex max-w-xs items-center rounded-full bg-dark text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2">
                               <span className="sr-only">Open user menu</span>
                               <img className="h-8 w-8 rounded-full" src={user.imageUrl} alt="" />
                             </Menu.Button>

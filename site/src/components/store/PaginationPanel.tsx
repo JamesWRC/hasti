@@ -31,8 +31,8 @@ export default function PaginationPanel() {
     const [numItemsDisplayed, setNumItemsDisplayed] = useState<number>(initPageNumber === 1 ? MAX_ITEMS_PER_PAGE_FIRST_PAGE : MAX_ITEMS_PER_PAGE);
     const [pageContent, setPageContent] = useState<any>([]);
     const [windowSize, setWindowSize] = useState({
-        width: window ? window.outerWidth : -1,
-        height: window ? window.innerHeight : -1,
+        width: -1,
+        height: -1,
       });
     function handlePageChange(pageNumber: number) {
         setPageNumber(pageNumber);
@@ -56,10 +56,27 @@ export default function PaginationPanel() {
     }, [pageNumber]);
 
     useEffect(()=> {
-        window.addEventListener('resize', ()=> {
-            setWindowSize({width: window.outerWidth, height: window.innerHeight})
-            console.log(window.innerHeight, window.outerWidth)
-        })
+        let timeoutId: NodeJS.Timeout;
+
+        function handleResize() {
+          clearTimeout(timeoutId);
+          
+          timeoutId = setTimeout(() => {
+            setWindowSize({width: window.outerWidth, height: window.outerHeight})
+            console.log(window.outerHeight, window.outerWidth)
+
+           }, 500); // delay the update for 500ms after the user stops resizing
+        }
+
+        window.addEventListener('resize', handleResize);
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            clearTimeout(timeoutId);
+          };
+        // window.addEventListener('resize', ()=> {
+        //     setWindowSize({width: window.outerWidth, height: window.innerHeight})
+        // })
      }, [])
 
     // use useEffect to make a call to the api/store/themes api and get the total number of pages
@@ -90,6 +107,7 @@ export default function PaginationPanel() {
         function evenOutRow(numItemInRow: number, currNumItemsDisplayed: number){
             while (currNumItemsDisplayed % numItemInRow != 0){
                 currNumItemsDisplayed++;
+                console.log("currNumItemsDisplayed: ", currNumItemsDisplayed)
             }
             return currNumItemsDisplayed
         }
@@ -100,23 +118,36 @@ export default function PaginationPanel() {
 
         if(windowSize.width > 2000){
             currNumItemsDisplayed *= 2
+            // currNumItemsDisplayed = evenOutRow(6, currNumItemsDisplayed)
             currNumItemsDisplayed = evenOutRow(5, currNumItemsDisplayed)
+            // alert(currNumItemsDisplayed)
 
-    }else if(windowSize.width <= 2000 && windowSize.width > 1425){
+
+        }else if(windowSize.width <= 2000 && windowSize.width > 1425){
         currNumItemsDisplayed *= 1
         currNumItemsDisplayed = evenOutRow(4, currNumItemsDisplayed)
 
-    // Handle devices that have a max row of 2 items
-    }else if(windowSize.width <= 1025){
-        currNumItemsDisplayed *= 1
-        currNumItemsDisplayed = evenOutRow(2, currNumItemsDisplayed)
+        // Handle devices that have a max row of 2 items
+        }else if(windowSize.width <= 1025){
+            currNumItemsDisplayed *= 1
+            currNumItemsDisplayed = evenOutRow(2, currNumItemsDisplayed)
 
         }else{
             currNumItemsDisplayed *= 1
+            currNumItemsDisplayed = evenOutRow(3, currNumItemsDisplayed)
+
         }
+
+        async function sleep() {
+            console.log("sleep start");
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            console.log("sleep done");
+          }
+        sleep();
         for (var i = 0; i < currNumItemsDisplayed; i++) {
             tempPageContent.push(<DescriptionItem title={''} description={''} author={''} authorImageUrl={''} authorLink={''} loaded={false} animateDelayCount={0} />);
         }
+
         setPageContent(tempPageContent);
         const timer = setTimeout(() => {
             fetch('api/store/themes')
@@ -136,7 +167,7 @@ export default function PaginationPanel() {
 
         tempPageContent = []
 
-    }, [numItemsDisplayed, pageNumber]);
+    }, [numItemsDisplayed, pageNumber, windowSize]);
 
     useEffect(() => {
         console.log(pageNumber)
@@ -152,7 +183,7 @@ export default function PaginationPanel() {
                         </h1>
                     </div>
                 {/* ------------- CONTENT  -------------*/}
-                <div className="mx-auto grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 gap-12 lg:gap-9 px-8 xs:px-8 md:px-0 pb-2 md:pb-14 gap-y-auto">
+                <div className="mx-auto grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 gap-12 lg:gap-9 px-8 xs:px-8 md:px-0 pb-2 md:pb-14 gap-y-auto">
                     {pageContent.map((item: any) => {
                         return item;
                     })}

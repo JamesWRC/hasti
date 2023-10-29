@@ -72,6 +72,7 @@ services:
 
 networks:
   traefik_default_network:
-    external: true
+    # external: true
+    driver: bridge
   hastinet: 
     driver: bridge
