@@ -2,7 +2,6 @@
 import { ArrowLongLeftIcon, ArrowLongRightIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
-import { Grid } from '@mantine/core';
 
 import DescriptionItem from '@/components/store/DescriptionItem';
 const arrayRange = (start: number, stop: number, step: number) =>
@@ -184,28 +183,11 @@ export default function PaginationPanel() {
                         </h1>
                     </div>
                 {/* ------------- CONTENT  -------------*/}
-                {/* <div className="mx-auto grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 gap-12 lg:gap-9 px-8 xs:px-8 md:px-0 pb-2 md:pb-14 gap-y-auto">
+                <div className="mx-auto grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 gap-12 lg:gap-9 px-8 xs:px-8 md:px-0 pb-2 md:pb-14 gap-y-auto">
                     {pageContent.map((item: any) => {
                         return item;
                     })}
-                </div> */}
-                <Grid columns={4}>
-                {pageContent.map((item: any) => {
-                        return <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>{item}</Grid.Col>
-                    })}
-                                            {/* <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>item</Grid.Col>
-
-                                            <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>item</Grid.Col>
-                                            <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>item</Grid.Col> */}
-
-                    {/* <Grid.Col span={4}>+{pageContent[0]}</Grid.Col>
-                    <Grid.Col span={4}>+{pageContent[1]}</Grid.Col>
-                    <Grid.Col span={4}>+{pageContent[2]}</Grid.Col>
-                    <Grid.Col span={4}>+{pageContent[3]}</Grid.Col>
-                    <Grid.Col span={4}>+{pageContent[4]}</Grid.Col> */}
-                    {/* <Grid.Col span={4}>2</Grid.Col>
-                    <Grid.Col span={4}>3</Grid.Col> */}
-                </Grid>
+                </div>
                 {/* ------------- PAGINATION BAR  -------------*/}
             </div>
 
