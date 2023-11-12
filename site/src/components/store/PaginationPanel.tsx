@@ -189,9 +189,9 @@ export default function PaginationPanel() {
                         return item;
                     })}
                 </div> */}
-                <Grid columns={4}>
+                <Grid columns={12} grow>
                 {pageContent.map((item: any) => {
-                        return <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>{item}</Grid.Col>
+                        return <Grid.Col span={{ base: 12, md: 4, lg: 3 }} key={item.id}>{item}</Grid.Col>
                     })}
                                             {/* <Grid.Col span={{ base: 12, md: 6, lg: 3 }}>item</Grid.Col>
 
