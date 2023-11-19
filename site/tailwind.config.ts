@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+
 module.exports = {
     content: [
       "./src/**/*.{js,ts,jsx,tsx}",
@@ -68,7 +69,7 @@ module.exports = {
   },
   plugins: [
     '@tailwindcss/aspect-ratio',
-    '@tailwindcss/typography',
+    require('@tailwindcss/typography'),
     '@tailwindcss/line-clamp',
     require('tailwindcss-animated')
   ],
