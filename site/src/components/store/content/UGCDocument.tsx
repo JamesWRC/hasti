@@ -93,8 +93,7 @@ This is what a disclaimer message looks like. You might want to include inline i
     // @ts-expect-error
     const content = Markdoc.transform(ast, config);
 
-    return Markdoc.renderers.html(content);
-
+    return Markdoc.renderers.react(content, React);
     
 }
 
