@@ -4,9 +4,10 @@ import fs from 'fs';
 
 import nodes from '@/markdoc/nodes';
 import tags from '@/markdoc/tags';
-
 import { Callout } from '@/components/markdoc/Callout'
 import { QuickLink, QuickLinks } from '@/components/markdoc/QuickLinks'
+import { type Node, Config } from '@markdoc/markdoc';
+
 
 // const config = {
 //     tags: {
@@ -53,10 +54,6 @@ import { QuickLink, QuickLinks } from '@/components/markdoc/QuickLinks'
 //     }
 //   };
 
-const config = {
-    nodes: nodes,
-    tags: tags,
-  };
 
 interface DocumentProps {
     source: string;
@@ -87,9 +84,16 @@ This is what a disclaimer message looks like. You might want to include inline i
 
     
     const ast = Markdoc.parse(source);
+    // ignore the error
+    const config  = {
+        nodes: nodes,
+        tags: tags,
+    };
+    // ignore type error
+    // @ts-expect-error
     const content = Markdoc.transform(ast, config);
 
-    return Markdoc.renderers.react(content, React);
+    return Markdoc.renderers.html(content);
 
     
 }
