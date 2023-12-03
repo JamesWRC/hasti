@@ -23,12 +23,13 @@ export default function RootLayout({
 
       <Head/>
 
-        <body className='bg-blue '>
+        <body className=''>
         {/* <MantineProvider> */}
-
+        <MantineProvider>
           <MainLayout >
-          <MantineProvider>{children}</MantineProvider>
+          {children}
         </MainLayout>
+        </MantineProvider>
         {/* </MantineProvider> */}
 
       </body>

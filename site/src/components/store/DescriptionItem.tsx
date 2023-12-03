@@ -24,7 +24,7 @@ function generateSkeletonLines(){
 
 export default function DescriptionItem({title, description, author, authorImageUrl, authorLink, loaded, animateDelayCount}:{title: string, description: string, author: string, authorImageUrl: string, authorLink: string, loaded: boolean, animateDelayCount: number}) {
     return (
-      <div className={classNames('flex', loaded ? `flex animate-fade-up animate-once animate-duration-500`: '')}>
+      <div className={classNames('flex px-auto', loaded ? `animate-fade-up animate-once animate-duration-500 p-auto`: '')}>
         <div className={classNames("mr-4 flex-shrink-0 self-center", loaded ? "" : "bg-gray-200 animate-pulse rounded-2xl")}>
           {/* <svg
             className="h-16 w-16 border border-gray-300 bg-white text-gray-300"
@@ -41,7 +41,7 @@ export default function DescriptionItem({title, description, author, authorImage
         <div className="w-max min-h-full">
           <h4 className={classNames("text-md xl:text-lg font-bold min-w-full text-black", loaded ? "" : "bg-gray-200 animate-pulse rounded-2xl")}>{loaded ? title : <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</>}</h4>
 
-          {loaded ? <p className="mt-1 line-clamp-3 text-xs xl:text-base min-h-fit text-gray-800">
+          {loaded ? <p className="mt-1 line-clamp-3 text-xs xl:text-base min-h-fit text-gray-800 w-96">
             {description}
           </p> : generateSkeletonLines()}
 
