@@ -108,7 +108,7 @@ export default function Pagination({pageNumber,handlePageChange, numShowing, max
             </a> */}
             <div ref={ref} className='inline-flex'>
             <span className={hovered ? "hidden" :
-            "relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0"}>
+            "relative inline-flex items-center pl-[1.58rem] pr-[1.58rem] py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0"}>
               ...
             </span>
                   <NumberInput
@@ -124,7 +124,7 @@ export default function Pagination({pageNumber,handlePageChange, numShowing, max
                         leftSectionWidth={0}
                         autoFocus={hovered ? true : false}
                         className={!hovered ? "hidden" :
-                        "w-16 min-w-0 relative inline-flex items-center px-1 text-md font-semibold text-gray-700 focus:outline-offset-0 "} 
+                        "w-16 min-w-0 relative inline-flex items-center px-1 text-md font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0"} 
                         placeholder="#" 
                         onChange={(e) => setDebounceValue(String(e))}
                     />

@@ -46,7 +46,7 @@ const user = {
   name: 'Tom Cook',
   email: 'tom@example.com',
   imageUrl:
-    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+    'https://avatars.githubusercontent.com/u/38713144?s=40&v=4',
 }
 const userNavigation = [
   { name: 'Your Profile', href: '#' },
@@ -282,7 +282,7 @@ export default function MainLayout({
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                   <div className="flex h-16">
                     <div className="flex justify-between w-full ">
-                      <div className="flex flex-shrink-0 items-center -ml-3 ">
+                      <div className="flex flex-shrink-0 items-center -ml-3 pr-2">
                         <img
                           className="h-[4rem] w-auto pt-2"
                           src="/white_ha_cube_RIGHT_hasti_splled_out_op4.png"
@@ -309,7 +309,9 @@ export default function MainLayout({
                         ))}
                       </div>
 
-                      <div className="grid content-center">
+                      {/* START Notification Bell Icon */}
+                      {/* Allows to view notifications. Add back when notifications are added */}
+                      {/* <div className="grid content-center">
                         <button
                           type="button"
                           className="rounded-full bg-dark p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
@@ -317,15 +319,18 @@ export default function MainLayout({
                           <span className="sr-only">View notifications</span>
                           <BellIcon className="h-6 w-6" aria-hidden="true" />
                         </button>
-                        </div>
+                        </div> */}
+                      {/* END Notification Bell Icon */}
+
+
                         {/* Profile dropdown also used in mobile layout*/}
                         <div className="grid content-center">
 
                         <Menu as="div" className="relative ml-3">
                           <div>
-                            <Menu.Button className="flex max-w-xs items-center rounded-full bg-dark text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2">
+                            <Menu.Button className="flex max-w-xs items-center rounded-full bg-dark text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 w-6 h-6">
                               <span className="sr-only">Open user menu</span>
-                              <img className="h-8 w-12 rounded-full" src={user.imageUrl} alt="" />
+                              <img className="rounded-full" src={user.imageUrl} alt="" />
                             </Menu.Button>
                           </div>
                           <Transition

@@ -173,9 +173,10 @@ export default function Page({ params }: { params: { name: string } }) {
 
       {/* // Banner if user doesnt upload a background image */}
       <div className="relative bg-white -mt-3 max-h-full">
-        <canvas id="myCanvas" className="absolute top-0 left-0 w-full h-28 lg:h-96 z-0 rounded-xl"></canvas>
+      {/* <canvas id="myCanvas" className="absolute top-0 left-0 w-full h-28 lg:h-96 z-0 rounded-xl"></canvas> */}
+      <canvas id="myCanvas" className="absolute top-0 left-0 w-full h-28 z-0 rounded-xl"></canvas>
         <div className="relative z-10 rounded-b-2xl">
-          <div className="sm:py-24 sm:px-6 lg:px-8 bg-opacity-30 backdrop-filter backdrop-blur-2xl h-40 lg:h-96 w-full">
+          <div className="sm:py-24 sm:px-6 lg:px-8 bg-opacity-30 backdrop-filter backdrop-blur-2xl h-40 w-full">
             {/* <div className=""> */}
 
           </div>
@@ -187,7 +188,7 @@ export default function Page({ params }: { params: { name: string } }) {
       {/* <div className='xl:px-24 2xl:px-40 3xl:px-72'> */}
       <div className='transition-all duration-700 mx-auto xl:max-w-5xl 2xl:max-w-6xl 4xl:max-w-8xl xl:-mt-24'>
         <div className="relative bg-white -mt-3 h-8 z-10 rounded-2xl">
-          <div className='bg-white rounded-2xl px-4 pt-6 md:px-28 md:pt-3 lg:px-40 lg:pt-4 mx-auto  my-8'>
+          <div className='bg-white rounded-2xl px-4 pt-6 md:px-28 md:pt-3 lg:px-40 lg:pt-4 mx-auto my-8'>
             <div className='mt-1 text-4xl font-extrabold text-gray-900 sm:text-5xl lg:text-6xl'>
 
               {/* // Package banner stats */}
@@ -229,7 +230,7 @@ export default function Page({ params }: { params: { name: string } }) {
         <div className="hidden xl:sticky xl:top-[4.75rem] xl:-mr-6 xl:block xl:h-[calc(100vh-4.75rem)] xl:flex-none xl:overflow-y-auto xl:py-16 xl:pr-6"><nav aria-labelledby="on-this-page-title" className="w-56"><h2 id="on-this-page-title" className="font-display text-sm font-medium text-slate-900 dark:text-white">On this page</h2><ol role="list" className="mt-4 space-y-3 text-sm"><li><h3><a className="text-sky-500" href="#quick-start">Quick start</a></h3><ol role="list" className="mt-2 space-y-3 pl-5 text-slate-500 dark:text-slate-400"><li><a className="hover:text-slate-600 dark:hover:text-slate-300" href="#installing-dependencies">Installing dependencies</a></li><li><a className="hover:text-slate-600 dark:hover:text-slate-300" href="#configuring-the-library">Configuring the library</a></li></ol></li><li><h3><a className="font-normal text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300" href="#basic-usage">Basic usage</a></h3><ol role="list" className="mt-2 space-y-3 pl-5 text-slate-500 dark:text-slate-400"><li><a className="hover:text-slate-600 dark:hover:text-slate-300" href="#your-first-cache">Your first cache</a></li><li><a className="hover:text-slate-600 dark:hover:text-slate-300" href="#clearing-the-cache">Clearing the cache</a></li><li><a className="hover:text-slate-600 dark:hover:text-slate-300" href="#adding-middleware">Adding middleware</a></li></ol></li><li><h3><a className="font-normal text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300" href="#getting-help">Getting help</a></h3><ol role="list" className="mt-2 space-y-3 pl-5 text-slate-500 dark:text-slate-400"><li><a className="hover:text-slate-600 dark:hover:text-slate-300" href="#submit-an-issue">Submit an issue</a></li><li><a className="hover:text-slate-600 dark:hover:text-slate-300" href="#join-the-community">Join the community</a></li></ol></li></ol></nav></div>
         
         </div> */}
-        <div className="flex w-full max-w-full items-start gap-x-8 px-4 py-32 sm:px-6 lg:px-8">
+        <div className="flex w-full max-w-full items-start gap-x-8 px-4 py-32 sm:px-6 lg:px-8 z-10">
 
         <main className="flex-1">
           <Prose>
@@ -237,7 +238,7 @@ export default function Page({ params }: { params: { name: string } }) {
           </Prose>
         </main>
 
-        <aside className="sticky top-8 hidden xl:w-96 shrink-0 xl:block">
+        <aside className="sticky top-8 hidden lg:w-64 2xl:w-96 shrink-0 xl:block">
           <Details />
         </aside>
     </div>
