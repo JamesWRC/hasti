@@ -163,6 +163,19 @@ export default function Page({ params }: { params: { name: string } }) {
     fetchData();
   }, []);
 
+  function renderDetails() {
+    return(
+      <aside className="transition-all duration-700 sticky top-8 xl:w-96 shrink-0 2xl:-mr-16 3xl:-mr-32 5xl:-mr-80 ">
+        <Details />
+        <div>
+          Hello worl, abit about the author blah blah balj
+        </div>
+      </aside>
+
+    )
+  }
+
+
   return (
     // Using tailwindcss design a page that showcases a a developers application
     // This page will be used to display the application and its features
@@ -236,13 +249,15 @@ export default function Page({ params }: { params: { name: string } }) {
           <Prose>
             <UGCDocument source={pkgContent.content}></UGCDocument>
           </Prose>
+          <div className='block xl:hidden'>
+            {renderDetails()}
+          </div>
         </main>
+        <div className='hidden xl:block '>
+          {renderDetails()}
+        </div>
 
-        <aside className="sticky top-8 hidden lg:w-64 2xl:w-96 shrink-0 xl:block">
-          <Details />
-        </aside>
     </div>
-
       </div>
       {/* // End of the main content */}
 

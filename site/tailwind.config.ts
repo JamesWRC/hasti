@@ -52,6 +52,7 @@ module.exports = {
           'xs': '530px',
           '3xl': '1850px',
           '4xl': '2100px',
+          '5xl': '2500px'
         },
         gridTemplateColumns: {
           '15': 'repeat(16, minmax(0, 1fr))',
