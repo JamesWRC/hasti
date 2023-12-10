@@ -16,6 +16,8 @@ const arrayRange = (start: number, stop: number, step: number) =>
         (value, index) => start + index * step
     );
 
+
+
 export default function Pagination({pageNumber,handlePageChange, numShowing, maxItems} : { pageNumber:number,handlePageChange:any, numShowing:number, maxItems:number}) {
   
     const { hovered, ref } = useHover();
@@ -29,6 +31,15 @@ export default function Pagination({pageNumber,handlePageChange, numShowing, max
         }
         }, [debounceValue]);
 
+    // Render the 'showing x of y results' text
+    const renderShowing = () => {
+      return(
+      <p className="text-sm text-gray-700">
+        Showing <span className="font-medium">{(pageNumber * numShowing ) - numShowing > 0 ? (pageNumber * numShowing ) - numShowing : 1}</span> to <span className="font-medium">{pageNumber * numShowing}</span> of{' '}
+        <span className="font-medium">{maxItems}</span> results
+      </p>
+      )
+    }
 
     return (
     <div className="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6">
@@ -49,11 +60,8 @@ export default function Pagination({pageNumber,handlePageChange, numShowing, max
         </a>
       </div>
       <div className="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-        <div>
-          <p className="text-sm text-gray-700">
-            Showing <span className="font-medium">{(pageNumber * numShowing ) - numShowing > 0 ? (pageNumber * numShowing ) - numShowing : 1}</span> to <span className="font-medium">{pageNumber * numShowing}</span> of{' '}
-            <span className="font-medium">{maxItems}</span> results
-          </p>
+        <div className="">
+          {renderShowing()}
         </div>
         <div>
           <nav className="isolate inline-flex  -space-x-px rounded-md shadow-sm" aria-label="Pagination">
@@ -73,7 +81,7 @@ export default function Pagination({pageNumber,handlePageChange, numShowing, max
                             aria-current="page"
                             className={item == pageNumber ?
                                 "relative z-10 inline-flex items-center bg-indigo-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                                : "relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"}
+                                : "relative  items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"}
                             onClick={() => handlePageChange(item)}
                             >
                             {item}
@@ -129,7 +137,7 @@ export default function Pagination({pageNumber,handlePageChange, numShowing, max
                             aria-current="page"
                             className={item == pageNumber ?
                                 "relative z-10 inline-flex items-center bg-indigo-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                                : "relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"}
+                                : "relative items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"}
                             onClick={() => handlePageChange(item)}
                           >
                             {item}

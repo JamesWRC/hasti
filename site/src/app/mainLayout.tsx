@@ -29,6 +29,11 @@ const navigation = [
   { name: 'Store', href: '/', icon: HomeIcon},
   { name: 'Themes', href: '/themes', icon: SwatchIcon},
   { name: 'Integrations', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'adfag', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
   
 ]
 const teams = [
@@ -303,12 +308,8 @@ export default function MainLayout({
                           </a>
                         ))}
                       </div>
-                      <div className="flex items-center">
-                        <div
-                          className="h-8 w-6 mx-6"
-                        />
-                      </div>
-                      <div className="ml-6 flex items-center pr-2 absolute right-0 top-4">
+
+                      <div className="grid content-center">
                         <button
                           type="button"
                           className="rounded-full bg-dark p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
@@ -316,13 +317,15 @@ export default function MainLayout({
                           <span className="sr-only">View notifications</span>
                           <BellIcon className="h-6 w-6" aria-hidden="true" />
                         </button>
-
+                        </div>
                         {/* Profile dropdown also used in mobile layout*/}
+                        <div className="grid content-center">
+
                         <Menu as="div" className="relative ml-3">
                           <div>
                             <Menu.Button className="flex max-w-xs items-center rounded-full bg-dark text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2">
                               <span className="sr-only">Open user menu</span>
-                              <img className="h-8 w-8 rounded-full" src={user.imageUrl} alt="" />
+                              <img className="h-8 w-12 rounded-full" src={user.imageUrl} alt="" />
                             </Menu.Button>
                           </div>
                           <Transition
