@@ -204,9 +204,11 @@ export default function PaginationPanel() {
                 </Grid> */}
             <Pagination pageNumber={pageNumber} handlePageChange={handlePageChange} numShowing={pageContent.length} maxItems={maxItems}/>
 
-                <Grid columns={12} grow>
+                <Grid columns={12} grow justify="space-around"
+                gutter={{ base: 5, xs: 'md', md: 'xl', xl: 40 }} className="px-2">
                     {pageContent.map((item: any, counter: number) => {
-                        return <Grid.Col span={{ base: 12, md: 6, lg: 3, xl:3 }} key={item.id} 
+                        return <Grid.Col span={{ base: 12, md: 6, lg: 2, xl:2 }} key={item.id}
+                        
                         className="flex justify-center">{item}</Grid.Col>
                     })}
                 </Grid>

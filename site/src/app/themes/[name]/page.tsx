@@ -4,7 +4,7 @@ import { Box, Portal, rem, Text } from '@mantine/core';
 
 import { Prose } from '@/components/markdoc/Prose';
 
-import Details from './details';
+import Details from '@/components/store/content/Details';
 import { useHeadroom } from '@mantine/hooks';
 
 import UGCDocument from '@/components/store/content/UGCDocument';

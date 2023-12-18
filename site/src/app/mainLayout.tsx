@@ -115,7 +115,7 @@ export default function MainLayout({
         <div className="md:fixed md:inset-y-0 md:z-50 md:flex md:w-72 md:flex-col hidden">
 
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex flex-col gap-y-5 overflow-y-auto bg-dark px-6">
+          <div className="flex flex-col gap-y-5 overflow-y-auto bg-dark pr-6 pl-8">
             <div className="grid grid-cols-1 gap-4 place-content-between h-screen">
               <div>
 
@@ -208,7 +208,7 @@ export default function MainLayout({
                 </a>
                 {/* md+ footer section */}
                 {/* Used for small footer content */}
-                <div className="mt-8 mx-4 -mb-2 bg-white w-full flex justify-around  rounded-t-2xl p-0.5 pt-1 pb-2">
+                <div className="mt-8 ml-5 -mb-2 bg-white w-full flex justify-around  rounded-t-2xl p-0.5 pt-1 pb-2">
                     {footerNavigation.main.map((item) => (
                       <a key={item.name} className="text-sm font-semibold leading-6 text-dark first:pl-2 pt-1" href={item.href}>{item.name}</a>
                     ))}
@@ -326,7 +326,7 @@ export default function MainLayout({
                         {/* Profile dropdown also used in mobile layout*/}
                         <div className="grid content-center">
 
-                        <Menu as="div" className="relative ml-3">
+                        <Menu as="div" className="relative ml-4">
                           <div>
                             <Menu.Button className="flex max-w-xs items-center rounded-full bg-dark text-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 w-6 h-6">
                               <span className="sr-only">Open user menu</span>

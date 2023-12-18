@@ -41,7 +41,7 @@ export default function DescriptionItem({title, description, author, authorImage
         <div className="w-max min-h-full">
           <h4 className={classNames("text-md xl:text-lg font-bold min-w-full text-black", loaded ? "" : "bg-gray-200 animate-pulse rounded-2xl")}>{loaded ? title : <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</>}</h4>
 
-          {loaded ? <p className="mt-1 line-clamp-3 text-xs xl:text-base min-h-fit text-gray-800 w-[21rem]">
+          {loaded ? <p className="mt-1 line-clamp-3 text-xs xl:text-base min-h-fit text-gray-800 max-w-xs 3xl:max-w-2xl">
             {description}
           </p> : generateSkeletonLines()}
 

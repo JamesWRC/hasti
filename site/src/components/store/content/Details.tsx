@@ -1,3 +1,5 @@
+import SidePaneContent from '@/components/store/content/SidePanelContent'
+
 const people = [
     { title: 'Lindsay Walton', description: 'Front-end Developer'},
     // More people...
@@ -15,15 +17,16 @@ const people = [
                   <p className="mt-2 text-sm text-gray-300">
                     A list of all the users in your account including their name, title, email and role.
                   </p>
+                  <SidePaneContent/>
                 </div>
-                <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+                {/* <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
                   <button
                     type="button"
                     className="block rounded-md bg-indigo-500 px-3 py-2 text-center text-sm font-semibold text-white hover:bg-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500"
                   >
                     Add user
                   </button>
-                </div>
+                </div> */}
               </div>
               <div className="mt-8 flow-root">
                 <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -35,7 +38,7 @@ const people = [
                           <tr key={person.title}>
                             <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">{person.title}</td>
                             <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">{person.description}</td>
-
+                            
                           </tr>
                         ))}
                       </tbody>

@@ -46,7 +46,7 @@ export default function Page() {
     return (
       <>
         {isFrontPage ? 
-        <div className="pl-6">
+        <div className="pl-0">
           <FeaturedGroup groupTitle={"Popular Themes"} groupPosts={groupPosts} /> 
         </div>: null}
       
