@@ -132,15 +132,10 @@ export default function Page({ params }: { params: { name: string } }) {
   useEffect(() => {
     const fetchData = async () => {
       // add headers to allow all cors
-
-      const res = await fetch(`http://localhost:3002/api/content`, {
+      console.log("process.env.NODE_ENV", process.env.NODE_ENV)
+      const res = await fetch(process.env.API_URL + `/api/content`, {
         method: 'GET',
         headers: {
-          'Access-Control-Allow-Origin': '*',
-          'Access-Control-Allow-Credentials': 'true',
-          'Access-Control-Allow-Methods': 'GET,HEAD,OPTIONS,POST,PUT',
-          'Access-Control-Allow-Headers': 'Origin, X-Requested-With, Content-Type, Accept, Authorization, Content-Type',
-          'Access-Control-Allow-Private-Network': 'true',
           'Content-Type': 'application/json',
            
         },
@@ -151,7 +146,7 @@ export default function Page({ params }: { params: { name: string } }) {
       let json;
       try{
         json = await res.json();
-        console.log(json);
+        console.log("setPkgContent", json);
         setPkgContent(json);
       } catch (e) {
         console.log(e)
@@ -247,7 +242,7 @@ export default function Page({ params }: { params: { name: string } }) {
 
         <main className="flex-1">
           <Prose>
-            <UGCDocument source={pkgContent.content}></UGCDocument>
+            {pkgContent && pkgContent.content ? <UGCDocument source={pkgContent.content}></UGCDocument> : null}
           </Prose>
           <div className='block xl:hidden'>
             {renderDetails()}

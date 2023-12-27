@@ -57,7 +57,7 @@ function Tags() {
     <Button
       key={tag.name}
       size={'compact-xs'}
-      p={4}
+      p={3}
       radius={'md'}
       variant="default"
       m={2}>

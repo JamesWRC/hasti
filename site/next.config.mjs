@@ -7,6 +7,11 @@ const nextConfig = {
   experimental: {
     appDir: true,
   },
+  env: {
+    API_URL: process.env.NODE_ENV === 'production' ? 'https://api.hasti.app' : 
+            process.env.NODE_ENV === 'test' ? 'http://192.168.0.233:3001' :
+            'http://localhost:3001'
+  }
 }
 
 export default withSearch(
