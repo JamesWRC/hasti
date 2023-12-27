@@ -17,7 +17,7 @@ export default async function handler(
     const fileContents = fs.readFileSync(filePath, 'utf8');
     // Add cors headers
     res.setHeader('Access-Control-Allow-Credentials', 'true')
-    res.setHeader('Access-Control-Allow-Origin', '*' )
+    res.setHeader('Access-Control-Allow-Origin', ['localhost', 'vercel.app', 'hasti.app'] )
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
     res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version')
     res.setHeader('Content-Type', 'text/plain')
