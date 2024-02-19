@@ -7,25 +7,10 @@ import { Button } from '@mantine/core';
 
 const data = [
   {
-    name: 'Athena Weissnat',
+    name: 'Tags',
     company: 'Little - Rippin',
     email: 'Elouise.Prohaska@yahoo.com',
-  },
-  {
-    name: 'Deangelo Runolfsson',
-    company: 'Greenfelder - Krajcik',
-    email: 'Kadin_Trantow87@yahoo.com',
-  },
-  {
-    name: 'Danny Carter',
-    company: 'Kohler and Sons',
-    email: 'Marina3@hotmail.com',
-  },
-  {
-    name: 'Trace Tremblay PhD',
-    company: 'Crona, Aufderhar and Senger',
-    email: 'Antonina.Pouros@yahoo.com',
-  },
+  }
 ];
 
 
@@ -43,6 +28,30 @@ function Tags() {
   {name: 'Grault', href: 'https://google.com'},
   {name: 'Garply', href: 'https://google.com'},
   {name: 'Waldo', href: 'https://google.com'},
+  {name: 'Fred', href: 'https://google.com'},
+  {name: 'Plugh', href: 'https://google.com'},
+  {name: 'Max 25 characters for tag', href: 'https://google.com'},
+  {name: 'Xyzzy', href: 'https://google.com'},
+  {name: 'Longer name', href: 'https://google.com'},
+  {name: 'Thud', href: 'https://google.com'},  {name: 'Waldo', href: 'https://google.com'},
+  {name: 'Fred', href: 'https://google.com'},
+  {name: 'Plugh', href: 'https://google.com'},
+  {name: 'Max 25 characters for tag', href: 'https://google.com'},
+  {name: 'Xyzzy', href: 'https://google.com'},
+  {name: 'Longer name', href: 'https://google.com'},
+  {name: 'Thud', href: 'https://google.com'},  {name: 'Waldo', href: 'https://google.com'},
+  {name: 'Fred', href: 'https://google.com'},
+  {name: 'Plugh', href: 'https://google.com'},
+  {name: 'Max 25 characters for tag', href: 'https://google.com'},
+  {name: 'Xyzzy', href: 'https://google.com'},
+  {name: 'Longer name', href: 'https://google.com'},
+  {name: 'Thud', href: 'https://google.com'},  {name: 'Waldo', href: 'https://google.com'},
+  {name: 'Fred', href: 'https://google.com'},
+  {name: 'Plugh', href: 'https://google.com'},
+  {name: 'Max 25 characters for tag', href: 'https://google.com'},
+  {name: 'Xyzzy', href: 'https://google.com'},
+  {name: 'Longer name', href: 'https://google.com'},
+  {name: 'Thud', href: 'https://google.com'},  {name: 'Waldo', href: 'https://google.com'},
   {name: 'Fred', href: 'https://google.com'},
   {name: 'Plugh', href: 'https://google.com'},
   {name: 'Max 25 characters for tag', href: 'https://google.com'},
@@ -66,7 +75,7 @@ function Tags() {
   ));
 
   return (
-    <Container my="md">
+    <Container my="md" className='w-fit'>
       <SimpleGrid cols={{ base: 1 }} spacing="md">
         <Grid gutter="">
           {/* <Grid.Col> */}
@@ -95,20 +104,16 @@ export default function SidePaneContent() {
 
   const rows = data.map((row) => (
     <Table.Tr key={row.name}>
-      <Table.Td>{row.name}</Table.Td>
+      <Table.Td>
+        <div className='text-white'>{row.name}</div></Table.Td>
       <Table.Td><Tags/></Table.Td>
     </Table.Tr>
   ));
 
   return (
-    <ScrollArea h={{base: '20rem', md: '20rem'}} onScrollPositionChange={({ y }) => setScrolled(y !== 0)}>
+    <ScrollArea h={{base: 'auto'}} onScrollPositionChange={({ y }) => setScrolled(y !== 0)}>
       <Table miw={{base: '100%'}}>
         <Table.Thead className={cx(classes.m_table_header, { [classes.m_scrolled]: scrolled })}>
-          <Table.Tr>
-            {/* <Table.Th>Name</Table.Th>
-            <Table.Th>Email</Table.Th>
-            <Table.Th>Company</Table.Th> */}
-          </Table.Tr>
         </Table.Thead>
         <Table.Tbody>{rows}</Table.Tbody>
       </Table>

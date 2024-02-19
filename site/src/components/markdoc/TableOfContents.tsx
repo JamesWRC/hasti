@@ -62,16 +62,11 @@ export function TableOfContents({
   }
 
   return (
-    <div className="hidden xl:sticky xl:top-[4.75rem] xl:-mr-6 xl:block xl:h-[calc(100vh-4.75rem)] xl:flex-none xl:overflow-y-auto xl:py-16 xl:pr-6">
-      <nav aria-labelledby="on-this-page-title" className="w-56">
+    // <div className="hidden xl:sticky xl:top-[4.75rem] xl:-mr-6 xl:block xl:h-[calc(100vh-4.75rem)] xl:flex-none xl:overflow-y-auto xl:py-16 xl:pr-6">
+    <div className="transition-all duration-700 sticky top-0 2xl:-ml-16 3xl:-ml-32 5xl:-ml-80">
+      <nav aria-labelledby="on-this-page-title" className="w-56 top-0">
         {tableOfContents.length > 0 && (
           <>
-            <h2
-              id="on-this-page-title"
-              className="font-display text-sm font-medium text-slate-900 dark:text-white"
-            >
-              On this page
-            </h2>
             <ol role="list" className="mt-4 space-y-3 text-sm">
               {tableOfContents.map((section) => (
                 <li key={section.id}>

@@ -1,6 +1,6 @@
 import { Callout } from '@/components/markdoc/Callout'
 import { QuickLink, QuickLinks } from '@/components/markdoc/QuickLinks'
-
+import { group } from '@/components/markdoc/Loop'
 const tags = {
   callout: {
     attributes: {
@@ -31,6 +31,9 @@ const tags = {
   },
   'quick-links': {
     render: QuickLinks,
+  },
+  'group' : {
+    render: group,
   },
   'quick-link': {
     selfClosing: true,

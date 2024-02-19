@@ -6,6 +6,7 @@ import withSearch from './src/markdoc/search.mjs'
 const nextConfig = {
   experimental: {
     appDir: true,
+    serverActions: true,
   },
   env: {
     API_URL: process.env.NODE_ENV === 'production' ? 'https://api.hasti.app' : 

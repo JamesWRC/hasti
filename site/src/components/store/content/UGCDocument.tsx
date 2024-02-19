@@ -7,6 +7,7 @@ import tags from '@/markdoc/tags';
 import { Callout } from '@/components/markdoc/Callout'
 import { QuickLink, QuickLinks } from '@/components/markdoc/QuickLinks'
 import { type Node, Config } from '@markdoc/markdoc';
+import '@/app/prism.js'
 
 
 // const config = {
@@ -82,8 +83,6 @@ export function UGCDocument({ source }: DocumentProps) {
 
 // `
 
-    console.log('UGCDocument source', source)
-    
     const ast = Markdoc.parse(source);
     // ignore the error
     const config  = {

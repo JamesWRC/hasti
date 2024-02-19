@@ -1,7 +1,7 @@
 import SidePaneContent from '@/components/store/content/SidePanelContent'
 
 const people = [
-    { title: 'Lindsay Walton', description: 'Front-end Developer'},
+    { title: 'Developer', description: 'INSERT DEVELOPER NAME HERE'},
     // More people...
   ]
   
@@ -42,7 +42,7 @@ const people = [
                           </tr>
                         ))}
                       </tbody>
-                    </table>
+                    </table>   
                   </div>
                 </div>
               </div>
