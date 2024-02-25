@@ -86,11 +86,12 @@ export function DocsLayout({
     <TableOfContents tableOfContents={tableOfContents} />
 
     </div>
-
+    {/* flex w-full max-w-full items-start gap-x-8 px-4 py-32 sm:px-6 lg:px-8 z-10 */}
+    {/* flex w-full max-w-full items-start gap-x-8 px-2 py-56 sm:py-32 md:py-20 sm:px-6 lg:px-8 z-10 */}
 
         {/* <div className="min-w-0 max-w-2xl flex-auto py-16 lg:max-w-none lg:pl-8 lg:pr-0 px-4 2xl:px-16"> */}
         {/* <div className="min-w-0 max-w-2xl flex-auto py-16 lg:max-w-none lg:pl-8 lg:pr-0 "> */}
-        <div className="min-w-0 max-w-xs flex-auto py-16 lg:pl-8 lg:pr-0 ">
+        <div className="flex-auto py-16 lg:pl-8 lg:pr-0 w-0">
         <article>
         <div className='2xl:hidden '>
         <LinksGroup {...mockdata} />

@@ -250,7 +250,7 @@ export default function Page({ params }: { params: { name: string } }) {
         </div>
 
         {/* // user generated content */}
-        <div className="flex w-full max-w-full items-start gap-x-8 px-2 py-56 sm:py-32 md:py-20 sm:px-6 lg:px-8 z-10">
+        <div className="flex w-full max-w-full items-start gap-x-8 px-4 py-32 sm:px-6 lg:px-8 z-10">
 
           <main className="flex-1">
 
