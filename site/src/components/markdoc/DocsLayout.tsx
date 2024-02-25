@@ -89,7 +89,8 @@ export function DocsLayout({
 
 
         {/* <div className="min-w-0 max-w-2xl flex-auto py-16 lg:max-w-none lg:pl-8 lg:pr-0 px-4 2xl:px-16"> */}
-      <div className="min-w-0 max-w-2xl flex-auto py-16 lg:max-w-none lg:pl-8 lg:pr-0 ">
+        {/* <div className="min-w-0 max-w-2xl flex-auto py-16 lg:max-w-none lg:pl-8 lg:pr-0 "> */}
+        <div className="min-w-0 max-w-xs flex-auto py-16 lg:pl-8 lg:pr-0 ">
         <article>
         <div className='2xl:hidden '>
         <LinksGroup {...mockdata} />

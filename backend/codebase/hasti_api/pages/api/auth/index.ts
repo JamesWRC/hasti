@@ -47,7 +47,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     token = token
                     res.status(200).json({
                         success: true,
-                        token: 'Bearer ' + token,
+                        token: token,
                     });
                 },
             );

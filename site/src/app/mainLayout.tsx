@@ -117,7 +117,7 @@ export default async function MainLayout({
         <div className="md:fixed md:inset-y-0 md:z-50 md:flex md:w-72 md:flex-col hidden">
 
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex flex-col gap-y-5 overflow-y-auto bg-dark pr-6 pl-8">
+          <div className="flex flex-col gap-y-5 overflow-y-auto bg-dark pr-6 pl-7">
             <div className="grid grid-cols-1 gap-4 place-content-between h-screen">
               <div>
 
@@ -166,8 +166,8 @@ export default async function MainLayout({
                 <VertiNav />
               </div>
 
-              <div className="-mx-6 mt-auto pb-2 w-full rounded-2xl order-last flex-auto">
-                <div className='px-6 py-3 '>
+              <div className="">
+                <div className=''>
                   <div className="text-xs font-semibold leading-6 text-gray-400">Your teams</div>
                   <ul role="list" className="-mx-2 mt-2 space-y-1">
                     {teams.map((team) => (
@@ -212,7 +212,7 @@ export default async function MainLayout({
                 <LoginBtn />
                 {/* md+ footer section */}
                 {/* Used for small footer content */}
-                <div className="mt-8 ml-5 -mb-2 bg-white w-full flex justify-around  rounded-t-2xl p-0.5 pt-1 pb-2">
+                <div className="mt-2 -ml-1 bg-white w-full flex justify-around  rounded-t-2xl p-0.5 pt-1 pb-2">
                     {footerNavigation.main.map((item) => (
                       <a key={item.name} className="text-sm font-semibold leading-6 text-dark first:pl-2 pt-1" href={item.href}>{item.name}</a>
                     ))}

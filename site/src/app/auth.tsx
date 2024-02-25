@@ -1,15 +1,16 @@
 import NextAuth from "next-auth"
 import GitHub from "next-auth/providers/github"
 import { Session } from 'next-auth';
+import { HastiSession } from "@/interfaces/user";
 
 const secretKey = 'your-secret-key';
 let jwtToken = '';
-let _user, _account;
+let _user= undefined;
 // Get JWT from backend
 const getTokenFromYourAPIServer = async (provider: string, user: any) => {
 
     // Make request to your API
-    const response = await fetch('http://localhost:3001/api/auth', {
+    const response = await fetch(`${process.env.API_URL}/api/auth`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -31,7 +32,14 @@ const getTokenFromYourAPIServer = async (provider: string, user: any) => {
 
 export const authOptions = { 
     providers: [ GitHub ],
-    callbackUrl: "/register",
+    pages: {
+        // signIn: "/register",
+        signOut: "/register/",
+        error: "/api/auth/error", // Error code passed in query string as ?error=
+        verifyRequest: "/api/auth/verify-request", // (used for check email message)
+        newUser: null // If set, new users will be directed here on first sign in
+        
+      },
     session: {
         jwt: true,
         maxAge: 30 * 24 * 60 * 60,
@@ -54,43 +62,37 @@ export const authOptions = {
                     name: profile.name,
                     avatar: profile.avatar_url,
                 }
-                user.name = githubUser.name
+                user.name = githubUser.username
+                user.id = githubUser.id
                 user.image = githubUser.avatar
+                user.jwt = await getTokenFromYourAPIServer('github', githubUser);
                 
-                user.accessToken = await getTokenFromYourAPIServer('github', githubUser)
-                jwtToken = user.accessToken;
-                _user = user;
                 return true
             }
         
             return false;
           },
-        async jwt({ token, account, profile }: {token: any, account: any, profile: any}) {
-            // Make request to backend to generate JWT token
-            console.log("jwt token: ", token)
-            console.log("jwt account: ", account)
-            console.log("jwt profile: ", profile)
-        //   if (user) {
-        //     token.user = { accessToken: user.accessToken };
-        // //   }
-        //   if (account) {
-        //     token.accessToken = jwtToken
-        //     // token.id = profile.id
-        //   }
-        //   token = { accessToken: jwtToken }
+        async jwt({ token, user, account, profile }: {token: any, user: any, account: any, profile: any}) {
 
+            if (account) {
+                token.uid = account.id;
+                token.jwt = user.jwt;
+            }
             return token;
         },
-        async session({ session, token, user }: {session: Session, token: any, user: any}) {
-            console.log("session session: ", session)
-            console.log("session token: ", token)
-            console.log("session user: ", user)
-            session.accessToken = token.accessToken
-            console.log("session session: ", session)
-            session.user = _user
-            // session.user.id = token.id
-                     return session
+        async session({ session, token, user }: {session: HastiSession, token: any, user: any}) {
+            
+            session.jwt = token.jwt
+            session.user.id = token.id
+            if (session?.user) {
+                session.user.id = token.sub;
+                // session.token = token;
+              }
+            return session
         },
+        async redirect({ url, baseUrl }: {url: string, baseUrl: string}) {
+            return baseUrl
+        }
     },
 }
 export const { handlers, auth, signIn, signOut } = NextAuth(authOptions)

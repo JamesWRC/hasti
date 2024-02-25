@@ -138,8 +138,7 @@ export default function Page({ params }: { params: { name: string } }) {
   useEffect(() => {
     const fetchData = async () => {
       // add headers to allow all cors
-      console.log("process.env.NODE_ENV", process.env.NODE_ENV)
-      const res = await fetch(process.env.API_URL + `/api/content`, {
+      const res = await fetch(`${process.env.API_URL}/api/content`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
