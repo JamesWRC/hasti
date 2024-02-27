@@ -13,3 +13,5 @@ export interface HastiSession extends Session{
     jwt: string;
     // Add any other properties you expect in the session object
 }
+
+export { Session };

@@ -34,10 +34,10 @@ export const authOptions = {
     providers: [ GitHub ],
     pages: {
         // signIn: "/register",
-        signOut: "/register/",
-        error: "/api/auth/error", // Error code passed in query string as ?error=
-        verifyRequest: "/api/auth/verify-request", // (used for check email message)
-        newUser: null // If set, new users will be directed here on first sign in
+        // signOut: "/a",
+        // error: "/api/auth/error", // Error code passed in query string as ?error=
+        // verifyRequest: "/api/auth/verify-request", // (used for check email message)
+        // newUser: null // If set, new users will be directed here on first sign in
         
       },
     session: {
@@ -91,8 +91,12 @@ export const authOptions = {
             return session
         },
         async redirect({ url, baseUrl }: {url: string, baseUrl: string}) {
-            return baseUrl
-        }
+    //this is the default behavior
+    // Allows relative callback URLs
+    if (url.startsWith("/")) return `${baseUrl}${url}`
+    // Allows callback URLs on the same origin
+    else if (new URL(url).origin === baseUrl) return url
+    return baseUrl        }
     },
 }
 export const { handlers, auth, signIn, signOut } = NextAuth(authOptions)

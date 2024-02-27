@@ -2,6 +2,7 @@ import { signIn, signOut } from "@/app/auth"
 import React from 'react';
 import { MarkGithubIcon } from '@primer/octicons-react';
 import { HastiSession } from "@/interfaces/user";
+import { ArrowLeftOnRectangleIcon } from "@heroicons/react/24/outline";
 
 
 
@@ -39,19 +40,28 @@ export function SignIn({
   )
 }
 
-export function SignOut({session}:{session:HastiSession}) {
+export function SignOut() {
   return (
     <form
       action={async () => {
         "use server"
-        await signOut()
+        await signOut({redirect: true, redirectTo: "/user/logout"})
       }}
     >
-        <div className="">
+      <button
+                      className={'bg-red-400 text-white group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'}
+                    >
 
-            <button>{session.user.name}</button>
+                      <ArrowLeftOnRectangleIcon
+                        className={'text-white group:hover:text-black h-6 w-6 shrink-0'}
+                        aria-hidden="true"
+                      />
+                      Sign out
 
-        </div>
+                      
+                    </button>
+
+      
         
     </form>
   )
