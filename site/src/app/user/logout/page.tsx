@@ -27,7 +27,7 @@ export default function Component() {
 
 
         return (
-            <div className="container mx-auto text-center mt-10">
+            <div className="container mx-auto text-center mt-10 w-max ">
                 <h1 className="text-4xl font-bold mb-8">Ta Ta! <b className='text-4xl pl-3'>👋</b></h1>
                 <p className="text-lg mb-8">Farewell. See ya next time! </p>
             </div>

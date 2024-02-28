@@ -12,6 +12,7 @@ import {
   const navigation = [
     { name: 'Account', href: '#', icon: UsersIcon, current: true },
     { name: 'Projects', href: '#', icon: FolderIcon, count: '5', current: false },
+    { name: 'Sign Out', href: '#', icon: ArrowLeftOnRectangleIcon, current: false },
     // { name: 'Projects', href: '#', icon: FolderIcon, count: '12', current: false },
     // { name: 'Calendar', href: '#', icon: CalendarIcon, count: '20+', current: false },
     // { name: 'Documents', href: '#', icon: DocumentDuplicateIcon, current: false },
@@ -75,6 +76,7 @@ import {
                     <a
                       href={item.href}
                       className={classNames(
+                        item.name === 'Sign Out' ? 'bg-red-400 text-white' :
                         item.current
                           ? 'bg-gray-50 text-indigo-600'
                           : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50',
@@ -83,7 +85,7 @@ import {
                     >
                       <item.icon
                         className={classNames(
-                          item.current ? 'text-indigo-600' : 'text-gray-400 group-hover:text-indigo-600',
+                          item.current ? 'text-indigo-600' : item.name === 'Sign Out' ? 'text-white group:hover:text-black' : 'text-gray-400 group-hover:text-indigo-600',
                           'h-6 w-6 shrink-0'
                         )}
                         aria-hidden="true"
@@ -100,7 +102,6 @@ import {
                     </a>
                   </li>
                 ))}
-                <SignOut />
               </ul>
             </li>
             {/* <li>
@@ -134,6 +135,7 @@ import {
               </ul>
             </li> */}
           </ul>
+          <SignOut />
         </nav>
       </div>
     )

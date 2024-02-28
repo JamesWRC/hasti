@@ -49,7 +49,7 @@ export function SignOut() {
       }}
     >
       <button
-                      className={'bg-red-400 text-white group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'}
+                      className={'bg-red-400 text-white group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold w-full'}
                     >
 
                       <ArrowLeftOnRectangleIcon

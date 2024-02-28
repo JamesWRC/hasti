@@ -32,6 +32,7 @@ import { auth } from './auth'
 import { SignIn } from '@/components/authComp'
 
 
+
 const navigation = [
   { name: 'Store', href: '/', icon: HomeIcon},
   { name: 'Themes', href: '/themes', icon: SwatchIcon},
@@ -89,6 +90,8 @@ const footerNavigation = {
 function classNames(...classes: String[]) {
   return classes.filter(Boolean).join(' ')
 }
+
+
 
 export default async function MainLayout({
   children,

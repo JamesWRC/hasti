@@ -4,6 +4,7 @@
 import React from 'react';
 import { Fragment, useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation';
+import { redirect, useSearchParams } from 'next/navigation'
 
 interface VertiNavProps {
     // Define your component props here
@@ -40,7 +41,14 @@ const navigation = [
   }
   
 const VertiNav: React.FC<VertiNavProps> = (props) => {
+    const searchParams = useSearchParams()
     const pathname = usePathname();
+
+    // Used to handle the redirect from the OAuth flow for github app
+    if(pathname == "/" && searchParams.get('code') && searchParams.get('installation_id') && searchParams.get('setup_action') && searchParams.get('state')){
+        redirect(`/user/account?code=${searchParams.get('code')}&installation_id=${searchParams.get('installation_id')}&setup_action=${searchParams.get('setup_action')}&state=${searchParams.get('state')}`)
+    }
+
 
     // Add your component logic here
     const [selectedNav, setSelectedNav] = useState<string>(navigation.filter((item) =>  pathname?.toUpperCase().includes(item.name.toUpperCase()) ?? '')[0]?.name ?? 'Store')
