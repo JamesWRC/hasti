@@ -1,11 +1,11 @@
 // import { getServerSession } from "next-auth/next"
-import { Session } from '@/interfaces/user'
 
 import { auth } from "@/app/auth"
 import { SignIn, SignOut } from "./authComp"
+import { Session } from 'next-auth';
 
 export default async function Component() {
-  const session:Session = await auth()
+  const session:Session|null = await auth()
   // const session = 'a'
   
   console.log("session?.user", session)

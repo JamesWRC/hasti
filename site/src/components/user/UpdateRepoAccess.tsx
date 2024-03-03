@@ -1,11 +1,15 @@
 "use client"
 import { CheckCircleIcon } from '@heroicons/react/20/solid'
+import { User } from 'next-auth'
+import { useSession } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-
+import type { GitHubUserTokenRequest } from '@/backend/interfaces/user/requests'
 
 
 export default function UpdateRepoAccess() {
+    const { data: session, status } = useSession()
+
     const searchParams = useSearchParams()
 
     const [updateStage, setUpdateStage] = useState([
@@ -28,42 +32,56 @@ export default function UpdateRepoAccess() {
 
       useEffect(() => {
         const fetchData = async () => {
-          try {
-            // API Call 1
-            const response1 = await fetch(`${process.env.API_URL}/api/content`, {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                cache: 'default'
-              });
-              updateStageStatus(1, 'complete')
-            await new Promise(resolve => setTimeout(resolve, 4000));
+          if(session){
+            const user:User = session.user
+            
+            const code = searchParams.get('code') as string
+            const installation_id = searchParams.get('installation_id') as string
+            const setup_action = searchParams.get('setup_action') as string
 
-            // API Call 2
-            const response2 = await fetch(`${process.env.API_URL}/api/content`, {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                cache: 'default'
-              });
-              updateStageStatus(2, 'complete')
+            const reqBody:GitHubUserTokenRequest = {
+              code: code,
+              installation_id: installation_id,
+              state: setup_action
+            }
+            try {
+              // API Call 1
+              const response1 = await fetch(`${process.env.API_URL}/api/auth/gitUserToken`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + user.jwt
+                  },
+                  body: JSON.stringify(reqBody),
+                });
+                updateStageStatus(1, 'complete')
+              await new Promise(resolve => setTimeout(resolve, 4000));
 
-            await new Promise(resolve => setTimeout(resolve, 1000));
+              // API Call 2
+              const response2 = await fetch(`${process.env.API_URL}/api/content`, {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  cache: 'default'
+                });
+                updateStageStatus(2, 'complete')
 
-            // API Call 3
-            const response3 = await fetch(`${process.env.API_URL}/api/content`, {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                cache: 'default'
-              });
-              updateStageStatus(3, 'complete')
+              await new Promise(resolve => setTimeout(resolve, 1000));
 
-            } catch (error) {
-            console.error('Error fetching data:', error);
+              // API Call 3
+              const response3 = await fetch(`${process.env.API_URL}/api/content`, {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  cache: 'default'
+                });
+                updateStageStatus(3, 'complete')
+
+              } catch (error) {
+              console.error('Error fetching data:', error);
+            }
           }
         };
     

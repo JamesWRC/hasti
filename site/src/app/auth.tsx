@@ -1,7 +1,7 @@
-import NextAuth from "next-auth"
+import NextAuth, { User } from "next-auth"
 import GitHub from "next-auth/providers/github"
 import { Session } from 'next-auth';
-import { HastiSession } from "@/interfaces/user";
+import { JWTBodyRequest, JWTBodyResponse } from '@/backend/interfaces/user/requests';
 
 const secretKey = 'your-secret-key';
 let jwtToken = '';
@@ -9,25 +9,24 @@ let _user= undefined;
 // Get JWT from backend
 const getTokenFromYourAPIServer = async (provider: string, user: any) => {
 
+    const JWTBodyRequest: JWTBodyRequest = {
+        provider,
+        user
+    }
+
     // Make request to your API
-    const response = await fetch(`${process.env.API_URL}/api/auth`, {
+    const response = await fetch(`${process.env.API_URL}/api/auth/jwt`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-            provider,
-            user,
-        }),
+        body: JSON.stringify(JWTBodyRequest),
     });
 
-    const data = await response.json();
+    const data:JWTBodyResponse = await response.json();
 
-    // Your logic here
-    return data.token;
+    return data;
 
-    // Your logic here
-    return 'jwt-token';
 }
 
 export const authOptions = { 
@@ -48,7 +47,7 @@ export const authOptions = {
         secret: "your-secret-key",
       },
       callbacks: {
-        async signIn({ user, account, profile, email, credentials }: {user: any, account: any, profile: any, email: any, credentials: any}) {
+        async signIn({ user, account, profile, email, credentials }: {user: User, account: any, profile?: any, email?: any, credentials: any}) {
             console.log("SBBBB user: ", user)
             console.log("SBBBB account: ", account)
             console.log("SBBBB profile: ", profile)
@@ -63,29 +62,35 @@ export const authOptions = {
                     avatar: profile.avatar_url,
                 }
                 user.name = githubUser.username
-                user.id = githubUser.id
+                user.githubID = githubUser.id
                 user.image = githubUser.avatar
-                user.jwt = await getTokenFromYourAPIServer('github', githubUser);
+                const authenticatedUser:JWTBodyResponse = await getTokenFromYourAPIServer('github', githubUser);
                 
+                user.jwt = authenticatedUser.jwt;
+                user.id = authenticatedUser.id;
+
                 return true
             }
         
             return false;
           },
-        async jwt({ token, user, account, profile }: {token: any, user: any, account: any, profile: any}) {
+        async jwt({ token, user, account }: {token: any, user: any, account: any}) {
 
             if (account) {
                 token.uid = account.id;
                 token.jwt = user.jwt;
+                token.githubID = user.githubID;
             }
             return token;
         },
-        async session({ session, token, user }: {session: HastiSession, token: any, user: any}) {
+        async session({ session, token, user }: {session: Session, token: any, user: any}) {
             
-            session.jwt = token.jwt
-            session.user.id = token.id
+            // session.jwt = token.jwt
+
             if (session?.user) {
                 session.user.id = token.sub;
+                session.user.jwt = token.jwt;
+                session.user.githubID = token.githubID;
                 // session.token = token;
               }
             return session
@@ -99,4 +104,6 @@ export const authOptions = {
     return baseUrl        }
     },
 }
+
+// @ts-expect-error.
 export const { handlers, auth, signIn, signOut } = NextAuth(authOptions)
