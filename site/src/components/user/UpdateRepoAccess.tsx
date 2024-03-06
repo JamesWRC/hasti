@@ -1,5 +1,5 @@
 "use client"
-import { CheckCircleIcon } from '@heroicons/react/20/solid'
+import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/20/solid'
 import { User } from 'next-auth'
 import { useSession } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
@@ -11,19 +11,19 @@ export default function UpdateRepoAccess() {
     const { data: session, status } = useSession()
 
     const searchParams = useSearchParams()
+    const [updateMessage, setUpdateMessage] = useState('')
 
     const [updateStage, setUpdateStage] = useState([
         { name: 'Received GitHub OAuth Code', href: '#', status: 'complete' },
         { name: 'Exchanging OAuth code for token', href: '#', status: 'current' },
         { name: 'Testing Access Token', href: '#', status: 'upcoming' },
-        { name: 'Successfully updated', href: '#', status: 'upcoming' },
       ]);
 
       function updateStageStatus(statusIndex: number, status: string){
         setUpdateStage(prevState => {
             const updatedStages = [...prevState];
             updatedStages[statusIndex].status = status;
-            if(statusIndex < updatedStages.length -1){
+            if(statusIndex < updatedStages.length -1 && status === 'complete'){
                 updatedStages[statusIndex+1].status = 'current';
             }
             return updatedStages;
@@ -54,35 +54,39 @@ export default function UpdateRepoAccess() {
                   },
                   body: JSON.stringify(reqBody),
                 });
-                updateStageStatus(1, 'complete')
-              await new Promise(resolve => setTimeout(resolve, 4000));
-
-              // API Call 2
-              const response2 = await fetch(`${process.env.API_URL}/api/content`, {
-                  method: 'GET',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  cache: 'default'
-                });
-                updateStageStatus(2, 'complete')
-
+                if(response1.ok){
+                    updateStageStatus(1, 'complete')
+                }else{
+                    updateStageStatus(1, 'error')
+                    setUpdateMessage('Error updating. Please try updating repository selections / access again.')
+                    return false
+                }
               await new Promise(resolve => setTimeout(resolve, 1000));
 
-              // API Call 3
-              const response3 = await fetch(`${process.env.API_URL}/api/content`, {
+              // API Call 2
+              const response2 = await fetch(`${process.env.API_URL}/api/auth/gitUserToken`, {
                   method: 'GET',
                   headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + user.jwt
                   },
-                  cache: 'default'
                 });
-                updateStageStatus(3, 'complete')
+                if(response2.ok){
+                  updateStageStatus(2, 'complete')
+                }else{
+                  updateStageStatus(2, 'error')
+                  setUpdateMessage('Error updating. Please try updating repository selections / access again.')
+                  return false
+                }
 
-              } catch (error) {
+            } catch (error) {
               console.error('Error fetching data:', error);
+              return false
             }
+
           }
+          setUpdateMessage('Successfully updated. You can now add any repositories to your profile.')
+
         };
     
         // Call the fetchData function on component mount
@@ -135,7 +139,21 @@ export default function UpdateRepoAccess() {
                     </span>
                     <span className="ml-3 text-sm font-medium text-indigo-600">{stage.name}</span>
                     </a>
-                ) : (
+                ) : stage.status === 'error' ? (
+                  <a className="group">
+                    <span className="flex items-start">
+                        <span className="relative flex h-5 w-5 flex-shrink-0 items-center justify-center">
+                        <XCircleIcon
+                            className="h-full w-full text-red-600 group-red:text-green-800"
+                            aria-hidden="true"
+                        />
+                        </span>
+                        <span className="ml-3 text-sm font-medium text-gray-500 group-hover:text-gray-900">
+                        {stage.name}
+                        </span>
+                    </span>
+                    </a>
+              ) : (
                     <a className="group">
                     <div className="flex items-start">
                         <div className="relative flex h-5 w-5 flex-shrink-0 items-center justify-center" aria-hidden="true">
@@ -149,7 +167,15 @@ export default function UpdateRepoAccess() {
             ))}
             </ol>
         </nav>
+        {/* // Add updateMessage to the UI */}
+        <div className="px-4 py-12 sm:px-6 lg:px-8">
+            <div className="flex justify-center">
+            <p>{updateMessage}</p>
+            </div>
         </div>
+        </div>
+      
+
     )
     }else{
         return (<></>)

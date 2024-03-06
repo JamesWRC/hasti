@@ -59,11 +59,11 @@ export const authOptions = {
                     id: profile.id,
                     username: profile.login,
                     name: profile.name,
-                    avatar: profile.avatar_url,
+                    image: profile.avatar_url,
                 }
                 user.name = githubUser.username
                 user.githubID = githubUser.id
-                user.image = githubUser.avatar
+                user.image = githubUser.image
                 const authenticatedUser:JWTBodyResponse = await getTokenFromYourAPIServer('github', githubUser);
                 
                 user.jwt = authenticatedUser.jwt;

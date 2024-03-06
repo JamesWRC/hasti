@@ -1,4 +1,4 @@
-import { ProjectType } from "./Project"
+import { Project, ProjectType } from "@/interfaces/project"
 
 const shortDesc = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam at ipsum eu nunc commodo posuere et sit amet ligula. elit nec. Lorem ipsum dolor sit amet, consectetur.'
 const shortDesc2 = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
@@ -9,10 +9,11 @@ const projectLink = "Boost-your-conversion-rate"
 
 
 
-export let groupPosts: any = []
+export let groupPosts: Project[] = []
 let i;
 for(i = 0; i < 10; i++){
-  groupPosts.push({
+
+  const post: Project = {
     id: i,
     title: 'Boost your conversion rate',
     shortDesc: shortDesc,
@@ -30,5 +31,7 @@ for(i = 0; i < 10; i++){
         'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
       link: link,
     },
-  })
+
+  }
+  groupPosts.push(post)
 }

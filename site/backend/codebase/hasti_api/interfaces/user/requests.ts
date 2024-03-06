@@ -1,22 +1,24 @@
 
 
+// Important difference here from UserJWTPayload is that the id is a string.
+// Used to set up the JWT on initial login.
 export interface JWTBodyRequest {
     provider: string,
     user: {
         id: number;
         name: string;
         username: string;
-        avatar: string;
+        image: string;
     };
 }
 
-export interface JWTContents {
+export interface JWTBody {
     provider: string,
     user: {
         id: string;
         name: string;
         username: string;
-        avatar: string;
+        image: string;
         githubID: number;
     };
 }

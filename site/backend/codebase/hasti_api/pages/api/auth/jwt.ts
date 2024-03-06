@@ -8,8 +8,8 @@ import { decode } from 'next-auth/jwt';
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 
 
-import { JWTBodyRequest, JWTBodyResponse, JWTContents } from '@/interfaces/user/requests';
-
+import { JWTBodyRequest, JWTBodyResponse } from '@/interfaces/user/requests';
+import type { UserJWT, UserJWTPayload } from '@/interfaces/user';
 import prisma from '@/prisma/client';
 import { addOrUpdateUser } from '@/pages/helpers/user';
 import { User } from '@prisma/client';
@@ -35,7 +35,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Handle GET request
         // res.status(200).json({ message: 'GET request handled' });
         try{
-            const payload = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET__KEY));
+            const payload:UserJWT = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET__KEY));
+
+            const ghuTokenEnc = await prisma.user.findUnique({
+                where: {
+                    id: payload.payload.payload.user.id
+                },
+                select: {
+                    ghuToken: true
+                }
+            })
+            console.log("ghuTokenEnc", ghuTokenEnc)
             res.status(200).json({ message: payload.payload });
         }catch(error){
             res.status(401).json({ message: 'Unauthorized' });
@@ -58,13 +68,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if(user){
             console.log('user', user)
             // Create JWT payload
-            const payload:JWTContents = {
+            const payload:UserJWTPayload = {
                 provider: body.provider,
                 user: {
                     id: user.id,
                     name: body.user.name,
                     username: body.user.username,
-                    avatar: body.user.avatar,
+                    image: body.user.image,
                     githubID: user.githubID
 
                 },
@@ -88,12 +98,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 jwt: token,
                 id: user.id
             }
-            res.status(200).json(response);
+            return res.status(200).json(response);
         
         }
-    res.status(500).json({ message: 'Internal Server Error. User failed to be created / found.' });
+        return res.status(500).json({ message: 'Internal Server Error. User failed to be created / found.' });
 
     } else {
-        res.status(405).json({ message: 'Method Not Allowed' });
+        return res.status(405).json({ message: 'Method Not Allowed' });
     }
 }

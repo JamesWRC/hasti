@@ -1,7 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { updateGitHubUserToken } from '@/pages/helpers/user';
-import jwt from 'jsonwebtoken';
+import { JWTResult, getGitHubUserToken, handleUserJWTPayload, updateGitHubUserToken } from '@/pages/helpers/user';
+
+import { User } from '@prisma/client';
+import prisma from '@/prisma/client';
 
 
 const JWT_SECRET__KEY = process.env.JWT_SECRET_KEY as string
@@ -14,55 +16,99 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
             const reqHeaders = req.headers;
             const token = reqHeaders.authorization?.replace('Bearer ', '') as string;
-
-            jwt.verify(token, JWT_SECRET__KEY, (err: any, decoded: any) => {
-                if (err) {
-                    return res.status(401).json({ message: 'Unauthorized' });
+            try{
+                const tokenResult:JWTResult<User, string> = await handleUserJWTPayload(token)
+                if(!tokenResult.success){
+                    return res.status(401).json({ message: tokenResult.message });
                 }
-                // console.log('decoded', decoded)
-                res.status(200).json({ message: 'GET request' });
-            });
 
-            const headers = {
-                Accept: 'application/json',
-            };
+                const user:User = tokenResult.user
 
-            // Make a POST request to GitHub API to exchange the code and installation_id for a user token
-            console.log({
-                code,
-                installation_id,
-                client_id: process.env.AUTH_GITHUB_ID,
-                client_secret: process.env.AUTH_GITHUB_SECRET,
-            })
-            const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
-                code,
-                installation_id,
-                client_id: process.env.AUTH_GITHUB_ID,
-                client_secret: process.env.AUTH_GITHUB_SECRET,
-            }, { headers });
+                // Make a POST request to GitHub API to exchange the code and installation_id for a user token
+                const headers = {
+                    Accept: 'application/json',
+                };
 
-            console.log('response', tokenResponse.data);
+                const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
+                    code,
+                    installation_id,
+                    client_id: process.env.AUTH_GITHUB_ID,
+                    client_secret: process.env.AUTH_GITHUB_SECRET,
+                }, { headers });
 
-            // Extract the user token from the response
-            const userToken = tokenResponse.data.access_token;
+                if(!tokenResponse.data?.error){
+                    // Extract the user token from the response
+                    const userToken = tokenResponse.data.access_token;
 
-            // Save the user token in the database  
-            await updateGitHubUserToken(userToken, installation_id);
+                    // Save the user token in the database  
+                    await updateGitHubUserToken(userToken, user);
 
-            const response = {
-                success: true,
-                
+                    const response = {
+                        success: true,
+                        message: 'User token saved'
+                    }
+                    // Return the user token as the API response
+                    return res.status(200).json({ response });
+                }else{
+                    return res.status(400).json({ message: 'GitHub failed to get a token for the user' });
+                }
+            }catch(error){
+                console.error('Error exchanging code and installation_id for user token1 :', error);
+                res.status(401).json({ message: 'Unauthorized' });
             }
-            // Return the user token as the API response
-            res.status(200).json({ userToken });
+
         } catch (error) {
-            console.error('Error exchanging code and installation_id for user token:', error);
+            console.error('Error exchanging code and installation_id for user token 2:', error);
             res.status(500).json({ error: 'Internal Server Error' });
         }
-    } else if (req.method === 'OPTIONS') {
-        // provide preflight response with headers
-        res.status(200).end();
-    } else {
+
+    } else if (req.method === 'GET'){
+
+
+        try{
+            // get headers from request
+            const headers = req.headers
+            const token = headers.authorization?.replace('Bearer ', '') as string
+            
+            const tokenResult:JWTResult<User, string> = await handleUserJWTPayload(token)
+            if(!tokenResult.success){
+                return res.status(401).json({ message: tokenResult.message });
+            }
+
+            const user:User = tokenResult.user
+
+            const encToken = await prisma.user.findUnique({
+                where: {
+                    id: user.id
+                },
+                select: {
+                    ghuToken: true
+                }
+            })
+
+            if(!encToken?.ghuToken){
+                return res.status(401).json({ message: 'Failed to get token from database' });
+            }
+
+            const decryptedToken = await getGitHubUserToken(encToken.ghuToken)
+
+            const tokenResponse = await axios.get('https://api.github.com',{
+                headers: {
+                    Authorization: `token ${decryptedToken}`
+                }
+            } );
+
+            if (tokenResponse.status !== 200) {
+                return res.status(401).json({ message: 'Bad token. Possibly failed to decrypt' });
+            }
+           
+            return res.status(200).json({ token: decryptedToken });
+        }catch(error){
+            console.log(error)
+            res.status(401).json({ message: 'Unauthorized' });
+        }
+        
+    }else {
         res.status(405).json({ error: 'Method Not Allowed' });
     }
 }

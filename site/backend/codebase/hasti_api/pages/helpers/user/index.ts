@@ -1,11 +1,24 @@
+import { UserJWT } from "@/interfaces/user";
 import type { JWTBodyRequest } from "@/interfaces/user/requests";
 import prisma from "@/prisma/client";
 import { User } from "@prisma/client";
-import crypto from 'crypto';
+import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
+import { jwtVerify } from "jose";
+import { NextApiResponse } from "next/types";
 
-const algorithm = 'aes-256-ctr';
-const ENCRYPTION_KEY = 'Put_Your_Password_Here'; // or generate sample key Buffer.from('FoCKvdLslUuB4y3EZlKate7XGottHski1LmyqJHvUhs=', 'base64');
-const IV_LENGTH = 16;
+
+const algorithm = 'aes-256-cbc';
+// Generate a secure, random key
+const DB_ENCRYPTION_KEY = process.env.DB_ENCRYPTION_KEY
+if(DB_ENCRYPTION_KEY === undefined){
+  throw new Error('DB_ENCRYPTION_KEY is undefined')
+}
+
+const key = Buffer.from(DB_ENCRYPTION_KEY, 'utf-8');
+// Generate an initialization vector
+
+const JWT_SECRET__KEY = process.env.JWT_SECRET_KEY as string
+
 
 export async function addOrUpdateUser(user: JWTBodyRequest): Promise<User|null> {
   // Add user to database
@@ -19,14 +32,14 @@ export async function addOrUpdateUser(user: JWTBodyRequest): Promise<User|null> 
   if(userExists){
 
     // check if image has changed
-    if(userExists.image !== user.user.avatar){
+    if(userExists.image !== user.user.image){
 
       const updatedUser = await prisma.user.update({
         where: {
           githubID: user.user.id
         },
         data: {
-          image: user.user.avatar
+          image: user.user.image
         }
       })
     }
@@ -40,7 +53,7 @@ export async function addOrUpdateUser(user: JWTBodyRequest): Promise<User|null> 
       data: {
         githubID: user.user.id,
         username: user.user.username,
-        image: user.user.avatar
+        image: user.user.image
       }
     })
     return newUser
@@ -55,7 +68,7 @@ export async function updateGitHubUserToken(token:string, user: User){
   const encryptedToken = encrypt(token)
   console.log('token', token)
   console.log('encryptedToken', encryptedToken)
-  await prisma.user.update({
+  const updatedUser:User = await prisma.user.update({
     where: {
       id: user.id
     },
@@ -64,31 +77,74 @@ export async function updateGitHubUserToken(token:string, user: User){
     }
   })
 
-  return true
+  return updatedUser
 }
 
 
-
-
-
-function encrypt(text:string) {
-  let iv = crypto.randomBytes(IV_LENGTH);
-  let cipher = crypto.createCipheriv(algorithm, Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
-  let encrypted = cipher.update(text);
-  encrypted = Buffer.concat([encrypted, cipher.final()]);
-  return iv.toString('hex') + ':' + encrypted.toString('hex');
+export async function getGitHubUserToken(encryptedToken: string){
+  const token = decrypt(encryptedToken)
+  return token
 }
 
-function decrypt(text:string) {
-  let textParts = text.split(':');
-  let shifted = textParts.shift();
-  if (!shifted) {
-    throw new Error('Invalid text input');
+export function encrypt(text: string): string {
+  const iv = randomBytes(16);
+
+  const cipher = createCipheriv(algorithm, key, iv);
+  let encrypted = cipher.update(text, 'utf8', 'hex');
+  encrypted += cipher.final('hex');
+
+  // Return the iv and the encrypted message
+  const encryptedMessage = iv.toString('hex') + encrypted;
+
+  return encryptedMessage;
+}
+
+export function decrypt(encryptedText: string): string {
+  // Extract the iv and the encrypted message
+  const receivedIv = Buffer.from(encryptedText.slice(0, 32), 'hex');
+  const receivedCiphertext = encryptedText.slice(32);
+
+  // Create a decipher object
+  const decipher = createDecipheriv(algorithm, key, receivedIv);
+  let decrypted = decipher.update(receivedCiphertext, 'hex', 'utf8');
+  decrypted += decipher.final('utf8');
+  return decrypted;
+}
+
+/**
+ * Excludes the 'ghuToken' from the user.
+ *
+ * @returns {User} - Returns User without the 'ghuToken'
+ */
+function excludeGHUToken<User, Key extends keyof User>(
+  user: User,
+  keys: Key[]
+): Omit<User, Key> {
+  const filteredEntries = Object.entries(user as {[key: string]: unknown}).filter(
+    ([key]) => !keys.includes(key as Key)
+  );
+
+  return Object.fromEntries(filteredEntries) as Omit<User, Key>;
+}
+
+
+export type JWTResult<T, E> = { success: true; user: User } | { success: false; message: string };
+export async function handleUserJWTPayload(token: string): Promise<JWTResult<User, string>>{
+  try{
+    const payload:UserJWT = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET__KEY));
+    const user:User|null = await prisma.user.findUnique({
+        where: {
+            id: payload.payload.payload.user.id
+        }
+    })
+
+    if (!user) {
+        return { success: false, message: 'Unauthorized. Bad user.' };
+    }
+
+    // Return the user token as the API response
+    return { success: true, user: user };
+  }catch(error){
+    return { success: false, message: 'failed to decode JWT' };
   }
-  let iv = Buffer.from(shifted, 'hex');
-  let encryptedText = Buffer.from(textParts.join(':'), 'hex');
-  let decipher = crypto.createDecipheriv(algorithm, Buffer.from(ENCRYPTION_KEY, 'hex'), iv);
-  let decrypted = decipher.update(encryptedText);
-  decrypted = Buffer.concat([decrypted, decipher.final()]);
-  return decrypted.toString();
 }

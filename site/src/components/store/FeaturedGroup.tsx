@@ -7,7 +7,8 @@ import {
 
 
 import AuthorDescription from '@/components/store/AuthorDescription';
-import { getProjectLink } from '@/interfaces/Project';
+import { Project, getProjectLink } from '@/interfaces/project';
+import PackageCard from './PackageCard';
 
 
 export default function FeaturedGroup({
@@ -15,7 +16,7 @@ export default function FeaturedGroup({
     groupPosts,
 }: {
     groupTitle: string,
-    groupPosts: any[],
+    groupPosts: Project[],
 
 }) {
 
@@ -45,31 +46,10 @@ export default function FeaturedGroup({
                             <div className="overflow-x-scroll scrollbar">
                                 {/* <div className="mx-auto mt-4 grid max-w-2xl auto-rows-fr grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5"> */}
                                 <div className="mt-4 pl-3 min-w-[250%] grid grid-cols-10 gap-[11.35rem] sm:gap-[12rem] md:gap-[12rem] lg:gap-[12rem] xl:gap-12">
-                                    {groupPosts.map((post) => (
-
-                                        <article
-                                        key={post.id}
-                                            className="col-span-1 relative isolate flex flex-col justify-end overflow-hidden rounded-2xl px-8 pb-8 pt-80 sm:pt-48 lg:pt-80 mb-4 max-h-[32rem] min-w-[10.5rem] sm:max-h-none"
-                                        
-                                        >
-                                            <img src={post.imageUrl} alt="" className="absolute inset-0 -z-10 h-full w-full object-cover" />
-                                            <div className="absolute inset-0 -z-10 bg-gradient-to-t from-gray-900 via-gray-900/40 " />
-                                            <div className="absolute inset-0 -z-10 rounded-2xl ring-1 ring-inset ring-gray-900/0 cursor-pointer" onClick={() => location.href = getProjectLink(post) ?? ''}/>
-                                            <div className='-mx-4 sm:-mx-2'>
-                                              
-                                                <AuthorDescription name={post.author.name} imageUrl={post.author.imageUrl} link={post.author.link} loaded={true}/>
-                                                <h3 className="mt-3 text-lg font-semibold leading-6 text-white">
-                                                    <a href={getProjectLink(post)}>
-                                                        {/* <span className="absolute inset-0" /> */}
-                                                        <span className="inset-0" />
-                                                        {post.title}
-                                                    </a>
-                                                </h3>
-                                                <a className="mt-2 text-base text-gray-300 line-clamp-5 -mb-4" href={getProjectLink(post)}>{post.shortDesc}</a>
-
-                                            </div>
-                                        </article>
-
+                                    {groupPosts.map((project) => (
+                                        <div key={`t-${project.id}`}>
+                                            <PackageCard project={project} style={"featured"} />
+                                        </div>
                                     ))}
                                 </div>
                             </div>

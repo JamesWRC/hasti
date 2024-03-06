@@ -10,8 +10,8 @@ import {
   import { SignOut } from "@/components/authComp"
 
   const navigation = [
-    { name: 'Account', href: '#', icon: UsersIcon, current: true },
-    { name: 'Projects', href: '#', icon: FolderIcon, count: '5', current: false },
+    { name: 'Account', href: '/user/account', icon: UsersIcon, current: true },
+    { name: 'Projects', href: '/user/projects', icon: FolderIcon, count: '5', current: false },
     // { name: 'Projects', href: '#', icon: FolderIcon, count: '12', current: false },
     // { name: 'Calendar', href: '#', icon: CalendarIcon, count: '20+', current: false },
     // { name: 'Documents', href: '#', icon: DocumentDuplicateIcon, current: false },
