@@ -3,7 +3,7 @@ import axios from 'axios';
 import { JWTResult, getGitHubUserToken, handleUserJWTPayload, updateGitHubUserToken } from '@/pages/helpers/user';
 
 import { User } from '@prisma/client';
-import prisma from '@/prisma/client';
+import prisma from '@/clients/prisma/client';
 
 
 const JWT_SECRET__KEY = process.env.JWT_SECRET_KEY as string

@@ -1,5 +1,4 @@
-
-
+export type {Repo} from "@prisma/client";
 
 export interface RepositoryData {
     id: number;
@@ -22,3 +21,5 @@ export interface GitHubAddRepoRequest {
     repositories_added: RepositoryData[];
     repositories_removed: RepositoryData[];
 }
+
+

@@ -1,6 +1,10 @@
 
 
 // Important difference here from UserJWTPayload is that the id is a string.
+
+import { RepositoryData } from "@/interfaces/repo/index";
+import { Project, Repo } from "@prisma/client";
+
 // Used to set up the JWT on initial login.
 export interface JWTBodyRequest {
     provider: string,
@@ -33,4 +37,25 @@ export interface  GitHubUserTokenRequest {
     code: string;
     installation_id: string;
     state: string;
+}
+
+export interface UserRepoCountResponse {
+    success: boolean;
+    count: number;
+}
+
+
+export interface UserReposResponse {
+    success: boolean;
+    repos: Repo[];
+}
+
+export interface UserProjectCountResponse {
+    success: boolean;
+    count: number;
+}
+
+export interface UserProjectsResponse {
+    success: boolean;
+    projects: Project[];
 }

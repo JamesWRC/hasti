@@ -1,6 +1,6 @@
 import { UserJWT } from "@/interfaces/user";
 import type { JWTBodyRequest } from "@/interfaces/user/requests";
-import prisma from "@/prisma/client";
+import prisma from "@/clients/prisma/client";
 import { User } from "@prisma/client";
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 import { jwtVerify } from "jose";
@@ -137,7 +137,6 @@ export async function handleUserJWTPayload(token: string): Promise<JWTResult<Use
             id: payload.payload.payload.user.id
         }
     })
-
     if (!user) {
         return { success: false, message: 'Unauthorized. Bad user.' };
     }
@@ -145,6 +144,7 @@ export async function handleUserJWTPayload(token: string): Promise<JWTResult<Use
     // Return the user token as the API response
     return { success: true, user: user };
   }catch(error){
+    console.error('Error getting token:', error);
     return { success: false, message: 'failed to decode JWT' };
   }
 }

@@ -3,7 +3,7 @@ import axios from 'axios';
 import { getGitHubUserToken, updateGitHubUserToken } from '@/pages/helpers/user';
 import { UserJWT } from '@/interfaces/user';
 import { jwtVerify } from 'jose';
-import prisma from '@/prisma/client';
+import prisma from '@/clients/prisma/client';
 import { User } from '@prisma/client';
 
 

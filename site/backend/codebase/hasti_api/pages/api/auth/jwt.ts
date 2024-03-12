@@ -10,7 +10,7 @@ import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 
 import { JWTBodyRequest, JWTBodyResponse } from '@/interfaces/user/requests';
 import type { UserJWT, UserJWTPayload } from '@/interfaces/user';
-import prisma from '@/prisma/client';
+import prisma from '@/clients/prisma/client';
 import { addOrUpdateUser } from '@/pages/helpers/user';
 import { User } from '@prisma/client';
 

@@ -1,4 +1,4 @@
-
+export type {User} from "@prisma/client";
 export interface UserJWTPayload {
     provider: string,
     user: { //Keep this updated with the User model in the prisma schema

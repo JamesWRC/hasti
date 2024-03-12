@@ -1,6 +1,6 @@
 import { GitHubAddRepoRequest } from '@/interfaces/repo';
 import { addOrUpdateRepo, removeRepo } from '@/pages/helpers/repo';
-import prisma from '@/prisma/client';
+import prisma from '@/clients/prisma/client';
 import { User } from '@prisma/client';
 import crypto from 'crypto';
 import { NextApiRequest, NextApiResponse } from 'next';

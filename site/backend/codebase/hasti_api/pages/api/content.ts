@@ -1,6 +1,6 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '@/prisma/client'
+import prisma from '@/clients/prisma/client'
 import fs from 'fs'
 import path from 'path'
 
