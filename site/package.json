@@ -37,6 +37,7 @@
     "@tiptap/starter-kit": "^2.1.12",
     "@types/jquery": "^3.5.16",
     "@types/jqueryui": "^1.12.17",
+    "@types/lodash": "^4.17.0",
     "@types/node": "20.4.2",
     "@types/prismjs": "^1.26.3",
     "@types/react": "18.2.15",
@@ -52,6 +53,7 @@
     "jquery": "^3.7.0",
     "jquery-ui": "^1.13.2",
     "jquery-ui-dist": "^1.13.2",
+    "lodash": "^4.17.21",
     "lorem-ipsum": "^2.0.8",
     "next": "13.4.10",
     "next-auth": "^5.0.0-beta.11",
@@ -69,6 +71,7 @@
     "simple-functional-loader": "^1.2.1",
     "tailwindcss": "^3.3.3",
     "tailwindcss-animated": "^1.0.1",
+    "types": "^0.1.1",
     "typescript": "5.1.6",
     "typesense": "^1.7.2",
     "typesense-instantsearch-adapter": "^2.8.0"

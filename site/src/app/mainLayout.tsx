@@ -23,11 +23,11 @@ import { useClickOutside } from '@mantine/hooks';
 
 import { useRouter } from 'next/navigation';
 
-import LoginBtn from '@/components/LoginBtn'
-import VertiNav from '@/components/VertiNav'
-import MobileNavi from '@/components/MobileNavi'
-import UserNavi from '@/components/UserNavi'
-import Navigation from '@/components/Navigation'
+import LoginBtn from '@/components/user/LoginBtn'
+import VertiNav from '@/components/ui/navigation/VertiNav'
+import MobileNavi from '@/components/ui/navigation/MobileNavi'
+import UserNavi from '@/components/ui/navigation/UserNavi'
+import Navigation from '@/components/ui/navigation/Navigation'
 import { auth } from './auth'
 import { SignIn } from '@/components/authComp'
 

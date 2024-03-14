@@ -1,7 +1,7 @@
 // import { getServerSession } from "next-auth/next"
 
 import { auth } from "@/app/auth"
-import { SignIn, SignOut } from "./authComp"
+import { SignIn, SignOut } from "../authComp"
 import { Session } from 'next-auth';
 
 export default async function Component() {

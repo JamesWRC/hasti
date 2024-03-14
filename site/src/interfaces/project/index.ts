@@ -1,8 +1,7 @@
-// Used for differentiating between theme and integration projects and other projcts in the future
-export enum ProjectType {
-  THEME = "theme",
-  INTEGRATION = "integration",
-}
+// Used for differentiating between theme and integration projects and other projects in the future
+
+import { ProjectType } from "@/backend/interfaces/project";
+
 
 
 export interface Author {
@@ -22,18 +21,6 @@ export interface Project {
   datetime: string;
   projectType: ProjectType;
   author: Author;
-}
-
-
-export function getProjectType(projectType: string): ProjectType {
-  switch (projectType) {
-    case ProjectType.THEME.toString():
-      return ProjectType.THEME
-    case ProjectType.INTEGRATION.toString():
-      return ProjectType.INTEGRATION
-    default:
-      return ProjectType.INTEGRATION
-  }
 }
 
 

@@ -18,12 +18,17 @@ import { Repo } from '@/backend/interfaces/repo'
 
 
 import { useForm } from '@mantine/form';
-import { TextInput, Textarea, Group, Box, MultiSelect, useCombobox } from '@mantine/core';
+import { TextInput, Textarea, Group, Box, MultiSelect } from '@mantine/core';
 import { randomId } from '@mantine/hooks';
 import { useDebouncedState } from '@mantine/hooks';
 import { useSession } from 'next-auth/react'
 import { TagSearchResponse } from '@/backend/interfaces/tag/request'
 import tags from '@/markdoc/tags';
+import SearchTagComboBox from '@/components/ui/SearchComboBox'
+import { SearchParams } from 'typesense/lib/Typesense/Documents';
+import { Project } from '../../../interfaces/project/index';
+import { ProjectType } from '@/backend/interfaces/project'
+import { ProjectTypeSelectDropdownBox } from '@/components/ui/ProjectTypeSelectDropdownBox'
 
 export default function Page() {
 
@@ -63,13 +68,8 @@ export function createNewProject() {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const [selectRepo, setSelectedRepo] = useState<Repo|null>(null)
 
-    // Used to search string value
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [search, setSearch] = useState('');
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [debounceValue, setDebounceValue] = useDebouncedState('', 750);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const [projectType, setProjectType] = useState<ProjectType>();
     const [tags, setTags] = useState(['']);
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const [existingTags, setExistingTags] = useState(['']);
@@ -77,8 +77,6 @@ export function createNewProject() {
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const { data: session, status } = useSession()
 
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const combobox = useCombobox();
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
     const form = useForm({
@@ -88,110 +86,49 @@ export function createNewProject() {
         },
       });
 
-
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
-        if (debounceValue != '') {
-            const searchTags = async () => {
-                
-                const params = new URLSearchParams({
-                    q: debounceValue,
-                    query_by: 'name',
-                    filter_by: 'type:integration',
-                    include_fields: 'name,projectsUsing,type',
-                    highlight_fields: 'name', // Hacky way to get API to not send highlight fields in response to save response size
-                    sort_by: 'projectsUsing:desc',
-                    typo_tokens_threshold: '3',
-                })
+        const fetchPopularTags = async () => {
+            
+            const params = new URLSearchParams({
+                q: '*', // Get most popular tags
+                query_by: 'name',
+                filter_by: 'type:integration',
+                include_fields: 'name,projectsUsing,type',
+                highlight_fields: 'name', // Hacky way to get API to not send highlight fields in response to save response size
+                sort_by: 'projectsUsing:desc',
+                per_page: '10'
+            })
 
-                const res = await fetch(`${process.env.API_URL}/api/tags/search?` + params, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session?.user.jwt}`
-                    }
-                })
-                const tagSearchResponse:TagSearchResponse = await res.json()
-                console.log('tagSearchResponse', tagSearchResponse);
-                const tags = tagSearchResponse.hits.map((hit) => hit.document.name)
-                
-                if (res.ok) {
-                    setExistingTags(tags)
+            const res = await fetch(`${process.env.API_URL}/api/tags/search?` + params, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.user.jwt}`
                 }
+            })
+            const tagSearchResponse:TagSearchResponse = await res.json()
+            console.log('tagSearchResponse', tagSearchResponse);
+            const popularTags = tagSearchResponse.hits.map((hit) => hit.document.name)
+            console.log('popularTags', popularTags);
+
+            if (res.ok) {
+                setExistingTags(popularTags)
             }
-            searchTags()
         }
-        }, [debounceValue]);
+        fetchPopularTags()
+        
+        }, []);
 
-
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-    useEffect(() => {
-        if (debounceValue.length === 0) {
-            const fetchPopularTags = async () => {
-                
-                const params = new URLSearchParams({
-                    q: '*', // Get most popular tags
-                    query_by: 'name',
-                    filter_by: 'type:integration',
-                    include_fields: 'name,projectsUsing,type',
-                    highlight_fields: 'name', // Hacky way to get API to not send highlight fields in response to save response size
-                    sort_by: 'projectsUsing:desc',
-                    per_page: '10'
-                })
-
-                const res = await fetch(`${process.env.API_URL}/api/tags/search?` + params, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session?.user.jwt}`
-                    }
-                })
-                const tagSearchResponse:TagSearchResponse = await res.json()
-                console.log('tagSearchResponse', tagSearchResponse);
-                const popularTags = tagSearchResponse.hits.map((hit) => hit.document.name)
-                console.log('popularTags', popularTags);
-
-                if (res.ok) {
-                    setExistingTags(popularTags)
-                }
-            }
-            fetchPopularTags()
-        }
-        }, [debounceValue]);
-
-    function handleSearch(value: KeyboardEvent<HTMLInputElement>) {
-        const delimiterKeys= ['Space', 'Comma', 'Enter']
-        const search = value.currentTarget.value.replaceAll(',', '').replaceAll(' ', '')
-
-        if (search.length > 2 && delimiterKeys.includes(value.code)) {
-            // console.log('handleTagsChange', value.code);
-            // console.log('handleTagsChange', value);
-            console.log('handleTagsChange', search);
-            if(tags === undefined) {
-                setTags([search])
-            } else {
-                setTags([...tags, search])
-
-            }
-            // Clear the search
-            setDebounceValue('')
-            setSearch('')
-        }else{
-            setDebounceValue(search)
-        }
-        combobox.openDropdown()
+    const searchParams:SearchParams = {
+        q:'placeholder',
+        query_by: 'name',
+        filter_by: 'type:integration',
+        include_fields: 'name,projectsUsing,type',
+        highlight_fields: 'name', // Hacky way to get API to not send highlight fields in response to save response size
+        sort_by: 'projectsUsing:desc',
+        typo_tokens_threshold: 3,
     }
-
-    function handleSearches(t: string[]) {
-        console.log('handleSearch', t);
-        setTags(t)
-        return null
-    }
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useEffect(() => {
-            console.log('tags', tags);
-        }, [tags]);
 
     return (
         <div key={`create-new-project`} className="mx-auto col-span-1 relative isolate flex flex-col justify-end overflow-hidden rounded-2xl px-8 py-8 my-4 min-w-[10.5rem] sm:max-h-none max-h-[15rem]">
@@ -239,18 +176,19 @@ export function createNewProject() {
             />
 
             </div>
-            <MultiSelect
-                label="Your favorite libraries"
-                placeholder="Pick value"
-                data={existingTags}
-                searchable
-                searchValue={search}
-                onSearchChange={setSearch}
-                value={tags.filter((tag) => tag.length > 0)} 
-                onChange={handleSearches}
-                nothingFoundMessage="Nothing found... Add to create a new tag"
-                onKeyUp={(e) => {handleSearch(e)}}
-            />
+            <div className='pt-3 w-1/2'>
+              
+            <ProjectTypeSelectDropdownBox projectType={projectType} setProjectType={setProjectType}/>
+            </div>
+
+            <SearchTagComboBox label="Select tags" 
+                placeholder="Select or add a tag..." 
+                searchable={true} 
+                nothingFoundMessage='Nothing found... Add to create a new tag, space delimited' 
+                existingTags={existingTags} 
+                tags={tags} setTags={setTags}
+                searchParams={searchParams}
+                maxSelectedValues={10}/>
             </Group>
 
             </div>

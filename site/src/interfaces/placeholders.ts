@@ -1,4 +1,5 @@
-import { Project, ProjectType } from "@/interfaces/project"
+import { ProjectType } from "@/backend/interfaces/project"
+import { Project } from "@/interfaces/project/index"
 
 const shortDesc = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam at ipsum eu nunc commodo posuere et sit amet ligula. elit nec. Lorem ipsum dolor sit amet, consectetur.'
 const shortDesc2 = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit.'
