@@ -34,6 +34,7 @@ export function ProjectTypeSelectDropdownBox({projectType, setProjectType}:{proj
         >
                             <Combobox.Target>
                 <InputBase
+                    label="Project Type" 
                     component="button"
                     type="button"
                     pointer
