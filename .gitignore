@@ -1,2 +1,3 @@
 
 site/backend/codebase/search_engine/typesense-data*
+*.env
