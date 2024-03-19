@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+
 module.exports = {
     content: [
       "./src/**/*.{js,ts,jsx,tsx}",
@@ -50,15 +51,26 @@ module.exports = {
         screens: {
           'xs': '530px',
           '3xl': '1850px',
+          '4xl': '2100px',
+          '5xl': '2500px'
         },
         gridTemplateColumns: {
           '15': 'repeat(16, minmax(0, 1fr))',
+        },
+        borderRadius: {
+          'inv-md': '-1rem',
+        },
+        boxShadow: {
+          'inv-md': 'inset -400px 0 #03214f,inset 9in 0 #fff',
+        }, 
+        maxWidth: {
+          '8xl': '1600px',
+        },
       },
-    },
   },
   plugins: [
     '@tailwindcss/aspect-ratio',
-    '@tailwindcss/typography',
+    require('@tailwindcss/typography'),
     '@tailwindcss/line-clamp',
     require('tailwindcss-animated')
   ],

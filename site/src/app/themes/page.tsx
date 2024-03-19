@@ -46,7 +46,7 @@ export default function Page() {
     return (
       <>
         {isFrontPage ? 
-        <div className="pl-6">
+        <div className="pl-0">
           <FeaturedGroup groupTitle={"Popular Themes"} groupPosts={groupPosts} /> 
         </div>: null}
       
@@ -54,7 +54,7 @@ export default function Page() {
       <PaginationPanel/>
       {/* <button
         type="button"
-        className="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        className="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
       >
         
         <svg

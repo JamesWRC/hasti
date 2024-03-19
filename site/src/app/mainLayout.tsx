@@ -1,8 +1,4 @@
 'use strict'
-'use client'
-
-import { Fragment, useEffect, useState } from 'react'
-import { Dialog, Disclosure, Menu, Transition } from '@headlessui/react'
 import {
   Bars3Icon,
   BellIcon,
@@ -21,12 +17,31 @@ import {
 import Footer from '@/components/Footer'
 import { usePathname } from 'next/navigation';
 
+import { Button, Group, Text, Collapse, Box } from '@mantine/core';
+import { useDisclosure } from '@mantine/hooks';
+import { useClickOutside } from '@mantine/hooks';
+
+import { useRouter } from 'next/navigation';
+
+import LoginBtn from '@/components/user/LoginBtn'
+import VertiNav from '@/components/ui/navigation/VertiNav'
+import MobileNavi from '@/components/ui/navigation/MobileNavi'
+import UserNavi from '@/components/ui/navigation/UserNavi'
+import Navigation from '@/components/ui/navigation/Navigation'
+import { auth } from './auth'
+import { SignIn } from '@/components/authComp'
+
 
 
 const navigation = [
   { name: 'Store', href: '/', icon: HomeIcon},
   { name: 'Themes', href: '/themes', icon: SwatchIcon},
   { name: 'Integrations', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'adfag', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
   
 ]
 const teams = [
@@ -39,27 +54,52 @@ const user = {
   name: 'Tom Cook',
   email: 'tom@example.com',
   imageUrl:
-    'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
+    'https://avatars.githubusercontent.com/u/38713144?s=40&v=4',
+  link: '/a'
 }
 const userNavigation = [
-  { name: 'Your Profile', href: '#' },
-  { name: 'Settings', href: '#' },
-  { name: 'Sign out', href: '#' },
+  { name: 'Your Profile', href: '#aa' },
+  { name: 'Settings', href: '#vv' },
+  { name: 'Sign out', href: '#dd' },
 ]
+
+const footerNavigation = {
+  main: [
+    { name: 'About', href: '#' },
+    { name: 'Support', href: '#' },
+    { name: 'F.A.Q.', href: '#' },
+  ],
+  social: [
+    {
+      name: 'GitHub',
+      href: '#',
+      icon: (props:any) => (
+          <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
+          <path
+            fillRule="evenodd"
+            d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678
+            1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+            clipRule="evenodd"
+          />
+        </svg>
+      ),
+    },
+  ]
+}
 
 function classNames(...classes: String[]) {
   return classes.filter(Boolean).join(' ')
 }
 
-export default function MainLayout({
+
+
+export default async function MainLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const pathname = usePathname();
 
-  const [selectedNav, setSelectedNav] = useState<string>(navigation.filter((item) =>  pathname?.toUpperCase().includes(item.name.toUpperCase()) ?? '')[0]?.name ?? 'Store')
-
+  const session = await auth()
 
   return (
     <>
@@ -80,7 +120,7 @@ export default function MainLayout({
         <div className="md:fixed md:inset-y-0 md:z-50 md:flex md:w-72 md:flex-col hidden">
 
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex flex-col gap-y-5 overflow-y-auto bg-dark px-6">
+          <div className="flex flex-col gap-y-5 overflow-y-auto bg-dark pr-6 pl-7">
             <div className="grid grid-cols-1 gap-4 place-content-between h-screen">
               <div>
 
@@ -95,7 +135,7 @@ export default function MainLayout({
                   </div>
 
                 </div>
-                <nav className="flex flex-1 flex-col">
+                {/* <nav className="flex flex-1 flex-col">
                   <ul role="list" className="flex flex-1 flex-col gap-y-7">
                     <li>
                       <ul role="list" className="-mx-2 space-y-1">
@@ -105,15 +145,15 @@ export default function MainLayout({
                               href={item.href}
                               className={classNames(
                                 selectedNav === item.name
-                                  ? 'bg-zinc-50 text-indigo-600'
-                                  : 'text-gray-100 hover:text-indigo-600 hover:bg-gray-50',
+                                  ? 'bg-zinc-50 text-cyan-500'
+                                  : 'text-gray-100 hover:text-cyan-500 hover:bg-gray-50',
                                 'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold '
                               )}
                               onClick={() => setSelectedNav(item.name)}
                             >
                               {item.icon ? <item.icon
                                 className={classNames(
-                                  selectedNav === item.name ? 'text-indigo-600' : 'text-white group-hover:text-indigo-600',
+                                  selectedNav === item.name ? 'text-cyan-500' : 'text-white group-hover:text-cyan-500',
                                   'h-6 w-6 shrink-0'
                                 )}
                                 aria-hidden="true"
@@ -125,11 +165,12 @@ export default function MainLayout({
                       </ul>
                     </li>
                   </ul>
-                </nav>
+                </nav> */}
+                <VertiNav />
               </div>
 
-              <div className="-mx-6 mt-auto pb-2 w-full rounded-2xl order-last flex-auto">
-                <div className='px-6 py-3 '>
+              <div className="">
+                <div className=''>
                   <div className="text-xs font-semibold leading-6 text-gray-400">Your teams</div>
                   <ul role="list" className="-mx-2 mt-2 space-y-1">
                     {teams.map((team) => (
@@ -138,16 +179,16 @@ export default function MainLayout({
                           href={team.href}
                           className={classNames(
                             team.current
-                              ? 'bg-gray-50 text-indigo-600'
-                              : 'text-gray-700 hover:text-indigo-600 hover:bg-gray-50',
+                              ? 'bg-gray-50 text-cyan-500'
+                              : 'text-gray-700 hover:text-cyan-500 hover:bg-gray-50',
                             'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
                           )}
                         >
                           <span
                             className={classNames(
                               team.current
-                                ? 'text-indigo-600 border-indigo-600'
-                                : 'text-gray-400 border-gray-200 group-hover:border-indigo-600 group-hover:text-indigo-600',
+                                ? 'text-cyan-500 border-cyan-500'
+                                : 'text-gray-400 border-gray-200 group-hover:border-cyan-500 group-hover:text-cyan-500',
                               'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-dark'
                             )}
                           >
@@ -159,8 +200,8 @@ export default function MainLayout({
                     ))}
                   </ul>
                 </div>
-                <a
-                  href="#"
+                {/* <a
+                  onClick={() => handleItemClick('/page1')}
                   className="rounded-md flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-100 hover:bg-gray-50"
                 >
                   <img
@@ -170,120 +211,83 @@ export default function MainLayout({
                   />
                   <span className="sr-only">Your profile</span>
                   <span aria-hidden="true">Tom Cook</span>
-                </a>
+                </a> */}
+                <LoginBtn />
+                {/* md+ footer section */}
+                {/* Used for small footer content */}
+                <div className="mt-2 -ml-1 bg-white w-full flex justify-around  rounded-t-2xl p-0.5 pt-1 pb-2">
+                    {footerNavigation.main.map((item) => (
+                      <a key={item.name} className="text-sm font-semibold leading-6 text-dark first:pl-2 pt-1" href={item.href}>{item.name}</a>
+                    ))}
+                    {footerNavigation.social.map((item) => (
+                      <a key={item.name} href={item.href} className="text-gray-500 hover:text-gray-400 px-1 pt-1">
+                        <span className="sr-only">{item.name}</span>
+                        <item.icon className="h-6 w-6" aria-hidden="true" />
+                      </a>
+                    ))}
+                  </div>
+                {/* COMMENTED OUT TILL MORE FOOTER CONTENT EXISTS */}
+                {/* <>
+                <Box  ref={ref} maw={400} className='mt-10 mx-6 -mb-2 bg-white w-full flex justify-around  rounded-t-2xl'>
+                  <Group>
+                    <Button onClick={() => setFooterOpen(!footerOpen)} fullWidth variant="filled" color="rgba(255, 255, 255, 1)" radius="lg">
+                      <h3 className={footerOpen ? "hidden" : "text-sm font-semibold leading-6 text-dark px-3"}>About</h3>
+                      <h3 className={footerOpen ? "hidden" : "text-sm font-semibold leading-6 text-dark px-3"}>Support</h3>
+                      <h3 className={footerOpen ? "hidden" : "text-sm font-semibold leading-6 text-dark px-3"}>F.A.Q</h3>
+   
+
+                    </Button>
+                  </Group>
+
+                  <Collapse in={footerOpen}>
+                  <div className="grid grid-cols-3 my-4">
+                    <div className="grid grid-cols-2">
+                      <div>
+                        <h3 className="text-sm font-semibold leading-5 text-dark tracking-wider uppercase">Company</h3>
+                        <ul className="mt-4">
+                          <li>
+                            <a href="#" className="text-base leading-6 text-dark hover:text-cyan-500">
+                              About
+                            </a>
+                          </li>
+
+                          <li>
+                            <a href="#" className="text-base leading-6 text-dark hover:text-cyan-500">
+                              Support
+                            </a>
+                          </li>
+
+                          <li>
+                            <a href="#" className="text-base leading-6 text-dark hover:text-cyan-500">
+                              F.A.Q
+                            </a>
+                          </li>
+
+                          <li>
+                            <a href="#" className="text-base leading-6 text-dark hover:text-cyan-500">
+                              Careers
+                            </a>
+                          </li>
+                        </ul>
+                      </div>
+                      
+                      </div>
+                      </div>
+                  </Collapse>
+                </Box>
+
+                </> */}
               </div>
             </div>
           </div>
         </div>
         {/* ---========== MOBILE NAV BAR ==========--- */}
-        <div className="min-h-full block md:hidden">
-          <Disclosure as="nav" className=" bg-dark">
-            {({ open }) => (
-              <>
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                  <div className="flex h-16">
-                    <div className="flex justify-between w-full ">
-                      <div className="flex flex-shrink-0 items-center -ml-3 ">
-                        <img
-                          className="h-[4rem] w-auto pt-2"
-                          src="/white_ha_cube_RIGHT_hasti_splled_out_op4.png"
-                          alt="Your Company"
-                        />
-                      </div>
-                      <div className="flex space-x-4 snap-x overflow--x-scroll overflow-y-hidden scroll-ml-4 scrollbar parent">
-                        {navigation.map((item) => (
-                          <a
-                            id='child'
-                            key={item.name}
-                            href={item.href}
-                            className={classNames(
-                              selectedNav === item.name
-                                ? 'border-indigo-500 text-gray-50'
-                                : 'border-transparent text-gray-50 hover:border-gray-300 hover:text-gray-400',
-                              `inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium first:ml-10 last:mr-10`,
-                            )}
-                            aria-current={selectedNav === item.name ? 'page' : undefined}
-                            onClick={() => setSelectedNav(item.name)}
-                          >
-                            {item.name}
-                          </a>
-                        ))}
-                      </div>
-                      <div className="flex items-center">
-                        <div
-                          className="h-8 w-6 mx-6"
-                        />
-                      </div>
-                      <div className="ml-6 flex items-center pr-2 absolute right-0 top-4">
-                        <button
-                          type="button"
-                          className="rounded-full bg-dark p-1 text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-                        >
-                          <span className="sr-only">View notifications</span>
-                          <BellIcon className="h-6 w-6" aria-hidden="true" />
-                        </button>
-
-                        {/* Profile dropdown also used in mobile layout*/}
-                        <Menu as="div" className="relative ml-3">
-                          <div>
-                            <Menu.Button className="flex max-w-xs items-center rounded-full bg-dark text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
-                              <span className="sr-only">Open user menu</span>
-                              <img className="h-8 w-8 rounded-full" src={user.imageUrl} alt="" />
-                            </Menu.Button>
-                          </div>
-                          <Transition
-                            as={Fragment}
-                            enter="transition ease-out duration-200"
-                            enterFrom="transform opacity-0 scale-95"
-                            enterTo="transform opacity-100 scale-100"
-                            leave="transition ease-in duration-75"
-                            leaveFrom="transform opacity-100 scale-100"
-                            leaveTo="transform opacity-0 scale-95"
-                          >
-                            <Menu.Items className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-dark py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                              {userNavigation.map((item) => (
-                                <Menu.Item key={item.name}>
-                                  {({ active }) => (
-                                    <a
-                                      href={item.href}
-                                      className={classNames(
-                                        active ? 'bg-gray-100' : '',
-                                        'block px-4 py-2 text-sm text-gray-700'
-                                      )}
-                                    >
-                                      {item.name}
-                                    </a>
-                                  )}
-                                </Menu.Item>
-                              ))}
-                            </Menu.Items>
-                          </Transition>
-                        </Menu>
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              </>
-            )}
-          </Disclosure>
-
-          {/* <div className="py-10 rounded">
-    <header>
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold leading-tight tracking-tight text-gray-900">Dashboard</h1>
-      </div>
-    </header>
-    <main className='p-3'>
-      <div className="mx-auto max-w-7xl sm:px-6 lg:px-8 bg-red-500 rounded-lg">{children}</div>
-    </main>
-  </div> */}
-        </div>
+          <Navigation/>
 
 
 
         <main className="md:pl-72 bg-dark h-full md:h-screen p-2">
-          <div className="p-3 pr-0 pl-0 bg-white rounded-2xl w-full h-full md:h-full overflow-y-scroll scrollbar">
+          <div className="p-3 pr-0 pl-0 bg-white rounded-2xl w-full h-full md:h-full overflow-y-scroll scrollbar overflow-x-hidden">
             {children}
 
           </div>

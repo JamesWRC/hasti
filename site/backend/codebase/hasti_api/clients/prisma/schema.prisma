@@ -1,0 +1,117 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+
+model Tags {
+  id                String        @id @default(uuid())
+  name              String        @db.VarChar(255)
+  type              String        @db.VarChar(255)
+  projectsUsing     Int           @default(0)
+
+  createdAt         DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime      @updatedAt
+
+}
+
+model Project {
+  id                String        @id @default(uuid())
+  title             String        @db.VarChar(255)
+  content           String        @db.Text
+  description       String        @default("") @db.Text 
+  tags              String[]      @db.VarChar(255)
+  published         Boolean       @default(false)
+  userID            String
+  user              User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  repoID            String
+  repo              Repo          @relation(fields: [repoID], references: [id])
+  haInstallType     String        @default("core") @db.VarChar(255)
+  projectType       String        @default("integration") @db.VarChar(255)
+
+  profileImage      String        @default("") @db.VarChar(255)
+  backgroundImage   String        @default("") @db.VarChar(255)
+
+  createdAt         DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime      @updatedAt
+}
+
+// Repo fullName can change if a user changes the name of the repo. 
+// Can look up repo details via https://api.github.com/repositories/<repoID>
+model Repo {
+  id                String        @id @default(uuid())
+  repoID            Int           @unique                 
+  nodeID            String        @db.VarChar(255)
+  name              String        @db.VarChar(255)
+  fullName          String        @db.VarChar(255)
+  private           Boolean       @default(false)
+  
+  userID            String
+  user              User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  projects          Project[]
+
+  gitHubStars       Int           @default(0)
+  gitHubWatchers    Int           @default(0)
+
+  createdAt         DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime      @updatedAt
+}
+
+model User {
+  id                String        @id @default(uuid())
+  githubID          Int           @unique
+  username          String        @db.VarChar(255)
+  image             String        @db.VarChar(255)
+  repos             Repo[]
+  projects          Project[]
+  notifications     Notification[]
+  ghuToken          String        @db.VarChar(255) @default("")// GitHub User Token used to access GitHub API
+
+  createdAt         DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime      @updatedAt
+}
+
+model Notification {
+    id              String        @id @default(uuid())
+    type            String        @db.VarChar(255)
+    message         String        @db.Text
+    read            Boolean       @default(false)
+    userID          String
+    user            User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+
+// model Post {
+//   id        Int      @id @default(autoincrement())
+//   title     String   @db.VarChar(255)
+//   createdAt DateTime @default(now()) @db.Timestamp(6)
+//   content   String?
+//   published Boolean  @default(false)
+//   authorId  Int
+//   author    User     @relation(fields: [authorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+// }
+
+// model Profile {
+//   id     Int     @id @default(autoincrement())
+//   bio    String?
+//   userId Int     @unique
+//   user   User    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+// }
+
+// model User {
+//   id      Int      @id @default(autoincrement())
+//   name    String?  @db.VarChar(255)
+//   email   String   @unique @db.VarChar(255)
+//   posts   Post[]
+//   profile Profile?
+// }

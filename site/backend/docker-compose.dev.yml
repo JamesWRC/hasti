@@ -1,0 +1,78 @@
+version: "3.8"  # optional since v1.27.0
+services:
+  hastidb:
+    image: postgres:14-alpine
+    container_name: hastidb
+    ports:
+      - 5433:5432
+    networks:
+      - hastinet
+    volumes:
+      - ~/postgres/data:/var/lib/postgresql/data
+    env_file:
+      - .env
+
+  hastibackend:
+    container_name: hastibackend
+    restart: always
+    depends_on:
+      - hastidb
+    image: jameswrc/hastibackend
+    # env_file Will be overriden by the environment variables in elasticbeanstalk configuration.
+    env_file:
+     - .env
+    ports:
+      - 3117:3000
+    networks:
+      - traefik_default_network
+      - hastinet
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.hastibackend.rule=Host(`${SUBDOMAIN}.${ZONE}`)
+      - traefik.http.routers.hastibackend.tls=true
+      - traefik.http.routers.hastibackend.tls.certresolver=myresolver
+      - traefik.http.routers.hastibackend.entrypoints=websecure
+      - traefik.http.services.hastibackend.loadbalancer.server.port=3000
+      - traefik.docker.network=traefik_default_network
+
+
+  #################################################
+  ###                                           ###
+  ######        DATABASE BACKUP TO DISK      ######
+  ###     Backs up the database via mysqldumb   ###
+  ###                                           ###
+  #################################################
+  hasti-db-backup:
+    container_name: hasti-db-backup
+    image: tiredofit/db-backup
+    links:
+     - hastidb:hastidb
+    networks:
+      - hastinet
+    volumes:
+      - /mnt/dbstore/databases/backups:/backup
+      #- ./post-script.sh:/assets/custom-scripts/post-script.sh
+    env_file:
+      - .env
+    environment:
+      # - DEBUG_MODE=TRUE
+      - DB_TYPE=pgsql 
+      - DB_HOST=hastidb
+      - DB_NAME=ALL
+      - DB_DUMP_FREQ=360          # backup every 6 hours
+      - DB_CLEANUP_TIME=1440      # clean up (remove) backups they are older than 24 hours
+      - CHECKSUM=SHA1
+      - COMPRESSION=ZSTD
+      - SPLIT_DB=FALSE
+      - CONTAINER_ENABLE_MONITORING=FALSE
+      - SIZE_VALUE=megabytes
+      - BACKUP_LOCATION=S3
+    restart: always
+
+
+networks:
+  traefik_default_network:
+    # external: true
+    driver: bridge
+  hastinet: 
+    driver: bridge
