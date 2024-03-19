@@ -4,7 +4,9 @@ ArrowRightIcon
   } from '@heroicons/react/24/outline'
 import FeaturedGroup from '@/components/store/FeaturedGroup'
 import { groupPosts } from '@/interfaces/placeholders'
-  export default function StorePage() {
+import { Session } from 'next-auth'
+
+export default function StorePage() {
     return (
       <div className="bg-white py-24 sm:py-28">
         <div className="mx-auto max-w-[150%] px-6 lg:px-8">

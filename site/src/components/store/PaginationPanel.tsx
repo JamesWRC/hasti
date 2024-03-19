@@ -2,8 +2,13 @@
 import { ArrowLongLeftIcon, ArrowLongRightIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { Grid } from '@mantine/core';
 
 import DescriptionItem from '@/components/store/DescriptionItem';
+
+import { useMediaQuery } from '@mantine/hooks';
+import Pagination from "@/components/store/Pagination";
+
 const arrayRange = (start: number, stop: number, step: number) =>
     Array.from({ length: (stop - start) / step + 1 },
         (value, index) => start + index * step
@@ -14,12 +19,15 @@ function classNames(...classes: String[]) {
 }
 
 
-
 export default function PaginationPanel() {
     const MAX_ITEMS_PER_PAGE = 30; // Number of items to show on all other pages that doesnt have a featured section
     const MAX_ITEMS_PER_PAGE_FIRST_PAGE = 20; // Number of items to show for first page
+
+    const maxItems = 100; // The total number of items in the store. CHANGE LATER
+
+
     // The number of pages to display either side of the selected page
-    const PAGINATION_PAGE_NUMBERS_EITHER_SIDE = 5
+    const PAGINATION_PAGE_NUMBERS_EITHER_SIDE = 6
     const searchParams = useSearchParams()
     const router = useRouter();
     const pathname = usePathname();
@@ -29,11 +37,15 @@ export default function PaginationPanel() {
 
     const [pageNumber, setPageNumber] = useState<number>(initPageNumber);
     const [numItemsDisplayed, setNumItemsDisplayed] = useState<number>(initPageNumber === 1 ? MAX_ITEMS_PER_PAGE_FIRST_PAGE : MAX_ITEMS_PER_PAGE);
-    const [pageContent, setPageContent] = useState<any>([]);
+    const [pageContent, setPageContent] = useState<any[]>([]);
+    const [skeletonPageContent, skeletonSetPageContent] = useState<any[]>([]);
     const [windowSize, setWindowSize] = useState({
-        width: window ? window.outerWidth : -1,
-        height: window ? window.innerHeight : -1,
+        width: -1,
+        height: -1,
       });
+    const matches = useMediaQuery('(min-width: 768px)');
+
+      
     function handlePageChange(pageNumber: number) {
         setPageNumber(pageNumber);
         // now you got a read/write object
@@ -56,10 +68,26 @@ export default function PaginationPanel() {
     }, [pageNumber]);
 
     useEffect(()=> {
-        window.addEventListener('resize', ()=> {
-            setWindowSize({width: window.outerWidth, height: window.innerHeight})
-            console.log(window.innerHeight, window.outerWidth)
-        })
+        let timeoutId: NodeJS.Timeout;
+
+        function handleResize() {
+          clearTimeout(timeoutId);
+          
+          timeoutId = setTimeout(() => {
+            setWindowSize({width: window.outerWidth, height: window.outerHeight})
+            console.log(window.outerHeight, window.outerWidth)
+
+           }, 500); // delay the update for 500ms after the user stops resizing
+        }
+
+        window.addEventListener('resize', handleResize);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            clearTimeout(timeoutId);
+          };
+        // window.addEventListener('resize', ()=> {
+        //     setWindowSize({width: window.outerWidth, height: window.innerHeight})
+        // })
      }, [])
 
     // use useEffect to make a call to the api/store/themes api and get the total number of pages
@@ -90,57 +118,69 @@ export default function PaginationPanel() {
         function evenOutRow(numItemInRow: number, currNumItemsDisplayed: number){
             while (currNumItemsDisplayed % numItemInRow != 0){
                 currNumItemsDisplayed++;
+                console.log("currNumItemsDisplayed: ", currNumItemsDisplayed)
             }
             return currNumItemsDisplayed
         }
         
+        console.log("matches", matches)
 
         var tempPageContent: any[] = [];
         let currNumItemsDisplayed = numItemsDisplayed
 
         if(windowSize.width > 2000){
             currNumItemsDisplayed *= 2
+            // currNumItemsDisplayed = evenOutRow(6, currNumItemsDisplayed)
             currNumItemsDisplayed = evenOutRow(5, currNumItemsDisplayed)
+            // alert(currNumItemsDisplayed)
 
-    }else if(windowSize.width <= 2000 && windowSize.width > 1425){
+
+        }else if(windowSize.width <= 2000 && windowSize.width > 1425){
         currNumItemsDisplayed *= 1
         currNumItemsDisplayed = evenOutRow(4, currNumItemsDisplayed)
 
-    // Handle devices that have a max row of 2 items
-    }else if(windowSize.width <= 1025){
-        currNumItemsDisplayed *= 1
-        currNumItemsDisplayed = evenOutRow(2, currNumItemsDisplayed)
+        // Handle devices that have a max row of 2 items
+        }else if(windowSize.width <= 1025){
+            currNumItemsDisplayed *= 1
+            currNumItemsDisplayed = evenOutRow(2, currNumItemsDisplayed)
 
         }else{
             currNumItemsDisplayed *= 1
+            currNumItemsDisplayed = evenOutRow(3, currNumItemsDisplayed)
+
         }
+
+        async function sleep() {
+            console.log("sleep start");
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            console.log("sleep done");
+          }
+        sleep();
         for (var i = 0; i < currNumItemsDisplayed; i++) {
             tempPageContent.push(<DescriptionItem title={''} description={''} author={''} authorImageUrl={''} authorLink={''} loaded={false} animateDelayCount={0} />);
         }
+
         setPageContent(tempPageContent);
+        tempPageContent =[]
         const timer = setTimeout(() => {
             fetch('api/store/themes')
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data.themes);
                     for (var i = 0; i < data.themes.length && i < currNumItemsDisplayed; i++) {
                         const delay = 100 * i
                         tempPageContent.push(<DescriptionItem title={data.themes[i].title} description={data.themes[i].description} author={data.themes[i].author.name} authorImageUrl={data.themes[i].author.imageUrl} authorLink={data.themes[i].author.link} loaded={true} animateDelayCount={delay} />);
                     }
+
                     setPageContent(tempPageContent);
+                    skeletonSetPageContent([]);
 
                     // setPageNumber(data.totalPages);
                 })
                 .catch(error => console.error(error));
         });
 
-        tempPageContent = []
+    }, [numItemsDisplayed, pageNumber, windowSize]);
 
-    }, [numItemsDisplayed, pageNumber]);
-
-    useEffect(() => {
-        console.log(pageNumber)
-    }, [pageNumber])
 
     return (
         <>
@@ -152,67 +192,33 @@ export default function PaginationPanel() {
                         </h1>
                     </div>
                 {/* ------------- CONTENT  -------------*/}
-                <div className="mx-auto grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 gap-12 lg:gap-9 px-8 xs:px-8 md:px-0 pb-2 md:pb-14 gap-y-auto">
+                {/* <div className="mx-auto grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 3xl:grid-cols-4 gap-12 lg:gap-9 px-8 xs:px-8 md:px-0 pb-2 md:pb-14 gap-y-auto">
                     {pageContent.map((item: any) => {
                         return item;
                     })}
-                </div>
+                </div> */}
+                {/* <Grid grow gutter="sm" className={pageContent.length <=0 ? "block" : "hidden"}>
+                    {skeletonPageContent.map((item: any, counter: number) => {
+                        return <Grid.Col span={4} key={item.id}>{item}</Grid.Col>
+                    })}
+                </Grid> */}
+            <Pagination pageNumber={pageNumber} handlePageChange={handlePageChange} numShowing={pageContent.length} maxItems={maxItems}/>
+
+                <Grid columns={12} grow justify="space-around"
+                gutter={{ base: 5, xs: 'md', md: 'xl', xl: 40 }} className="px-2">
+                    {pageContent.map((item: any, counter: number) => {
+                        return <Grid.Col span={{ base: 12, md: 6, lg: 2, xl:2 }} key={item.id}
+                        
+                        className="flex justify-center">{item}</Grid.Col>
+                    })}
+                </Grid>
                 {/* ------------- PAGINATION BAR  -------------*/}
             </div>
 
-            <div className="rounded-2xl lg:absolute lg:bottom-2 lg:left-72 lg:right-4 bg-white px-8 lg:pb-4">
-                    <nav className="flex items-center justify-between border-t border-gray-200 px-4 md:px-0 overflow-hidden -mx-2">
-                        <div className="-mt-px flex w-0 flex-1 justify-start bg-white">
-                            <a
-                                href="#"
-                                className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm lg:text-base font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 bg-inherit bg-white z-10"
-                                onClick={(e) => handlePageChange(pageNumber - 1)}
-                            >
-                                <ArrowLongLeftIcon className="mr-3 h-5 w-5 text-gray-400" aria-hidden="true" />
-                                Previous
-                            </a>
-                        </div>
-                        <div className="hidden md:-mt-px xs:flex overflow-x-hidden">
-                            <div className="">
 
-                                {arrayRange(pageNumber - PAGINATION_PAGE_NUMBERS_EITHER_SIDE, pageNumber, 1).filter(number => number > 0).map((i) => {
-                                    return (<a
-                                        key={'paginationPrev#' + i}
-                                        href="#"
-                                        className={classNames("first:hidden lg:first:inline-flex items-center border-t-2 border-transparent px-3 pt-3.5 text-sm lg:text-base font-medium text-gray-500 hover:text-gray-700",
-                                            i == pageNumber ? "inline-flex items-center border-t-4 border-transparent px-4 text-sm font-medium text-gray-500 border-gray-500" : "hover:border-gray-600")}
-                                        onClick={(e) => handlePageChange(i)}
-                                    >
-                                        {i}
-                                    </a>) 
-                                })}
 
-                                {/* // keeping the 5 (in pageNumber < 5 ? 10 ) means the selected number will stay in the center when scrolling to higher numbers */}
-                                {arrayRange(pageNumber + 1, pageNumber < PAGINATION_PAGE_NUMBERS_EITHER_SIDE ? 10 : pageNumber + PAGINATION_PAGE_NUMBERS_EITHER_SIDE, 1).map((i) => {
-                                    return (<a
-                                        key={'paginationPrev#' + i}
-                                        href="#"
-                                        className={classNames("first:hidden lg:first:inline-flex items-center border-t-2 border-transparent px-3 pt-3.5 text-sm lg:text-base font-medium text-gray-500 hover:text-gray-700",
-                                            i == pageNumber ? "inline-flex items-center border-t-4 border-transparent px-4 text-sm font-medium text-gray-500 border-gray-900" : "hover:border-gray-600")}
-                                        onClick={(e) => handlePageChange(i)}
-                                    >
-                                        {i}
-                                    </a>)
-                                })}
-                            </div>
-                        </div>
-                        <div className="-mt-px flex w-0 flex-1 justify-end">
-                            <a
-                                href="#"
-                                className="inline-flex items-center border-t-2 border-transparent pt-4 text-sm lg:text-base font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 bg-white z-10"
-                                onClick={(e) => handlePageChange(pageNumber + 1)}
-                            >
-                                Next
-                                <ArrowLongRightIcon className="ml-3 h-5 w-5 text-gray-400" aria-hidden="true" />
-                            </a>
-                        </div>
-                    </nav>
-                </div>
+            
+            <Pagination pageNumber={pageNumber} handlePageChange={handlePageChange} numShowing={pageContent.length} maxItems={maxItems}/>
         </>
     )
     // <div className="mx-auto max-w-7xl 3xl:max-w-full sm:px-6 lg:px-8">
