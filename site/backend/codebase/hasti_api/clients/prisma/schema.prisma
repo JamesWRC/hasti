@@ -32,8 +32,14 @@ model Project {
   published         Boolean       @default(false)
   userID            String
   user              User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  repoID            String
+  repo              Repo          @relation(fields: [repoID], references: [id])
   haInstallType     String        @default("core") @db.VarChar(255)
   projectType       String        @default("integration") @db.VarChar(255)
+
+  profileImage      String        @default("") @db.VarChar(255)
+  backgroundImage   String        @default("") @db.VarChar(255)
 
   createdAt         DateTime      @default(now()) @db.Timestamp(6)
   updatedAt         DateTime      @updatedAt
@@ -48,8 +54,12 @@ model Repo {
   name              String        @db.VarChar(255)
   fullName          String        @db.VarChar(255)
   private           Boolean       @default(false)
+  
   userID            String
   user              User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  projects          Project[]
+
   gitHubStars       Int           @default(0)
   gitHubWatchers    Int           @default(0)
 
