@@ -12,28 +12,28 @@ services:
     env_file:
       - .env
 
-  hastibackend:
-    container_name: hastibackend
-    restart: always
-    depends_on:
-      - hastidb
-    image: jameswrc/hastibackend
-    # env_file Will be overriden by the environment variables in elasticbeanstalk configuration.
-    env_file:
-     - .env
-    ports:
-      - 3117:3000
-    networks:
-      - traefik_default_network
-      - hastinet
-    labels:
-      - traefik.enable=true
-      - traefik.http.routers.hastibackend.rule=Host(`${SUBDOMAIN}.${ZONE}`)
-      - traefik.http.routers.hastibackend.tls=true
-      - traefik.http.routers.hastibackend.tls.certresolver=myresolver
-      - traefik.http.routers.hastibackend.entrypoints=websecure
-      - traefik.http.services.hastibackend.loadbalancer.server.port=3000
-      - traefik.docker.network=traefik_default_network
+  # hastibackend:
+  #   container_name: hastibackend
+  #   restart: always
+  #   depends_on:
+  #     - hastidb
+  #   image: jameswrc/hastibackend
+  #   # env_file Will be overriden by the environment variables in elasticbeanstalk configuration.
+  #   env_file:
+  #    - .env
+  #   ports:
+  #     - 3117:3000
+  #   networks:
+  #     - traefik_default_network
+  #     - hastinet
+  #   labels:
+  #     - traefik.enable=true
+  #     - traefik.http.routers.hastibackend.rule=Host(`${SUBDOMAIN}.${ZONE}`)
+  #     - traefik.http.routers.hastibackend.tls=true
+  #     - traefik.http.routers.hastibackend.tls.certresolver=myresolver
+  #     - traefik.http.routers.hastibackend.entrypoints=websecure
+  #     - traefik.http.services.hastibackend.loadbalancer.server.port=3000
+  #     - traefik.docker.network=traefik_default_network
 
 
   #################################################
