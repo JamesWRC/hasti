@@ -1,0 +1,1 @@
+docker-compose -p 'HAST_DEV' up -d
