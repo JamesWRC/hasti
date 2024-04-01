@@ -38,8 +38,8 @@ model Project {
   haInstallType     String        @default("core") @db.VarChar(255)
   projectType       String        @default("integration") @db.VarChar(255)
 
-  profileImage      String        @default("") @db.VarChar(255)
-  backgroundImage   String        @default("") @db.VarChar(255)
+  profileImage      String?        @default("") @db.VarChar(255)
+  backgroundImage   String?        @default("") @db.VarChar(255)
 
   createdAt         DateTime      @default(now()) @db.Timestamp(6)
   updatedAt         DateTime      @updatedAt

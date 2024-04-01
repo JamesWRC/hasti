@@ -9,6 +9,8 @@ import { User } from '@prisma/client';
 
 const JWT_SECRET__KEY = process.env.JWT_SECRET_KEY as string
 
+const AUTH_GITHUB_ID = process.env.NODE_ENV === 'production' ? process.env.AUTH_GITHUB_ID : process.env.DEV_AUTH_GITHUB_ID;
+const AUTH_GITHUB_SECRET = process.env.NODE_ENV === 'production' ? process.env.AUTH_GITHUB_SECRET : process.env.DEV_AUTH_GITHUB_SECRET;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
@@ -37,8 +39,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
                     code,
                     installation_id,
-                    client_id: process.env.AUTH_GITHUB_ID,
-                    client_secret: process.env.AUTH_GITHUB_SECRET,
+                    client_id: AUTH_GITHUB_ID,
+                    client_secret: AUTH_GITHUB_SECRET,
                 }, { headers });
 
                 console.log('tokenResponse.status', tokenResponse)

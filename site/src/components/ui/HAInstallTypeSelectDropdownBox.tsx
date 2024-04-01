@@ -2,18 +2,18 @@ import { upperFirst } from 'lodash';
 
 import { Combobox, Input, InputBase, useCombobox } from '@mantine/core';
 
-import { ProjectType, getAllProjectTypes, getProjectType } from '@/backend/interfaces/project'
+import { haInstallType, getAllHaInstallTypes, getHaInstallType } from '@/backend/interfaces/project'
 import { GetInputProps } from '@mantine/form/lib/types';
 
 
-const projectTypes = getAllProjectTypes()
-export function ProjectTypeSelectDropdownBox({projectType, setProjectType, inputProps}:{projectType:ProjectType|undefined, setProjectType: (projectType: ProjectType) => void, inputProps: GetInputProps<any>}) {
+const haInstallTypes = getAllHaInstallTypes()
+export function HAInstallTypeSelectDropdownBox({projectType, setProjectType, inputProps}:{projectType:haInstallType|undefined, setProjectType: (projectType: haInstallType) => void, inputProps: GetInputProps<any>}) {
 
     const combobox = useCombobox({
         onDropdownClose: () => combobox.resetSelectedOption(),
     });
 
-    const options = projectTypes.map((item: string, index:number) => (
+    const options = haInstallTypes.map((item: string, index:number) => (
          
          <Combobox.Option value={item} key={index}>
            
@@ -30,16 +30,16 @@ export function ProjectTypeSelectDropdownBox({projectType, setProjectType, input
             withinPortal={false}
             onOptionSubmit={(val) => {
                 console.log(val)
-                console.log(getProjectType(val))
-                setProjectType(getProjectType(val)) ;
+                console.log(getHaInstallType(val))
+                setProjectType(getHaInstallType(val)) ;
                 combobox.closeDropdown();
             }}
             
-            {...inputProps('projectType')}
+            {...inputProps('haInstallType')}
         >
                             <Combobox.Target>
                 <InputBase
-                    label="Project Type" 
+                    label="Install Type" 
                     component="button"
                     type="button"
                     pointer

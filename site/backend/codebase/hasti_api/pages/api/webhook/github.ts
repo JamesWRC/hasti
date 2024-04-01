@@ -9,6 +9,13 @@ import { NextApiRequest, NextApiResponse } from 'next';
 
 export const dynamic = 'force-dynamic'
 
+// Used to verify the webhook signature. 
+//      Dev is a placeholder secret to still test th webhook verify signature function. This is obviously not secure...
+//      In production, the secret is set to the GITHUB_APP_WEBHOOK_SECRET environment variable. 
+const GITHUB_APP_WEBHOOK_SECRET = process.env.NODE_ENV === 'production' ?
+ process.env.GITHUB_APP_WEBHOOK_SECRET as string : 'dev_secret';
+
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
         // Verify the request is coming from GitHub
@@ -78,7 +85,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 function verifySignature(signature: string, body: any): boolean {
     
-    const GITHUB_APP_WEBHOOK_SECRET = process.env.GITHUB_APP_WEBHOOK_SECRET as string;
     const hmac = crypto.createHmac('sha1', GITHUB_APP_WEBHOOK_SECRET);
     const calculatedSignature = `sha1=${hmac.update(JSON.stringify(body)).digest('hex')}`;
     return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(calculatedSignature));

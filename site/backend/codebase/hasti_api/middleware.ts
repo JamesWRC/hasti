@@ -1,13 +1,20 @@
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 import { NextRequest, NextResponse } from 'next/server'
 
+interface PublicPaths {
+  path: string | RegExp;
+  methods: string[];
+}
+
 
 // Any path that is public and does not require a JWT token
-const PUBLIC_PATHS = [
+const PUBLIC_PATHS:PublicPaths[] = [
   {path: '/api/auth/gitUserToken', methods: ["GET"]}, 
   {path: '/api/auth/jwt', methods: ["POST"]},
   {path: '/api/auth/*', methods: ["GET"]},
-  {path: '/api/**/user/*', methods: ["GET"]},
+  {path: '^\/api\/.*\/user\/.*', methods: ["GET"]},
+  {path: /^\/api\/webhook\/.*/, methods: ["POST"]},
+  {path: '/api/project/add', methods: ["POST"]},
 ]
 
 const allowedOrigins = [process.env.FRONTEND_URL]
@@ -15,7 +22,6 @@ const JWT_SECRET__KEY = process.env.JWT_SECRET_KEY as string
 
  
 export async function middleware(request: NextRequest) {
-
 
   // Handle CORS
   const response = handleCORS(request);
@@ -89,6 +95,7 @@ async function handleSecureRoutes(request: NextRequest) {
   const isPublic = PUBLIC_PATHS.find(route => {
     let matchedPath = false
     const currentPath = route.path as any
+    console.log(currentPath as any instanceof RegExp)
     if (currentPath as any instanceof RegExp) {
       matchedPath = currentPath.test(reqPath);
     } else {
@@ -103,7 +110,7 @@ async function handleSecureRoutes(request: NextRequest) {
   if(!isPublic){
     const token = request.headers.get('Authorization')?.replace('Bearer ', '') as string
     if(!token){
-      return NextResponse.json({message: 'Unauthorized. No Authorization header provided.'}, {status: 401})
+      return NextResponse.json({message: 'Unauthorized. No Authorization header provided to middleware.'}, {status: 401})
     }
 
     try{

@@ -5,6 +5,7 @@ import { Repo } from '@/backend/interfaces/repo'
 import { useSession } from 'next-auth/react'
 import { UserReposResponse } from '@/backend/interfaces/user/requests'
 import Identicon from 'identicon.js';
+import { GetInputProps } from '@mantine/form/lib/types'
 
 
 function classNames(...classes: string[]) {

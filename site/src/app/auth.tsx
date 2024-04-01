@@ -3,11 +3,13 @@ import GitHub from "next-auth/providers/github"
 import { Session } from 'next-auth';
 import { JWTBodyRequest, JWTBodyResponse } from '@/backend/interfaces/user/requests';
 
-const secretKey = 'your-secret-key';
-let jwtToken = '';
-let _user= undefined;
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY as string
+
+const AUTH_GITHUB_ID = process.env.NODE_ENV === 'production' ? process.env.AUTH_GITHUB_ID : process.env.DEV_AUTH_GITHUB_ID;
+const AUTH_GITHUB_SECRET = process.env.NODE_ENV === 'production' ? process.env.AUTH_GITHUB_SECRET : process.env.DEV_AUTH_GITHUB_SECRET;
+
 // Get JWT from backend
-const getTokenFromYourAPIServer = async (provider: string, user: any) => {
+const getTokenFromAPIServer = async (provider: string, user: any) => {
 
     const JWTBodyRequest: JWTBodyRequest = {
         provider,
@@ -30,7 +32,7 @@ const getTokenFromYourAPIServer = async (provider: string, user: any) => {
 }
 
 export const authOptions = { 
-    providers: [ GitHub ],
+    providers: [ GitHub({ clientId: AUTH_GITHUB_ID, clientSecret: AUTH_GITHUB_SECRET }) ],
     pages: {
         // signIn: "/register",
         // signOut: "/a",
@@ -44,7 +46,7 @@ export const authOptions = {
         maxAge: 30 * 24 * 60 * 60,
       },
       jwt: {
-        secret: "your-secret-key",
+        secret: JWT_SECRET_KEY,
       },
       callbacks: {
         async signIn({ user, account, profile, email, credentials }: {user: User, account: any, profile?: any, email?: any, credentials: any}) {
@@ -64,7 +66,7 @@ export const authOptions = {
                 user.name = githubUser.username
                 user.githubID = githubUser.id
                 user.image = githubUser.image
-                const authenticatedUser:JWTBodyResponse = await getTokenFromYourAPIServer('github', githubUser);
+                const authenticatedUser:JWTBodyResponse = await getTokenFromAPIServer('github', githubUser);
                 
                 user.jwt = authenticatedUser.jwt;
                 user.id = authenticatedUser.id;

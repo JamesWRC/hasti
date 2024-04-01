@@ -2,8 +2,14 @@ import { auth } from '@/app/auth'
 import UpdateRepoAccess from '@/components/user/UpdateRepoAccess'
 import { PaperClipIcon } from '@heroicons/react/20/solid'
 
+
+const GIT_APP_NAME = process.env.NODE_ENV === 'production' ? 'hasti-bot' : 'hasti-bot-dev';
+
+
 export default async function Example() {
     const session = await auth()
+
+
 
   return (
     <div className='px-4 md:px-10 w-full'>
@@ -24,7 +30,7 @@ export default async function Example() {
           <div className="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
             <dt className="text-sm font-medium leading-6 text-gray-900 pt-3">Repository Access</dt>
             <dd className="mt-2 text-sm text-gray-900 sm:col-span-2 sm:mt-0">
-            <a href={`https://github.com/apps/hasti-bot/installations/new?state=${session?.user?.id}`}>
+            <a href={`https://github.com/apps/${GIT_APP_NAME}/installations/new?state=${session?.user?.id}`}>
 
               <button className="flex items-center bg-dark text-white font-bold py-2 pl-3 -ml-1 rounded-2xl focus:outline-none focus:shadow-outline-gray hover:bg-gray-700 w-full"
               >

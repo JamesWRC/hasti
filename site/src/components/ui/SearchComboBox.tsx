@@ -6,6 +6,7 @@ import { useDebouncedState } from '@mantine/hooks';
 import { useSession } from 'next-auth/react'
 import { TagSearchResponse } from '@/backend/interfaces/tag/request'
 import { SearchParams } from 'typesense/lib/Typesense/Documents';
+import { GetInputProps } from '@mantine/form/lib/types';
 
 export default function SearchComboBox({
     label,
@@ -16,7 +17,8 @@ export default function SearchComboBox({
     nothingFoundMessage, 
     tags, 
     setTags,
-    searchParams}: 
+    searchParams,
+    inputProps}: 
     {label: string,
         placeholder: string,
         searchable: boolean,
@@ -25,7 +27,9 @@ export default function SearchComboBox({
         existingTags: string[], 
         tags: string[], 
         setTags: (tags: string[]) => void,
-        searchParams?: SearchParams}) {
+        searchParams?: SearchParams,
+        inputProps: GetInputProps<any>
+    }) {
     // Holds what the user has entered in the search box
     const [search, setSearch] = useState('');
     // Holds the value of the search after a debounce
@@ -120,6 +124,7 @@ export default function SearchComboBox({
             onKeyUp={(e) => { handleSearch(e) }}
             limit={6}
             maxValues={maxSelectedValues}
+            error={inputProps('tags').error}
         />
     )
 }
