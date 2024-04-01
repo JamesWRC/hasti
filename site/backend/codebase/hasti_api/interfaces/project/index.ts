@@ -46,13 +46,13 @@ export function getProjectType(projectType: string): ProjectType {
   }
   
 export function getHaInstallType(installType: string): HAInstallType {
-    const tprojValues = Object.values(HAInstallType);
-    for(const t in tprojValues){
-        if(tprojValues[t] === installType.toLowerCase()){
-            return tprojValues[t];
+    const values = Object.values(HAInstallType);
+    for(const t in values){
+        if(values[t] === installType.toLowerCase()){
+            return values[t];
         }
     }
-    // If the project type is not found, return other
+    // If the install type is not found, return any
     return HAInstallType.ANY;
   }
 

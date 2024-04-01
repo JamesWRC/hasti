@@ -12,6 +12,7 @@ import AWS from 'aws-sdk';
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from 'fs';
 import { AddProjectResponse } from '@/interfaces/project/request';
+import { NotificationAbout, NotificationType } from '@/interfaces/notification';
 
 export const config = {
     api: {
@@ -62,7 +63,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
                             // File size too large code
                             if(err.code === 1009){
-                                console.log(err)
+                                // console.log(err)
                                 // Gte file Size too large error
                                 const okFiles = Object.keys(files).map((fieldName) => {
                                     const file = files[fieldName];
@@ -74,8 +75,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                 const response:AddProjectResponse = {
                                     success: false,
                                     message: 'File size too large. Max File Size: 10MB.',
-                                    extraInfo: 'File fields OK: ' + okFiles.join(', '),
                                 }
+                                console.log("okFiles", okFiles)
+                                if(okFiles.length > 0){
+                                    response.extraInfo = 'File fields OK: ' + okFiles.join(', ')
+                                }
+
                                 return resolve({code: 413, json: response});
         
                             }
@@ -86,7 +91,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                 success: false,
                                 message: 'Something went wrong during the file upload.',
                             }
-                            reject({code: 500, json: response});
+                            return reject({code: 500, json: response});
                         }
                         
                         // Get form fields
@@ -146,7 +151,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                                 success: false,
                                                 message: 'Something went wrong during the file upload.',
                                             }   
-                                            reject({code: 500, json: response});
+                                            return reject({code: 500, json: response});
                                         }
                                     });
         
@@ -171,9 +176,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                     success: true,
                                     message: 'Project added successfully',
                                     project: addProject,
-                                }   
+                                } 
+                            
+                                await prisma.notification.create({
+                                    data: {
+                                        userID: user.id,
+                                        type: NotificationType.SUCCESS,
+                                        about: NotificationAbout.PROJECT,
+                                        title: addProject.title,
+                                        message: `Project added`,
+                                        read: false,
+                                    }
+                                });
 
-                                resolve({code: 200, json: response});
+                                return resolve({code: 200, json: response});
                             })
         
                         }else{
@@ -189,7 +205,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                 success: false,
                                 message: 'Missing required form fields: ' + missingFields.join(', '),
                             }   
-                            reject({code: 400, json: response});
+                            return reject({code: 400, json: response});
                         }
                     });
                     

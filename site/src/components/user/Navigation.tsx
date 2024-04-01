@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   FolderIcon,
   UsersIcon,
+  BellIcon
 } from '@heroicons/react/24/outline'
 import { useSession } from 'next-auth/react';
 
@@ -20,6 +21,7 @@ const UserNavigation: React.FC = () => {
     const navigation = [
         { name: 'Account', href: '/user/account', icon: UsersIcon, current: pathname === '/user/account' },
         { name: 'Projects', href: '/user/projects', icon: FolderIcon, count: repoCount, current: pathname === '/user/projects' },
+        { name: 'Notifications', href: '/user/notifications', icon: BellIcon, count: repoCount, current: pathname === '/user/notifications' },
       ]
       function classNames(...classes: string[]) {
         return classes.filter(Boolean).join(' ')

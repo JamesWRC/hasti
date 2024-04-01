@@ -3,7 +3,7 @@
 // Important difference here from UserJWTPayload is that the id is a string.
 
 import { RepositoryData } from "@/interfaces/repo/index";
-import { Project, Repo } from "@prisma/client";
+import { Project, Repo, Notification } from "@prisma/client";
 
 // Used to set up the JWT on initial login.
 export interface JWTBodyRequest {
@@ -58,4 +58,14 @@ export interface UserProjectCountResponse {
 export interface UserProjectsResponse {
     success: boolean;
     projects: Project[];
+}
+
+export interface UserNotificationCountResponse {
+    success: boolean;
+    count: number;
+}
+
+export interface UserNotificationsResponse {
+    success: boolean;
+    notifications: Notification[];
 }

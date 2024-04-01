@@ -97,6 +97,7 @@ export function createNewProject() {
 
 
 
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const form = useForm({
@@ -121,8 +122,8 @@ export function createNewProject() {
       haInstallType: (value: HAInstallType | undefined) => (haInstallType === undefined ? 'Please select an install type.' : null),
       description: (value: string) => (value.length < 30 ? `Description too short. Must have at least 30 characters. You have ${value.length}` : null),
       tags: (value: string[]) => (tags.length < 3 ? 'Please select at least 3 tags.' : null),
-      iconImage: (value: File | null) => (value === null ? null : null),
-      backgroundImage: (value: File | null) => (value === null ? null : null),
+      iconImage: (value: File | null) => (iconImage !== null && iconImage.size > MAX_FILE_SIZE ? 'File too big. Max size is 10MB' : null),
+      backgroundImage: (value: File | null) => (backgroundImage !== null && backgroundImage.size > MAX_FILE_SIZE ? 'File too big. Max size is 10MB' : null),
     },
 
   });
@@ -152,9 +153,7 @@ export function createNewProject() {
 
 
       if (res.ok && tagSearchResponse.hits && tagSearchResponse.hits.length > 0) {
-        console.log('tagSearchResponse', tagSearchResponse);
         const popularTags = tagSearchResponse.hits.map((hit) => hit.document.name)
-        console.log('popularTags', popularTags);
         setExistingTags(popularTags)
       }
     }
@@ -214,18 +213,18 @@ export function createNewProject() {
               'Authorization': `Bearer ${session?.user.jwt}`
             }
           });
-          console.log('response', response)
+
           const responseBody:AddProjectResponse = await response.json()
-          console.log('responseBody', form.values)
-          if(response.status === 413 && responseBody.extraInfo){
+
+          if(response.status === 413){
             
-            if(!responseBody.extraInfo.includes('iconImage')){
+            if(responseBody.extraInfo && !responseBody.extraInfo.includes('iconImage') || (!responseBody.extraInfo && iconImage)){
               form.setErrors({iconImage: responseBody.message})
             }
-            if(!responseBody.extraInfo.includes('backgroundImage')){
+            if(responseBody.extraInfo && !responseBody.extraInfo.includes('backgroundImage') || (!responseBody.extraInfo && backgroundImage)){
               form.setErrors({backgroundImage: responseBody.message})
             }
-            if(!responseBody.extraInfo.includes('iconImage') && !responseBody.extraInfo.includes('backgroundImage')){
+            if(!responseBody.extraInfo || (!responseBody.extraInfo.includes('iconImage') && !responseBody.extraInfo.includes('backgroundImage'))){
               form.setErrors({iconImage: responseBody.message, backgroundImage: responseBody.message})
             }
 

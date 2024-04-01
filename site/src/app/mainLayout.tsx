@@ -287,7 +287,7 @@ export default async function MainLayout({
 
 
         <main className="md:pl-72 bg-dark h-full md:h-screen p-2">
-          <div className="p-3 pr-0 pl-0 bg-white rounded-2xl w-full h-full md:h-full overflow-y-scroll scrollbar overflow-x-hidden">
+          <div className="pr-0 pl-0 bg-white rounded-2xl w-full h-full md:h-full overflow-y-scroll scrollbar overflow-x-hidden">
             {children}
 
           </div>
