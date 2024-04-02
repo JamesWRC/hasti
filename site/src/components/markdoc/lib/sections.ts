@@ -73,20 +73,22 @@ export function collectSections(
       let title = getNodeText(node)
       if (title) {
         let id = slugify(title)
-        if (isH3Node(node)) {
-          if (!sections[sections.length - 1]) {
-            throw new Error(
-              'Cannot add `h3` to table of contents without a preceding `h2`',
-            )
-          }
-          sections[sections.length - 1].children.push({
-            ...node.attributes,
-            id,
-            title,
-          })
-        } else {
-          sections.push({ ...node.attributes, id, title, children: [] })
-        }
+        // if (isH3Node(node)) {
+          // if (!sections[sections.length - 1]) {
+          //   throw new Error(
+          //     'Cannot add `h3` to table of contents without a preceding `h2`',
+          //   )
+          // }
+        //   sections[sections.length - 1].children.push({
+        //     ...node.attributes,
+        //     id,
+        //     title,
+        //   })
+        // } else {
+        //   sections.push({ ...node.attributes, id, title, children: [] })
+        // }
+        sections.push({ ...node.attributes, id, title, children: [] })
+
       }
     }
 

@@ -16,6 +16,10 @@ Welcome to Alpha release of Eufy Security Integration for Home Assistant. Congra
   - [Unlock safe with code](#unlock-safe-with-code)
 - [Debugging Issues](#debugging-issues)
 - [Show Off](#show-off)
+  - [Usage](#usage)
+  - [Features](#features-1)
+  - [Contributing](#contributing)
+  - [License](#license)
 
 # Gratitude
 - @bropat for building docker image (https://github.com/bropat/eufy-security-ws) so I can wrap it as Home Assistant Add-on. You can also thank him over here: https://ko-fi.com/bropat
@@ -302,3 +306,91 @@ To schedule the time, please use this link: https://calendly.com/fuatakgun/offic
 ![image](https://user-images.githubusercontent.com/11085566/210081967-46926dad-55de-4a36-b4ba-a4b6ae99c7ac.png)
 
 https://user-images.githubusercontent.com/11085566/210083674-bbf082ab-5f20-4d1c-ab61-e687c7ce7506.mp4
+
+Certainly! Below is a GitHub README.md file that demonstrates various Markdown features and styles:
+
+```markdown
+# My Awesome Project
+
+Welcome to **My Awesome Project**! This project showcases the diverse capabilities of Markdown in creating compelling README files.
+
+## Table of Contents
+
+1. [Introduction](#introduction)
+2. [Installation](#installation)
+3. [Usage](#usage)
+4. [Features](#features)
+5. [Contributing](#contributing)
+6. [License](#license)
+
+## Introduction
+
+My Awesome Project is a versatile tool designed to help developers create visually appealing and informative README files using Markdown.
+
+## Installation
+
+To install My Awesome Project, simply execute the following command:
+
+```bash
+npm install my-awesome-project
+```
+
+## Usage
+
+To utilize My Awesome Project, import it into your project and unleash the power of Markdown:
+
+```javascript
+const myAwesomeProject = require('my-awesome-project');
+
+myAwesomeProject.writeAwesomeMarkdown();
+```
+
+## Features
+
+- **Text Formatting:**
+  - **Bold**: Make text **bold** with double asterisks.
+  - *Italic*: Emphasize text with *italics* using single asterisks.
+- **Links and Images:**
+  - Hyperlink: Create [hyperlinks](https://github.com) to external sites.
+  - Image: Embed images ![GitHub Logo](https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png)
+- **Code Blocks:**
+  - Inline code: Use backticks to highlight `inline code`.
+  - Multiline code blocks:
+
+    ```python
+    def greet():
+        print("Hello, world!")
+    ```
+- **Lists:**
+  - Ordered List:
+    1. Item 1
+    2. Item 2
+    3. Item 3
+  - Unordered List:
+    - Bullet 1
+    - Bullet 2
+    - Bullet 3
+- **Tables:**
+
+    | Name     | Age | Gender |
+    |----------|-----|--------|
+    | John     | 25  | Male   |
+    | Jane     | 30  | Female |
+- **Blockquotes:**
+  > Markdown is a lightweight markup language with plain-text formatting syntax.
+
+## Contributing
+
+Contributions from the community are highly appreciated. To contribute to My Awesome Project:
+1. Fork the repository
+2. Create a new branch (`git checkout -b feature/your-feature`)
+3. Commit your changes (`git commit -am 'Add some feature'`)
+4. Push to the branch (`git push origin feature/your-feature`)
+5. Create a new Pull Request
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+```
+
+This README.md file covers various Markdown features and styles, including headings, text formatting (bold, italic), hyperlinks, images, code blocks, lists, tables, blockquotes, and more. Feel free to customize it further to suit your project's needs!

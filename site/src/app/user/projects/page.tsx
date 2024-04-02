@@ -138,6 +138,7 @@ export function createNewProject() {
         filter_by: 'type:integration',
         include_fields: 'name,type',
         highlight_fields: 'name', // Hacky way to get API to not send highlight fields in response to save response size
+        
         per_page: '10'
       })
 

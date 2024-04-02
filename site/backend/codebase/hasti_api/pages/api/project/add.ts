@@ -13,6 +13,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from 'fs';
 import { AddProjectResponse } from '@/interfaces/project/request';
 import { NotificationAbout, NotificationType } from '@/interfaces/notification';
+import { updateContent } from '@/pages/helpers/project';
 
 export const config = {
     api: {
@@ -209,6 +210,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
                                 return resolve({code: 200, json: response});
                             })
+
+                            // Update content and images
+                            const updateResponse = await updateContent(repositoryID, addProject.id, user.id)
+                            console.log("updateResponse", updateResponse)
         
                         }else{
                             const missingFields = [];

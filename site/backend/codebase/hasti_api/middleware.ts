@@ -15,6 +15,7 @@ const PUBLIC_PATHS:PublicPaths[] = [
   {path: '^\/api\/.*\/user\/.*', methods: ["GET"]},
   {path: /^\/api\/webhook\/.*/, methods: ["POST"]},
   {path: '/api/project/add', methods: ["POST"]},
+  {path: '/api/content', methods: ["GET"]},
 ]
 
 const allowedOrigins = [process.env.FRONTEND_URL]
