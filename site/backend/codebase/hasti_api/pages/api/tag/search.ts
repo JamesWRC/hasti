@@ -25,7 +25,7 @@ export default async function searchTags(
         }
 
         // Perform the search using the Typesense client
-        const searchResults = await tsClient.collections('Tags').documents().search(searchParameters, searchOptions);
+        const searchResults = await tsClient.collections('Tag').documents().search(searchParameters, searchOptions);
 
         // Return the search results as the API response
         res.status(200).json(searchResults);

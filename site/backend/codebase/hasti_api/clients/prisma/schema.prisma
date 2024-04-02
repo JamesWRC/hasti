@@ -11,16 +11,16 @@ datasource db {
 }
 
 
-
-model Tags {
+model Tag {
   id                String        @id @default(uuid())
-  name              String        @db.VarChar(255)
+  name              String        @unique @db.VarChar(255)
   type              String        @db.VarChar(255)
-  projectsUsing     Int           @default(0)
+  project           Project[]     // IMPLICIT many to many relationship to Project
 
   createdAt         DateTime      @default(now()) @db.Timestamp(6)
   updatedAt         DateTime      @updatedAt
 
+  @@index([name], name: "name_index")
 }
 
 model Project {
@@ -28,7 +28,9 @@ model Project {
   title             String        @db.VarChar(255)
   content           String        @db.Text
   description       String        @default("") @db.Text 
-  tags              String[]      @db.VarChar(255)
+
+  tags              Tag[]         // IMPLICIT many to many relationship to Tag
+
   published         Boolean       @default(false)
   userID            String
   user              User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -38,8 +40,8 @@ model Project {
   haInstallType     String        @default("core") @db.VarChar(255)
   projectType       String        @default("integration") @db.VarChar(255)
 
-  profileImage      String?        @default("") @db.VarChar(255)
-  backgroundImage   String?        @default("") @db.VarChar(255)
+  profileImage      String?       @default("") @db.VarChar(255)
+  backgroundImage   String?       @default("") @db.VarChar(255)
 
   createdAt         DateTime      @default(now()) @db.Timestamp(6)
   updatedAt         DateTime      @updatedAt

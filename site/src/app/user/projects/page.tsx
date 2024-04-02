@@ -136,13 +136,12 @@ export function createNewProject() {
         q: '*', // Get most popular tags
         query_by: 'name',
         filter_by: 'type:integration',
-        include_fields: 'name,projectsUsing,type',
+        include_fields: 'name,type',
         highlight_fields: 'name', // Hacky way to get API to not send highlight fields in response to save response size
-        sort_by: 'projectsUsing:desc',
         per_page: '10'
       })
 
-      const res = await fetch(`${process.env.API_URL}/api/tags/search?` + params, {
+      const res = await fetch(`${process.env.API_URL}/api/tag/search?` + params, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',

@@ -113,12 +113,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                     title: title,
                                     content: '',    // Hard code empty content, as the repo needs to be cloned and processed.
                                     description: description,
-                                    tags: tagArray,
+                                    tags: {
+                                        // Use connectOrCreate to create and connect tags if they don't exist
+                                        connectOrCreate: tagArray.map((tag) => {
+                                            return {
+                                                where: { name: tag },
+                                                create: { name: tag, type: projectType },
+                                            };
+                                        }),
+                                      }, 
                                     published: false, // Hard code false, as the repo needs to be cloned and processed.
                                     userID: user.id,
                                     repoID: repositoryID,
                                     haInstallType: haInstallType,
                                     projectType: projectType,
+                                },
+                                include: {
+                                    tags: {
+                                        select: {
+                                            name: true,
+                                        },
+                                    },
+                                    
                                 }
                             });
         
@@ -180,12 +196,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                             
                                 await prisma.notification.create({
                                     data: {
-                                        userID: user.id,
                                         type: NotificationType.SUCCESS,
-                                        about: NotificationAbout.PROJECT,
                                         title: addProject.title,
                                         message: `Project added`,
+                                        about: NotificationAbout.PROJECT,
                                         read: false,
+
+                                        userID: user.id,
+
                                     }
                                 });
 
