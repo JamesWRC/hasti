@@ -26,7 +26,7 @@ To schedule the time, please use this link: https://calendly.com/fuatakgun/offic
 
 https://user-images.githubusercontent.com/11085566/210083674-bbf082ab-5f20-4d1c-ab61-e687c7ce7506.mp4
 
-## Config
+## Config 123
 
 > [⚙️ Configuration](https://my.home-assistant.io/redirect/config) > Devices and Services > [🧩 Integrations](https://my.home-assistant.io/redirect/integrations) > [➕ Add Integration](https://my.home-assistant.io/redirect/config_flow_start?domain=xiaomi_miot) > 🔍 Search `Xiaomi Miot Auto`
 
