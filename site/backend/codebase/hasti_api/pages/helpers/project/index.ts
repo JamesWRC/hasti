@@ -93,20 +93,11 @@ export async function updateContent(repoID: string, projectID: string, userID: s
 
         const newContentImages: string[] = []
         // If there are images in the project that are not in the new content, delete them
-        const imagesToDelete: string[] = project.contentImages.filter(image => !extractedContentImages.includes(image));
-
 
         for (const imageURL of extractedContentImages) {
 
-            // Split the image URL to get the image name
-            const imageUrlParts = imageURL.split('/');
-            // get image name from url
-            const fileName = imageUrlParts.pop();
-
-            // Replace the image URL with the new URL
-            const imagePath = `user/${userID}/${projectID}/${fileName}`
-            const newImageURL = `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${imagePath}`
-
+            // Get the new image URL
+            const {newImageURL, imagePath} = getNewImageURL(imageURL, userID, projectID);
             // Add the new image URL to the hastiImages array
             newContentImages.push(newImageURL)
 
@@ -114,7 +105,9 @@ export async function updateContent(repoID: string, projectID: string, userID: s
             decodedContent = decodedContent.replace(imageURL, newImageURL);
 
         }
-
+        console.log("newContentImages", newContentImages)
+        console.log("project.contentImages", project.contentImages)
+        const imagesToDelete: string[] = project.contentImages.filter(image => !newContentImages.includes(image));
         const imagesToUpload: string[] = newContentImages.filter(image => !project.contentImages.includes(image));
 
         // Update the project's contentImages
@@ -128,7 +121,7 @@ export async function updateContent(repoID: string, projectID: string, userID: s
 
             }
         })
-
+        console.log("imagesToDelete", imagesToDelete)
         // Delete images that are no longer in the project's content
         const deletePromises: Promise<any>[] = [];
         for (const imagePath of imagesToDelete) {
@@ -143,18 +136,37 @@ export async function updateContent(repoID: string, projectID: string, userID: s
 
 
         // Upload new images to the Cloudflare R2 bucket
-        const uploadPromises: Promise<any>[] = [];
-        for (const imageURL of imagesToUpload) {
+        for (const imageURL of extractedContentImages) {
             
-            // 
+            const {newImageURL, imagePath} = getNewImageURL(imageURL, userID, projectID);
 
-            // Upload the image to the Cloudflare R2 bucket
-            uploadPromises.push(s3.upload({
+            // download image
+            const imageResponse = await fetch(imageURL);
+            // Get the content type of the content
+            const contentType:string = imageResponse.headers.get('content-type') ?? 'image/jpeg'
+
+            if (!imageResponse.ok) {
+                return { success: false, message: `Failed to download image: ${imageURL} status: ${response.statusText}`}
+
+            }
+
+            const imageBuffer = await imageResponse.arrayBuffer();
+
+            // Set the parameters for the S3 upload
+            const s3Params = {
                 Bucket: process.env.CLOUDFLARE_BUCKET_NAME as string,
                 Key: imagePath,
-                Body: imageURL,
-                ACL: 'public-read'
-            }).promise())
+                Body: Buffer.from(imageBuffer),
+                ContentType: contentType,
+            };
+
+            // Upload the image to the Cloudflare R2 bucket
+            s3.upload(s3Params, (s3Err:any, data:any) => {
+                if (s3Err) {
+                    console.error('Error uploading to S3: ', s3Err);
+                    return { success: false, message: "Error uploading to S3." }
+                }
+            });
         }
 
         return retVal = { success: true, message: "Successfully updated project content." }
@@ -163,6 +175,19 @@ export async function updateContent(repoID: string, projectID: string, userID: s
 
 }
 
+
+function getNewImageURL(imageURL: string, userID: string, projectID: string): {newImageURL: string, imagePath: string}{
+    // Split the image URL to get the image name
+    const imageUrlParts = imageURL.split('/');
+    // get image name from url
+    const fileName = imageUrlParts.pop() as string;
+
+    // Replace the image URL with the new URL
+    const imagePath = `user/${userID}/${projectID}/${fileName}`
+    const newImageURL = `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${imagePath}`
+
+    return {newImageURL: newImageURL, imagePath: imagePath}
+}
 
 // Function to extract image URLs from Markdown content
 function extractImageUrls(markdownContent: string): string[] {

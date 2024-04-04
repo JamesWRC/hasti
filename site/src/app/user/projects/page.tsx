@@ -94,7 +94,11 @@ export function createNewProject() {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [backgroundImage, setBackgroundImage] = useState<File | null>(null);
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [loading, setLoading] = useState<boolean>(false);
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
+  const [projectResponse, setProjectResponse] = useState<AddProjectResponse>({success: true, message: ''});
 
 
   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -191,6 +195,9 @@ export function createNewProject() {
       const formData = new FormData();
 
       if(!form.validate().hasErrors && selectRepo && projectType){
+        setLoading(true)
+        setProjectResponse({success: false, message: ''})
+        
         formData.append('repositoryID', selectRepo?.id)
         formData.append('projectType', projectType)
         formData.append('haInstallType', haInstallType)
@@ -215,7 +222,7 @@ export function createNewProject() {
           });
 
           const responseBody:AddProjectResponse = await response.json()
-
+          setProjectResponse(responseBody)
           if(response.status === 413){
             
             if(responseBody.extraInfo && !responseBody.extraInfo.includes('iconImage') || (!responseBody.extraInfo && iconImage)){
@@ -229,13 +236,10 @@ export function createNewProject() {
             }
 
           }
+
       }
 
-
-
-      
-
-
+      setLoading(false)
 
     }
 
@@ -354,18 +358,26 @@ export function createNewProject() {
 
 
           </div>
+          <div className='mt-6 flex justify-between'>
+          <div className='justify-start'>
+            {projectResponse.success ? 
+            <p className="text-sm font-semibold leading-6 text-green-500 justify-start">{projectResponse.message}</p> : 
+            <p className="text-sm font-semibold leading-6 text-red-500 justify-start">{projectResponse.message}</p>}
+          </div>
+          <div className="items-center justify-end gap-x-6">
 
-          <div className="mt-6 flex items-center justify-end gap-x-6">
-            <button type="button" className="text-sm font-semibold leading-6 text-gray-900">
+            <Button type="button" className="text-sm font-semibold leading-6 text-gray-900">
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
               tabIndex={1}
               className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              loading={loading}
             >
               Save
-            </button>
+            </Button>
+          </div>
           </div>
         </form>
       </Modal>

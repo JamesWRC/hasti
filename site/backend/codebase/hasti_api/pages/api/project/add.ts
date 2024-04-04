@@ -189,11 +189,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                         });
                                     }
                                 }
-                                const response:AddProjectResponse = {
-                                    success: true,
-                                    message: 'Project added successfully',
-                                    project: addProject,
-                                } 
+
                             
                                 await prisma.notification.create({
                                     data: {
@@ -208,13 +204,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                     }
                                 });
 
-                                return resolve({code: 200, json: response});
                             })
 
                             // Update content and images
                             const updateResponse = await updateContent(repositoryID, addProject.id, user.id)
-                            console.log("updateResponse", updateResponse)
-        
+
+                            if (!updateResponse.success) {
+                                const response:AddProjectResponse = {
+                                    success: false,
+                                    message: `Failed to add project content. ${updateResponse.message}`,
+                                }   
+                                return reject({code: 500, json: response});
+                            }else{
+                                const response:AddProjectResponse = {
+                                    success: true,
+                                    message: 'Project added successfully',
+                                    project: addProject,
+                                } 
+
+                                return resolve({code: 200, json: response});
+
+                            }
                         }else{
                             const missingFields = [];
                             if(!repositoryID) missingFields.push('repositoryID');
