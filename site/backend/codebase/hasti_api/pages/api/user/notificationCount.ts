@@ -1,4 +1,4 @@
-import { UserNotificationsResponse, UserProjectsResponse } from '@/interfaces/user/requests';
+import { UserNotificationCountResponse } from '@/interfaces/user/requests';
 import { JWTResult, handleUserJWTPayload } from '@/pages/helpers/user';
 import prisma from '@/clients/prisma/client';
 import { Notification, Project, User } from '@prisma/client';
@@ -19,9 +19,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             const user:User = tokenResult.user
             
             // Get count of user's repositories
-            const notifications:Notification[] = await prisma.notification.findMany({
+            const notificationCount:number = await prisma.notification.count({
                 where: {
                     userID: user.id,
+                    read: false
                 },
                 orderBy: {
                     createdAt: 'desc'
@@ -29,9 +30,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             })
 
 
-            const response: UserNotificationsResponse = {
+            const response: UserNotificationCountResponse = {
                 success: true,
-                notifications: notifications
+                count: notificationCount
             }
             
             return res.status(200).json(response);

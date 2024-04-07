@@ -17,18 +17,19 @@ const UserNavigation: React.FC = () => {
 
     // repo count state
     const [repoCount, setRepoCount] = useState(0)
+    const [notificationCount, setNotificationCount] = useState(0)
 
     const navigation = [
         { name: 'Account', href: '/user/account', icon: UsersIcon, current: pathname === '/user/account' },
         { name: 'Projects', href: '/user/projects', icon: FolderIcon, count: repoCount, current: pathname === '/user/projects' },
-        { name: 'Notifications', href: '/user/notifications', icon: BellIcon, count: repoCount, current: pathname === '/user/notifications' },
+        { name: 'Notifications', href: '/user/notifications', icon: BellIcon, count: notificationCount, current: pathname === '/user/notifications' },
       ]
       function classNames(...classes: string[]) {
         return classes.filter(Boolean).join(' ')
       }
 
       useEffect(() => {
-        const fetchRepos = async () => {
+        const fetchRepoCount = async () => {
           const res = await fetch(`${process.env.API_URL}/api/user/projectCount`, {
             method: 'GET',
             headers: {
@@ -41,7 +42,24 @@ const UserNavigation: React.FC = () => {
             setRepoCount(data.count)
           }
         }
-        fetchRepos()
+        const fetchNotificationCount = async () => {
+          const res = await fetch(`${process.env.API_URL}/api/user/notificationCount`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session?.user.jwt}`
+            }
+          })
+          const data = await res.json()
+          console.log("data", data)
+          if (data.success) {
+            setNotificationCount(data.count)
+          }
+        }
+        
+        fetchRepoCount()
+        fetchNotificationCount()
+
       }, [])
 
     return (

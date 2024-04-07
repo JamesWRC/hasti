@@ -1,4 +1,3 @@
-import { UserProjectsResponse } from '@/interfaces/user/requests';
 import { JWTResult, handleUserJWTPayload } from '@/pages/helpers/user';
 import prisma from '@/clients/prisma/client';
 import { Project, User } from '@prisma/client';
@@ -11,7 +10,7 @@ import AWS from 'aws-sdk';
 
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from 'fs';
-import { AddProjectResponse } from '@/interfaces/project/request';
+import { AddProjectResponse, MAX_FILE_SIZE } from '@/interfaces/project/request';
 import { NotificationAbout, NotificationType } from '@/interfaces/notification';
 import { updateContent } from '@/pages/helpers/project';
 
@@ -27,8 +26,6 @@ export const config = {
     accessKeyId: process.env.CLOUDFLARE_BUCKET_ACCESS_KEY,
     secretAccessKey: process.env.CLOUDFLARE_BUCKET_SECRET_KEY,
   });
-
-  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
   
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -92,7 +89,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                 success: false,
                                 message: 'Something went wrong during the file upload.',
                             }
-                            return reject({code: 500, json: response});
+                            return resolve({code: 500, json: response});
                         }
                         
                         // Get form fields
@@ -168,7 +165,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                                 success: false,
                                                 message: 'Something went wrong during the file upload.',
                                             }   
-                                            return reject({code: 500, json: response});
+                                            return resolve({code: 500, json: response});
                                         }
                                     });
         
@@ -184,7 +181,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                         await prisma.project.update({
                                             where: { id: addProject.id },
                                             data: {
-                                                backgroundImage: fileUploadPath
+                                                backgroundImage: encodeURIComponent(fileUploadPath)
                                             }
                                         });
                                     }
@@ -214,7 +211,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                     success: false,
                                     message: `Failed to add project content. ${updateResponse.message}`,
                                 }   
-                                return reject({code: 500, json: response});
+                                return resolve({code: 500, json: response});
                             }else{
                                 const response:AddProjectResponse = {
                                     success: true,
@@ -238,7 +235,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                                 success: false,
                                 message: 'Missing required form fields: ' + missingFields.join(', '),
                             }   
-                            return reject({code: 400, json: response});
+                            return resolve({code: 400, json: response});
                         }
                     });
                     

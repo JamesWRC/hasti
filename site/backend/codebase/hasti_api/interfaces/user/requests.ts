@@ -55,11 +55,6 @@ export interface UserProjectCountResponse {
     count: number;
 }
 
-export interface UserProjectsResponse {
-    success: boolean;
-    projects: Project[];
-}
-
 export interface UserNotificationCountResponse {
     success: boolean;
     count: number;
@@ -68,4 +63,8 @@ export interface UserNotificationCountResponse {
 export interface UserNotificationsResponse {
     success: boolean;
     notifications: Notification[];
+}
+
+export interface GetProjectsQueryParams {
+    limit?: number;
 }

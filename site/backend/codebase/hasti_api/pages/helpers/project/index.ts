@@ -65,12 +65,16 @@ export async function updateContent(repoID: string, projectID: string, userID: s
             Authorization: `Bearer ${token}`,
         },
     });
+    console.log("response", response)
 
     if (!response.ok) {
         return retVal = { success: false, message: "Failed to fetch README.md file. May not exist at path or no access to repo." }
+    }else if(response.status === 404){
+        return retVal = { success: false, message: "README.md file not found." }
     }else{
+
         const data = await response.json();
-        console.log("response", data)
+        console.log("response data", data)
 
         const content = data.content;
         let decodedContent = Buffer.from(content, 'base64').toString('utf-8');

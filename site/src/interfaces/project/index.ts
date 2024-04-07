@@ -1,6 +1,8 @@
 // Used for differentiating between theme and integration projects and other projects in the future
 
 import { ProjectType } from "@/backend/interfaces/project";
+import type { Project } from  '@/backend/interfaces/project';
+import { UserProject } from "@/backend/interfaces/project/request";
 
 
 
@@ -10,24 +12,17 @@ export interface Author {
   link: string;
 }
 
-export interface Project {
-  id: number;
-  title: string;
-  shortDesc: string;
-  href: string;
-  description: string;
-  imageUrl: string;
-  date: string;
-  datetime: string;
-  projectType: ProjectType;
-  author: Author;
+export interface LoadProjects {
+  reqStatus: string,
+  loadedProjects: UserProject[] | null
+
 }
 
 
 export function getProjectLink(project: Project) {
   if (project.projectType === ProjectType.THEME) {
-    return 'themes/' + project.href;
+    return 'themes/' + project.title;
   } else if (project.projectType === ProjectType.INTEGRATION) {
-    return 'integrations/' + project.href;
+    return 'integrations/' + project.title;
   }
 }

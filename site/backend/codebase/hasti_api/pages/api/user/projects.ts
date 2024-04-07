@@ -1,8 +1,9 @@
-import { UserProjectsResponse } from '@/interfaces/user/requests';
 import { JWTResult, handleUserJWTPayload } from '@/pages/helpers/user';
 import prisma from '@/clients/prisma/client';
 import { Project, User } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { GetProjectResponse, UserProject } from '@/interfaces/project/request';
+import { GetProjectsQueryParams } from '@/interfaces/user/requests';
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -17,18 +18,30 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             }
 
             const user:User = tokenResult.user
-            
-            // Get count of user's repositories
+
+            // parse query params
+            const queryParams:GetProjectsQueryParams = req.query
+
             const userProject:Project[] = await prisma.project.findMany({
                 where: {
                     userID: user.id
-                }
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                },
+                take: queryParams.limit ? Number(queryParams.limit) : undefined
+                
             })
 
-
-            const response: UserProjectsResponse = {
+            const userProjects:UserProject[] = userProject.map((project) => {
+                return {
+                    user: user,
+                    project: project
+                }
+            })
+            const response: GetProjectResponse = {
                 success: true,
-                projects: userProject
+                userProjects: userProjects
             }
             
             return res.status(200).json(response);

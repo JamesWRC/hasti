@@ -4,64 +4,51 @@ import {
   PhotoIcon,
   UserCircleIcon
 } from '@heroicons/react/24/outline'
-import FeaturedGroup from '@/components/store/FeaturedGroup'
-import { groupPosts } from '@/interfaces/placeholders'
-import { Session } from 'next-auth'
-import PackageCard from '@/components/store/PackageCard'
+import PackageCard from '@/components/store/ProjectCard'
 import { Grid } from '@mantine/core';
 
 import { useDisclosure } from '@mantine/hooks';
 import { Modal, Button } from '@mantine/core';
 import SelectRepo from '@/components/repo/SelectRepo';
-import { FormEventHandler, KeyboardEvent, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { Repo } from '@/backend/interfaces/repo'
 
 
 
 import { useForm } from '@mantine/form';
-import { TextInput, Textarea, Group, Box, MultiSelect } from '@mantine/core';
-import { useFocusTrap  } from '@mantine/hooks';
+import { TextInput, Textarea,  } from '@mantine/core';
 import { useSession } from 'next-auth/react'
 import { TagSearchResponse } from '@/backend/interfaces/tag/request'
 import tags from '@/markdoc/tags';
 import SearchTagComboBox from '@/components/ui/SearchComboBox'
 import { SearchParams } from 'typesense/lib/Typesense/Documents';
-import { Project } from '../../../interfaces/project/index';
 import { ProjectType, getProjectType, HAInstallType } from '@/backend/interfaces/project'
 import { ProjectTypeSelectDropdownBox } from '@/components/ui/ProjectTypeSelectDropdownBox'
 
 import { FileInput } from '@mantine/core';
 import { HAInstallTypeSelectDropdownBox } from '@/components/ui/HAInstallTypeSelectDropdownBox'
-import { AddProjectResponse } from '@/backend/interfaces/project/request'
+import { AddProjectResponse, MAX_FILE_SIZE } from '@/backend/interfaces/project/request'
+import type { UserProject } from "@/backend/interfaces/project/request";
+import useProjects from '@/components/project'
 
+
+import { LoadProjects } from '@/interfaces/project';
+import { GetProjectResponse } from '@/backend/interfaces/project/request';
+import ProjectGrid from '@/components/project/ProjectGrid';
 
 export default function Page() {
 
-
   return (
-    <div className="bg-white py-24 sm:py-28">
-      <div className="mx-auto max-w-[150%] px-6 lg:px-8">
+    <div className="bg-white py-24 sm:py-28 w-full">
+      <div className="mx-auto max-w-[150%] px-6 lg:px-2">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl py-4">Your Packages</h2>
         </div>
-        <Grid>
-
-          {groupPosts.map((project, index) => (
-            <>
-              {index === 0 ? createNewProject() : null}
-
-              <Grid.Col span={{ base: 12, md: 4, lg: 4 }} key={`t-${project.id}`}>
-
-                <PackageCard project={project} style={"featured"} />
-              </Grid.Col>
-            </>
-
-          ))}
-
-          {/* <FeaturedGroup groupTitle={"Your Themes"} groupPosts={groupPosts} />
-                <FeaturedGroup groupTitle={"Your Integrations"} groupPosts={groupPosts} /> */}
-        </Grid>
+        <div className=" w-full h-full">
+              {createNewProject()}
+              </div>
+        <ProjectGrid/>
       </div>
     </div>
 
@@ -100,8 +87,6 @@ export function createNewProject() {
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const [projectResponse, setProjectResponse] = useState<AddProjectResponse>({success: true, message: ''});
 
-
-  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const form = useForm({
@@ -275,9 +260,6 @@ export function createNewProject() {
           <div className="space-y-12">
             <div className="border-b border-gray-900/10 pb-12">
               {/* <h2 className="text-base font-semibold leading-7 text-gray-900">New Project</h2> */}
-              <p className="mt-1 text-sm leading-6 text-gray-600">
-                Add a new Project
-              </p>
 
               <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
                 <div className="sm:col-span-4">
@@ -288,8 +270,8 @@ export function createNewProject() {
                 </div>
                 <div className="sm:col-span-4">
 
-                  <div className="mt-2">
-                    <TextInput className="w-full pt-3" label="Project Name" placeholder={selectRepo?.name} defaultValue={selectRepo?.name} {...form.getInputProps('projectName')} />
+                  <div className="">
+                    <TextInput className="w-full" label="Project Name" placeholder={selectRepo?.name} defaultValue={selectRepo?.name} {...form.getInputProps('projectName')} />
 
                   </div>
                 </div>
@@ -366,7 +348,7 @@ export function createNewProject() {
           </div>
           <div className="items-center justify-end gap-x-6">
 
-            <Button type="button" className="text-sm font-semibold leading-6 text-gray-900">
+            <Button type="button" className="text-sm font-semibold leading-6 text-gray-900" onClick={e => close()}>
               Cancel
             </Button>
             <Button

@@ -2,12 +2,12 @@ import { upperFirst } from 'lodash';
 
 import { Combobox, Input, InputBase, useCombobox } from '@mantine/core';
 
-import { haInstallType, getAllHaInstallTypes, getHaInstallType } from '@/backend/interfaces/project'
+import { HAInstallType, getAllHaInstallTypes, getHaInstallType } from '@/backend/interfaces/project'
 import { GetInputProps } from '@mantine/form/lib/types';
 
 
 const haInstallTypes = getAllHaInstallTypes()
-export function HAInstallTypeSelectDropdownBox({projectType, setProjectType, inputProps}:{projectType:haInstallType|undefined, setProjectType: (projectType: haInstallType) => void, inputProps: GetInputProps<any>}) {
+export function HAInstallTypeSelectDropdownBox({projectType, setProjectType, inputProps}:{projectType:HAInstallType|undefined, setProjectType: (projectType: HAInstallType) => void, inputProps: GetInputProps<any>}) {
 
     const combobox = useCombobox({
         onDropdownClose: () => combobox.resetSelectedOption(),

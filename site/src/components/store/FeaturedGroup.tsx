@@ -8,7 +8,9 @@ import {
 
 import AuthorDescription from '@/components/store/AuthorDescription';
 import { Project, getProjectLink } from '@/interfaces/project';
-import PackageCard from './PackageCard';
+import PackageCard from './ProjectCard';
+import { UserProject } from '@/backend/interfaces/project/request';
+import useProjects from '@/components/project'
 
 
 export default function FeaturedGroup({
@@ -21,6 +23,7 @@ export default function FeaturedGroup({
 }) {
 
 
+    const {loadedProjects, reqStatus} = useProjects({limit:10});
 
 
     return (
@@ -46,11 +49,11 @@ export default function FeaturedGroup({
                             <div className="overflow-x-scroll scrollbar">
                                 {/* <div className="mx-auto mt-4 grid max-w-2xl auto-rows-fr grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5"> */}
                                 <div className="mt-4 pl-3 min-w-[250%] grid grid-cols-10 gap-[11.35rem] sm:gap-[12rem] md:gap-[12rem] lg:gap-[12rem] xl:gap-12">
-                                    {groupPosts.map((project) => (
-                                        <div key={`t-${project.id}`}>
-                                            <PackageCard project={project} style={"featured"} />
+                                    {loadedProjects ? loadedProjects.map((userProject:UserProject, index:number) => (
+                                        <div key={`featured-group-${userProject.project.id}`}>
+                                            <PackageCard userProject={userProject} style={"featured"} loaded={reqStatus === "success"} />
                                         </div>
-                                    ))}
+                                    )): null}
                                 </div>
                             </div>
                         </div>

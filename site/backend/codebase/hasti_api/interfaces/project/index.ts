@@ -1,4 +1,6 @@
 import { Container } from '@mantine/core';
+import { Project, User } from '@prisma/client';
+export type {Project} from "@prisma/client";
 // Used for differentiating between theme and integration projects and other projects in the future
 export enum ProjectType {
     THEME = "theme",
@@ -6,7 +8,7 @@ export enum ProjectType {
     OTHER = "other"
   }
 
-export enum   HAInstallType {
+export enum HAInstallType {
     OS = "os",
     CONTAINER = "container",
     CORE = "core",
@@ -55,5 +57,4 @@ export function getHaInstallType(installType: string): HAInstallType {
     // If the install type is not found, return any
     return HAInstallType.ANY;
   }
-
 
