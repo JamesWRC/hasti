@@ -16,6 +16,7 @@ const PUBLIC_PATHS:PublicPaths[] = [
   {path: /^\/api\/webhook\/.*/, methods: ["POST"]},
   {path: '/api/project/add', methods: ["POST"]},
   {path: '/api/content', methods: ["GET"]},
+  {path: '/api/project', methods: ["GET"]},
 ]
 
 const allowedOrigins = [process.env.FRONTEND_URL]
@@ -96,7 +97,6 @@ async function handleSecureRoutes(request: NextRequest) {
   const isPublic = PUBLIC_PATHS.find(route => {
     let matchedPath = false
     const currentPath = route.path as any
-    console.log(currentPath as any instanceof RegExp)
     if (currentPath as any instanceof RegExp) {
       matchedPath = currentPath.test(reqPath);
     } else {

@@ -1,6 +1,7 @@
-import { Container } from '@mantine/core';
 import { Project, User } from '@prisma/client';
 export type {Project} from "@prisma/client";
+export type {ProjectWithUser} from '@/clients/prisma/client';
+
 // Used for differentiating between theme and integration projects and other projects in the future
 export enum ProjectType {
     THEME = "theme",
@@ -16,12 +17,15 @@ export enum HAInstallType {
     ANY = "any",
   }
 
-export function getAllProjectTypes(): string[] {
+export function getAllProjectTypes(caseSensitive:Boolean=true): string[] {
     const ret: string[] = [];
     const tprojValues = Object.values(ProjectType);
     for(const t in tprojValues){
-        const upperType = tprojValues[t][0].toUpperCase() + tprojValues[t].slice(1)
-        ret.push(upperType);
+        if(caseSensitive){
+          ret.push(tprojValues[t][0].toUpperCase() + tprojValues[t].slice(1)) 
+        }else{
+          ret.push(tprojValues[t]);
+        }
     }
     return ret;
   }

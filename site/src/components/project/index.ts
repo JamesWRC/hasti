@@ -2,12 +2,12 @@ import { useState, useEffect } from 'react';
 
 import { useSession } from 'next-auth/react'
 import { LoadProjects } from '@/interfaces/project';
-import { GetProjectResponse, UserProject } from '@/backend/interfaces/project/request';
-import { GetProjectsQueryParams } from '@/backend/interfaces/user/requests';
+import { GetProjectsResponse, GetProjectsQueryParams } from '@/backend/interfaces/project/request';
+import { ProjectWithUser } from '@/backend/interfaces/project'
 
 
 export default function useProjects({...props}: GetProjectsQueryParams):LoadProjects {
-  const [projects, setProjects] = useState<GetProjectResponse|null>(generatePlaceHolderProjects(props.limit || 10));
+  const [projects, setProjects] = useState<GetProjectsResponse>(generatePlaceHolderProjects(props.limit || 10));
   const [reqStatus, setReqStatus] = useState('idle'); // idle, loading, success, error
   
   const { data: session, status } = useSession()
@@ -15,14 +15,28 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
     const fetchData = async () => {
         setReqStatus('loading');
       try {
+
         //Build query string
-        let queryStr = '';
-        if (props.limit) {
-          queryStr = `?limit=${props.limit}`;
-        }
+        // Set the limit of the number of notifications to fetch
+        let queryStr = props.limit ? `?limit=${props.limit}` : '';
+        // set the project type
+        if (props.type) queryStr += `${queryStr ? '&' : '?'}type=${props.type}`;
+
+        // Set the cursor to the next 'page' of notifications
+        if (props.cursor) queryStr += `${queryStr ? '&' : '?'}cursor=${props.cursor}`;
+
+        // Set the userID
+        if (props.userID) queryStr += `${queryStr ? '&' : '?'}userID=${props.userID}`;
+
+        // Set the username 
+        if (props.username) queryStr += `${queryStr ? '&' : '?'}username=${props.username}`;
+
+        // Set the github userID
+        if (props.githubUserID) queryStr += `${queryStr ? '&' : '?'}githubUserID=${props.githubUserID}`;
+
         // sleep for 2 seconds to simulate a slow network
         await new Promise((resolve) => setTimeout(resolve, 4000));
-        const response = await fetch(`${process.env.API_URL}/api/user/projects` + queryStr, {
+        const response = await fetch(`${process.env.API_URL}/api/project` + queryStr, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -32,13 +46,13 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
-        const jsonData:GetProjectResponse = await response.json();
+        const jsonData:GetProjectsResponse = await response.json();
         console.log("jsonData: ", jsonData)
         setProjects(jsonData);
         setReqStatus('success');
       } catch (error) {
         setReqStatus('error');
-        console.error('Error fetching data:', error);
+        console.error('Error fetching data:', error); 
       }
     };
 
@@ -50,28 +64,18 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
   }, []);
 
 
-  if (projects) {
     const retVal:LoadProjects = {
-      loadedProjects: projects.userProjects,
-        reqStatus
+      projects: projects.userProjects,
+      reqStatus
     }
     console.log("retVal12: ", retVal)
     return retVal;
 
-  }else{
-    const retVal:LoadProjects = {
-      loadedProjects: projects,
-        reqStatus
-      }
-      console.log("retVal1: ", retVal)
-
-      return retVal;
-  }
 
 
 };
 
-function generatePlaceHolderProjects(count:number):GetProjectResponse {
+function generatePlaceHolderProjects(count:number):GetProjectsResponse {
   let userProjects = [];
   for (let i = 0; i < count; i++) {
 
@@ -83,7 +87,7 @@ function generatePlaceHolderProjects(count:number):GetProjectResponse {
     const random = Math.floor(Math.random() * 1000) + 1;
 
 
-    const userProject:UserProject = {
+    const userProject:ProjectWithUser = {
       user: {
         id: random.toString(),
         githubID: i,

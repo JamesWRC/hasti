@@ -600,6 +600,11 @@
   resolved "https://registry.yarnpkg.com/@popperjs/core/-/core-2.11.8.tgz#6b79032e760a0899cd4204710beede972a3a185f"
   integrity sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==
 
+"@primer/octicons-react@^19.9.0":
+  version "19.9.0"
+  resolved "https://registry.yarnpkg.com/@primer/octicons-react/-/octicons-react-19.9.0.tgz#eb90a9b47da924c0ab33055d050e6ea21104d219"
+  integrity sha512-Uk4XrHyfylyfzZN9d8VFjF8FpfYHEyT4sabw+9+oP+GWAJHhPvNPTz6gXvUzJZmoblAvgcTrDslIPjz8zMh76w==
+
 "@reactflow/background@11.3.8":
   version "11.3.8"
   resolved "https://registry.yarnpkg.com/@reactflow/background/-/background-11.3.8.tgz#367a21c3fd9204ae84cca2ea6d98cd0d142e57d6"
@@ -1146,6 +1151,11 @@
   version "20.4.2"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-20.4.2.tgz#129cc9ae69f93824f92fac653eebfb4812ab4af9"
   integrity sha512-Dd0BYtWgnWJKwO1jkmTrzofjK2QXXcai0dmtzvIBhcA+RsG5h8R3xlyta0kGOZRNfL9GuRtb1knmPEhQrePCEw==
+
+"@types/primer__octicons@^19.6.3":
+  version "19.6.3"
+  resolved "https://registry.yarnpkg.com/@types/primer__octicons/-/primer__octicons-19.6.3.tgz#6ea5c10da79361ef6eb6b698c6396cd4053ee107"
+  integrity sha512-lvDS7/5uZLCnG/h3W5fzMjLsMKAlu2Y4nF615U6FtwMarwCD76l9TvkD8nn0g0fIb2gg81/NsRa2LFvksvukRQ==
 
 "@types/prismjs@^1.26.0", "@types/prismjs@^1.26.3":
   version "1.26.3"
@@ -2890,6 +2900,11 @@ minimist@^1.2.0, minimist@^1.2.6:
   version "1.2.8"
   resolved "https://registry.yarnpkg.com/minimist/-/minimist-1.2.8.tgz#c1a464e7693302e082a075cee0c057741ac4772c"
   integrity sha512-2yyAR8qBkN3YuheJanUpWC5U3bb5osDywNB8RzDVlDwDHbocAJveqqj1u8+SVD7jkWT4yvsHCpWqqWqAxb0zCA==
+
+moment@^2.30.1:
+  version "2.30.1"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.30.1.tgz#f8c91c07b7a786e30c59926df530b4eac96974ae"
+  integrity sha512-uEmtNhbDOrWPFS+hdjFCBfy9f2YoyzRpwcl+DqpC6taX21FzsTLQVbMV/W7PzNSX6x/bhC1zA3c2UQ5NzH6how==
 
 ms@2.1.2:
   version "2.1.2"

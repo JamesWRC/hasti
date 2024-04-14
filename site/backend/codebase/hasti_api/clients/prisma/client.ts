@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 
 // PrismaClient is attached to the `global` object in development to prevent
 // exhausting your database connection limit.
@@ -11,5 +11,14 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient }
 export const prisma = globalForPrisma.prisma || new PrismaClient()
 
 if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
+
+
+// Hacky way to create type for what a find many query WITH the user relation is included.
+async function getProjectWithUser() {
+  return await prisma.project.findFirst({ include: { user: true } })
+}
+// Extract `ProjectWithUser` type with
+type ThenArg<T> = T extends PromiseLike<infer U> ? U : T
+export type ProjectWithUser = ThenArg<ReturnType<typeof getProjectWithUser>>
 
 export default prisma

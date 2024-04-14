@@ -1,7 +1,7 @@
 import NextAuth, { User } from "next-auth"
 import GitHub from "next-auth/providers/github"
 import { Session } from 'next-auth';
-import { JWTBodyRequest, JWTBodyResponse } from '@/backend/interfaces/user/requests';
+import { JWTBodyRequest, JWTBodyResponse } from '@/backend/interfaces/user/request';
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY as string
 

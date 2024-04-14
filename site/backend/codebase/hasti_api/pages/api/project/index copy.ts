@@ -3,7 +3,7 @@ import prisma from '@/clients/prisma/client';
 import { Project, User } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { GetProjectResponse, UserProject } from '@/interfaces/project/request';
-import { GetProjectsQueryParams } from '@/interfaces/user/requests';
+import { GetProjectsQueryParams } from '@/interfaces/user/request';
 
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -30,9 +30,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                     createdAt: 'desc'
                 },
                 take: queryParams.limit ? Number(queryParams.limit) : undefined
-                
             })
-
             const userProjects:UserProject[] = userProject.map((project) => {
                 return {
                     user: user,

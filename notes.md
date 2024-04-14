@@ -25,3 +25,6 @@
    1. Add little i icon on each input linking to a FAQ? that goes into detail
 2. Possibly remove Install Type if not needed IE for blueprints tec
 
+3. cursor for the /api/project API. Needs to be date (something unique and sequential)
+  - May have to store this and previous cursor to speed up even more
+  - see if curr and prev cursor is > or < then could do take + if > or - if <

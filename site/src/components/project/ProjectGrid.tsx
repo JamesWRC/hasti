@@ -9,20 +9,20 @@ import {
 import PackageCard from '@/components/store/ProjectCard'
 import { Grid } from '@mantine/core';
 
-import type { UserProject } from "@/backend/interfaces/project/request";
+import type { ProjectWithUser } from '@/backend/clients/prisma/client'
 import useProjects from '@/components/project'
 
 export default function ProjectGrid() {
 
-    const {loadedProjects, reqStatus} = useProjects({});
+    const {projects, reqStatus} = useProjects({});
 
 
     return (
         <div className="bg-white w-full">
           <div className="mx-auto max-w-[150%] px-6 lg:px-2">
             <Grid>
-            <div className={!loadedProjects || loadedProjects.length <= 0 ? "mx-auto max-w-2xl text-center" : "m-auto w-full h-full"}>
-                {!loadedProjects || !loadedProjects || loadedProjects.length <= 0 ? <h4 className="text-sm font-bold tracking-tight text-gray-900 sm:text-sm py-4 px-3">
+            <div className={!projects || projects.length <= 0 ? "mx-auto max-w-2xl text-center" : "m-auto w-full h-full"}>
+                {!projects || !projects || projects.length <= 0 ? <h4 className="text-sm font-bold tracking-tight text-gray-900 sm:text-sm py-4 px-3">
                 You projects will be shown below when you create a project.
                 </h4>: null }
                 {reqStatus === 'loading' ? 
@@ -34,13 +34,13 @@ export default function ProjectGrid() {
                   </div> : null
               }
               </div>
-              {loadedProjects && loadedProjects.length > 0 ? loadedProjects.map((userProject:UserProject, index:number) => (
+              {projects && projects.length > 0 ? projects.map((project:ProjectWithUser, index:number) => (
                 <>
                   {/* {index === 0 ? createNewProject() : null} */}
     
-                  <Grid.Col span={{ base: 12, md: 6, lg: 4 }} key={`user-project-${userProject.project.id}`}>
+                  <Grid.Col span={{ base: 12, md: 6, lg: 4 }} key={`user-project-${index}`}>
     
-                    <PackageCard userProject={userProject} style={"featured"} loaded={reqStatus === "success"} />
+                    <PackageCard userProject={project} style={"featured"} loaded={reqStatus === "success"} />
                   </Grid.Col>
                 </>
     

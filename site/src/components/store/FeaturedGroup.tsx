@@ -5,25 +5,15 @@ import {
 
 } from '@heroicons/react/24/outline'
 
-
-import AuthorDescription from '@/components/store/AuthorDescription';
-import { Project, getProjectLink } from '@/interfaces/project';
+import type { Project } from  '@/backend/interfaces/project';
 import PackageCard from './ProjectCard';
-import { UserProject } from '@/backend/interfaces/project/request';
+import type { ProjectWithUser } from '@/backend/clients/prisma/client';
 import useProjects from '@/components/project'
+import { FeaturedGroup } from '@/interfaces/ui';
 
 
-export default function FeaturedGroup({
-    groupTitle,
-    groupPosts,
-}: {
-    groupTitle: string,
-    groupPosts: Project[],
-
-}) {
-
-
-    const {loadedProjects, reqStatus} = useProjects({limit:10});
+export default function FeaturedGroupSection({...props}: FeaturedGroup) {
+    const {projects, reqStatus} = useProjects({...props});
 
 
     return (
@@ -32,7 +22,7 @@ export default function FeaturedGroup({
                 <div className="grid grid-cols-[1fr,auto] items-center gap-4">
                     <div className="flex min-w-0 px-6">
                         <h2 className="inline-block text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight dark:text-slate-900">
-                            <a href="#Themes">{groupTitle}</a>
+                            <a href="#Themes">{props.groupTitle}</a>
                         </h2>
                     </div>
                     <div className="ml-6 flex items-center">
@@ -49,11 +39,11 @@ export default function FeaturedGroup({
                             <div className="overflow-x-scroll scrollbar">
                                 {/* <div className="mx-auto mt-4 grid max-w-2xl auto-rows-fr grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5"> */}
                                 <div className="mt-4 pl-3 min-w-[250%] grid grid-cols-10 gap-[11.35rem] sm:gap-[12rem] md:gap-[12rem] lg:gap-[12rem] xl:gap-12">
-                                    {loadedProjects ? loadedProjects.map((userProject:UserProject, index:number) => (
-                                        <div key={`featured-group-${userProject.project.id}`}>
-                                            <PackageCard userProject={userProject} style={"featured"} loaded={reqStatus === "success"} />
-                                        </div>
-                                    )): null}
+                                    {projects ? projects.map((project:ProjectWithUser, index:number) => (
+                                        <div key={`featured-group-${index}`}>
+                                            <PackageCard userProject={project} style={"featured"} loaded={reqStatus === "success"} />
+                                        </div>)
+                                    ): null}
                                 </div>
                             </div>
                         </div>

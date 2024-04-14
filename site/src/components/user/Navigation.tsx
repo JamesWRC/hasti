@@ -83,7 +83,7 @@ const UserNavigation: React.FC = () => {
                   aria-hidden="true"
                 />
                 {item.name}
-                {item.count || item.count === 0 ? (
+                {item.count || item.count === 0 && (notificationCount !== 0) ? (
                   <span
                     className="ml-auto w-9 min-w-max whitespace-nowrap rounded-full bg-white px-1.5 py-0.5 text-center text-xs font-medium leading-5 text-gray-600 ring-1 ring-inset ring-gray-200"
                     aria-hidden="true"

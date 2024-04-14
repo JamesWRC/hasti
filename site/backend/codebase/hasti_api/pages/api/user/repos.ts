@@ -1,4 +1,4 @@
-import { UserReposResponse } from '@/interfaces/user/requests';
+import { UserReposResponse } from '@/interfaces/user/request';
 import { JWTResult, handleUserJWTPayload } from '@/pages/helpers/user';
 import prisma from '@/clients/prisma/client';
 import { Repo, User } from '@prisma/client';

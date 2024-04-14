@@ -1,4 +1,4 @@
-import { UserRepoCountResponse } from '@/interfaces/user/requests';
+import { UserRepoCountResponse } from '@/interfaces/user/request';
 import { JWTResult, handleUserJWTPayload } from '@/pages/helpers/user';
 import prisma from '@/clients/prisma/client';
 import { User } from '@prisma/client';

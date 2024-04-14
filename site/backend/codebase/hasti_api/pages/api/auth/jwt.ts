@@ -8,7 +8,7 @@ import { decode } from 'next-auth/jwt';
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 
 
-import { JWTBodyRequest, JWTBodyResponse } from '@/interfaces/user/requests';
+import { JWTBodyRequest, JWTBodyResponse } from '@/interfaces/user/request';
 import type { UserJWT, UserJWTPayload } from '@/interfaces/user';
 import prisma from '@/clients/prisma/client';
 import { addOrUpdateUser } from '@/pages/helpers/user';

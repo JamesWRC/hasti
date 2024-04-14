@@ -3,7 +3,7 @@ import { Listbox, Transition } from '@headlessui/react'
 import { CheckIcon, ChevronUpDownIcon } from '@heroicons/react/20/solid'
 import { Repo } from '@/backend/interfaces/repo'
 import { useSession } from 'next-auth/react'
-import { UserReposResponse } from '@/backend/interfaces/user/requests'
+import { UserReposResponse } from '@/backend/interfaces/user/request'
 // import Identicon from 'identicon.js';
 import { createAvatar } from '@dicebear/core';
 import { GetInputProps } from '@mantine/form/lib/types'

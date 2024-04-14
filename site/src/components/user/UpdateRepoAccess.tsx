@@ -4,7 +4,7 @@ import { User } from 'next-auth'
 import { useSession } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import type { GitHubUserTokenRequest } from '@/backend/interfaces/user/requests'
+import type { GitHubUserTokenRequest } from '@/backend/interfaces/user/request'
 
 
 export default function UpdateRepoAccess() {

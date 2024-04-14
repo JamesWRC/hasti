@@ -4,7 +4,6 @@
 
 import { RepositoryData } from "@/interfaces/repo/index";
 import { Project, Repo, Notification } from "@prisma/client";
-
 // Used to set up the JWT on initial login.
 export interface JWTBodyRequest {
     provider: string,
@@ -63,8 +62,4 @@ export interface UserNotificationCountResponse {
 export interface UserNotificationsResponse {
     success: boolean;
     notifications: Notification[];
-}
-
-export interface GetProjectsQueryParams {
-    limit?: number;
 }

@@ -29,12 +29,10 @@ import { ProjectTypeSelectDropdownBox } from '@/components/ui/ProjectTypeSelectD
 import { FileInput } from '@mantine/core';
 import { HAInstallTypeSelectDropdownBox } from '@/components/ui/HAInstallTypeSelectDropdownBox'
 import { AddProjectResponse, MAX_FILE_SIZE } from '@/backend/interfaces/project/request'
-import type { UserProject } from "@/backend/interfaces/project/request";
 import useProjects from '@/components/project'
 
 
 import { LoadProjects } from '@/interfaces/project';
-import { GetProjectResponse } from '@/backend/interfaces/project/request';
 import ProjectGrid from '@/components/project/ProjectGrid';
 
 export default function Page() {

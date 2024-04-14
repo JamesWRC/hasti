@@ -3,7 +3,7 @@ ArrowRightIcon
     
   } from '@heroicons/react/24/outline'
 import FeaturedGroup from '@/components/store/FeaturedGroup'
-import { groupPosts } from '@/interfaces/placeholders'
+import { ProjectType } from '@/backend/interfaces/project'
 import { Session } from 'next-auth'
 
 export default function StorePage() {
@@ -16,8 +16,8 @@ export default function StorePage() {
               Explore popular Home Assistant Themes and Integrations
             </p>
           </div>
-          <FeaturedGroup groupTitle={"Featured Themes"} groupPosts={groupPosts} />
-          <FeaturedGroup groupTitle={"Featured Integrations"} groupPosts={groupPosts} />
+          <FeaturedGroup groupTitle={"Featured Themes"} groupType={ProjectType.THEME} limit={10}/>
+          <FeaturedGroup groupTitle={"Featured Integrations"} groupType={ProjectType.INTEGRATION} limit={2}/>
         </div>
       </div>
     )

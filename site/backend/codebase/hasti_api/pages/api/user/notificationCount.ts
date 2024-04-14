@@ -1,4 +1,4 @@
-import { UserNotificationCountResponse } from '@/interfaces/user/requests';
+import { UserNotificationCountResponse } from '@/interfaces/user/request';
 import { JWTResult, handleUserJWTPayload } from '@/pages/helpers/user';
 import prisma from '@/clients/prisma/client';
 import { Notification, Project, User } from '@prisma/client';

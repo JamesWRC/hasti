@@ -2,8 +2,7 @@
 
 import { ProjectType } from "@/backend/interfaces/project";
 import type { Project } from  '@/backend/interfaces/project';
-import { UserProject } from "@/backend/interfaces/project/request";
-
+import { ProjectWithUser } from "@/backend/clients/prisma/client";
 
 
 export interface Author {
@@ -14,15 +13,15 @@ export interface Author {
 
 export interface LoadProjects {
   reqStatus: string,
-  loadedProjects: UserProject[] | null
+  projects: ProjectWithUser[] | null
 
 }
 
 
-export function getProjectLink(project: Project) {
-  if (project.projectType === ProjectType.THEME) {
+export function getProjectLink(project: ProjectWithUser) {
+  if (project?.projectType === ProjectType.THEME) {
     return 'themes/' + project.title;
-  } else if (project.projectType === ProjectType.INTEGRATION) {
+  } else if (project?.projectType === ProjectType.INTEGRATION) {
     return 'integrations/' + project.title;
   }
 }
