@@ -2,7 +2,7 @@
 
 // Important difference here from UserJWTPayload is that the id is a string.
 
-import { RepositoryData } from "@/interfaces/repo/index";
+import { RepositoryData } from "@/backend/interfaces/repo/index";
 import { Project, Repo, Notification } from "@prisma/client";
 // Used to set up the JWT on initial login.
 export interface JWTBodyRequest {

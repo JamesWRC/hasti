@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 
-import { navigation } from '@/components/markdoc/lib/navigation'
+import { navigation } from '@/frontend/components/markdoc/lib/navigation'
 
 export function DocsHeader({ title }: { title?: string }) {
   let pathname = usePathname()

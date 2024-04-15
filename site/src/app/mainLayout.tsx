@@ -14,7 +14,7 @@ import {
   SwatchIcon,
 
 } from '@heroicons/react/24/outline'
-import Footer from '@/components/Footer'
+import Footer from '@/frontend/components/Footer'
 import { usePathname } from 'next/navigation';
 
 import { Button, Group, Text, Collapse, Box } from '@mantine/core';
@@ -23,13 +23,13 @@ import { useClickOutside } from '@mantine/hooks';
 
 import { useRouter } from 'next/navigation';
 
-import LoginBtn from '@/components/user/LoginBtn'
-import VertiNav from '@/components/ui/navigation/VertiNav'
-import MobileNavi from '@/components/ui/navigation/MobileNavi'
-import UserNavi from '@/components/ui/navigation/UserNavi'
-import Navigation from '@/components/ui/navigation/Navigation'
+import LoginBtn from '@/frontend/components/user/LoginBtn'
+import VertiNav from '@/frontend/components/ui/navigation/VertiNav'
+import MobileNavi from '@/frontend/components/ui/navigation/MobileNavi'
+import UserNavi from '@/frontend/components/ui/navigation/UserNavi'
+import Navigation from '@/frontend/components/ui/navigation/Navigation'
 import { auth } from './auth'
-import { SignIn } from '@/components/authComp'
+import { SignIn } from '@/frontend/components/authComp'
 
 
 

@@ -2,12 +2,12 @@ import React from "react";
 import Markdoc from '@markdoc/markdoc';
 import fs from 'fs';
 
-import nodes from '@/markdoc/nodes';
-import tags from '@/markdoc/tags';
-import { Callout } from '@/components/markdoc/Callout'
-import { QuickLink, QuickLinks } from '@/components/markdoc/QuickLinks'
+import nodes from '@/frontend/markdoc/nodes';
+import tags from '@/frontend/markdoc/tags';
+import { Callout } from '@/frontend/components/markdoc/Callout'
+import { QuickLink, QuickLinks } from '@/frontend/components/markdoc/QuickLinks'
 import { type Node, Config } from '@markdoc/markdoc';
-import '@/app/prism.js'
+import '@/frontend/app/prism.js'
 
 
 // const config = {

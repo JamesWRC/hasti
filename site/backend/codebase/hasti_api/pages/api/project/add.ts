@@ -1,5 +1,5 @@
-import { JWTResult, handleUserJWTPayload } from '@/pages/helpers/user';
-import prisma from '@/clients/prisma/client';
+import { JWTResult, handleUserJWTPayload } from '@/backend/pages/helpers/user';
+import prisma from '@/backend/clients/prisma/client';
 import { Project, User } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { NextRequest } from 'next/server';
@@ -10,9 +10,9 @@ import AWS from 'aws-sdk';
 
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from 'fs';
-import { AddProjectResponse, MAX_FILE_SIZE } from '@/interfaces/project/request';
-import { NotificationAbout, NotificationType } from '@/interfaces/notification';
-import { updateContent } from '@/pages/helpers/project';
+import { AddProjectResponse, MAX_FILE_SIZE } from '@/backend/interfaces/project/request';
+import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
+import { updateContent } from '@/backend/pages/helpers/project';
 
 export const config = {
     api: {

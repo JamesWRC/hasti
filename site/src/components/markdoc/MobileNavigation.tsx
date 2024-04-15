@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { Dialog } from '@headlessui/react'
 
-import { Logomark } from '@/components/markdoc/Logo'
-import { Navigation } from '@/components/markdoc/Navigation'
+import { Logomark } from '@/frontend/components/markdoc/Logo'
+import { Navigation } from '@/frontend/components/markdoc/Navigation'
 
 function MenuIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (

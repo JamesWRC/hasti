@@ -1,8 +1,13 @@
 import Prism from 'prismjs';
-import * as React from 'react';
+import React, { ReactNode } from 'react';
 import {nodes} from '@markdoc/markdoc';
 
-export function CodeBlock({children, 'data-language': language}) {
+interface CodeBlockProps {
+   children: ReactNode;
+   'data-language': string;
+}
+
+export function CodeBlock({children, 'data-language': language}: CodeBlockProps) {
   const ref = React.useRef(null);
 
   React.useEffect(() => {

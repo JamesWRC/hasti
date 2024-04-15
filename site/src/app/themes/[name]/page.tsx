@@ -2,17 +2,17 @@
 import { useState, useEffect } from 'react';
 import { Box, Portal, rem, Text } from '@mantine/core';
 
-import { Prose } from '@/components/markdoc/Prose';
+import { Prose } from '@/frontend/components/markdoc/Prose';
 
-import Details from '@/components/store/content/Details';
+import Details from '@/frontend/components/store/content/Details';
 import { useHeadroom } from '@mantine/hooks';
 
-import UGCDocument from '@/components/store/content/UGCDocument';
-import TableOfContents from '@/components/store/content/TableOfContents';
+import UGCDocument from '@/frontend/components/store/content/UGCDocument';
+import TableOfContents from '@/frontend/components/store/content/TableOfContents';
 
 import Prism from 'prismjs';
-import '@/app/prism.css'
-import ColorBackground from '@/components/project/ColorBackground';
+import '@/frontend/app/prism.css'
+import ColorBackground from '@/frontend/components/project/ColorBackground';
 // import prism from "prismjs";
 
 // import 'prismjs/components/prism-json'; // need this

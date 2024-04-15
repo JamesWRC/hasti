@@ -1,6 +1,6 @@
 import Link from 'next/link'
 
-import { Icon } from '@/components/markdoc/Icon'
+import { Icon } from '@/frontend/components/markdoc/Icon'
 
 export function QuickLinks({ children }: { children: React.ReactNode }) {
   return (

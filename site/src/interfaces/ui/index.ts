@@ -4,5 +4,5 @@ import { GetProjectsQueryParams } from '@/backend/interfaces/project/request';
 
 export interface FeaturedGroup extends GetProjectsQueryParams {
     groupTitle: string;
-    groupType: ProjectType;
+    type: ProjectType;
 }

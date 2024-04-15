@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { JWTResult, getGitHubUserToken, handleUserJWTPayload, updateGitHubUserToken } from '@/pages/helpers/user';
+import { JWTResult, getGitHubUserToken, handleUserJWTPayload, updateGitHubUserToken } from '@/backend/pages/helpers/user';
 
 import { User } from '@prisma/client';
-import prisma from '@/clients/prisma/client';
+import prisma from '@/backend/clients/prisma/client';
 
 
 const AUTH_GITHUB_ID = process.env.NODE_ENV === 'production' ? process.env.AUTH_GITHUB_ID : process.env.DEV_AUTH_GITHUB_ID;

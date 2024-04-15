@@ -7,7 +7,7 @@ import {
     UsersIcon,
     ArrowLeftOnRectangleIcon
   } from '@heroicons/react/24/outline'
-  import { SignOut } from "@/components/authComp"
+  import { SignOut } from "@/frontend/components/authComp"
 
   const navigation = [
     { name: 'Account', href: '#', icon: UsersIcon, current: true },

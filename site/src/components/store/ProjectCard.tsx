@@ -1,14 +1,14 @@
 import { Skeleton } from "@mantine/core";
 import AuthorDescription from "./AuthorDescription";
-import { getProjectLink } from "@/interfaces/project"
+import { getProjectLink } from "@/frontend/interfaces/project"
 import type { Project, ProjectType } from  '@/backend/interfaces/project';
-import { DynamicSkeletonText, DynamicSkeletonTitle } from "@/components/ui/skeleton/index";
+import { DynamicSkeletonText, DynamicSkeletonTitle } from "@/frontend/components/ui/skeleton/index";
 
 import { createAvatar } from '@dicebear/core';
 import Svg from "react-inlinesvg";
 
 import { botttsNeutral, funEmoji, shapes, bottts  } from '@dicebear/collection';
-import ColorBackground from "@/components/project/ColorBackground";
+import ColorBackground from "@/frontend/components/project/ColorBackground";
 import type { ProjectWithUser } from '@/backend/clients/prisma/client'
 
 const loaded = false

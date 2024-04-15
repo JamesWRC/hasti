@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import clsx from 'clsx'
 
-import { type Section, type Subsection } from '@/components/markdoc/lib/sections'
+import { type Section, type Subsection } from '@/frontend/components/markdoc/lib/sections'
 
 export function TableOfContents({
   tableOfContents,

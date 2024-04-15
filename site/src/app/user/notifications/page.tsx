@@ -8,14 +8,14 @@ import {
   QuestionMarkCircleIcon
 } from '@heroicons/react/20/solid'
 import { Listbox, Transition } from '@headlessui/react'
-import useNotifications from '@/components/notification'
+import useNotifications from '@/frontend/components/notification'
 import moment from 'moment'
 import { Button, HoverCard, Skeleton } from '@mantine/core'
 import { GitBranchIcon } from '@primer/octicons-react'
 import type { Notification, } from '@/backend/interfaces/notification';
 import { GetNotificationsQueryParams } from '@/backend/interfaces/notification/request'
 import { set } from 'lodash'
-import { DynamicSkeletonText, DynamicSkeletonTitle } from '@/components/ui/skeleton'
+import { DynamicSkeletonText, DynamicSkeletonTitle } from '@/frontend/components/ui/skeleton'
 
 
 // types

@@ -22,11 +22,9 @@
     "preserveSymlinks": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*", "./backend/codebase/hasti_api/*"],
-      "@/backend/*": [
-        "./backend/codebase/hasti_api/*",
-      ]
-    }
+      "@/frontend*": ["./src/*"],
+      "@/backend/*": ["./backend/codebase/hasti_api/*"]
+    },
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
   "exclude": ["node_modules"]

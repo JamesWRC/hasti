@@ -1,10 +1,10 @@
 import { type Node } from '@markdoc/markdoc'
 
-import { DocsHeader } from '@/components/markdoc/DocsHeader'
-import { PrevNextLinks } from '@/components/markdoc/PrevNextLinks'
-import { Prose } from '@/components/markdoc/Prose'
-import { TableOfContents } from '@/components/markdoc/TableOfContents'
-import { collectSections } from '@/components/markdoc/lib/sections'
+import { DocsHeader } from '@/frontend/components/markdoc/DocsHeader'
+import { PrevNextLinks } from '@/frontend/components/markdoc/PrevNextLinks'
+import { Prose } from '@/frontend/components/markdoc/Prose'
+import { TableOfContents } from '@/frontend/components/markdoc/TableOfContents'
+import { collectSections } from '@/frontend/components/markdoc/lib/sections'
 
 
 // Mantine 
@@ -12,7 +12,7 @@ import { collectSections } from '@/components/markdoc/lib/sections'
 import { useState } from 'react';
 import { Group, Box, Collapse, ThemeIcon, Text, UnstyledButton, rem } from '@mantine/core';
 import { IconListNumbers , IconChevronUp } from '@tabler/icons-react';
-import classes from '@/app/page.module.css';
+import classes from '@/frontend/app/page.module.css';
 
 
 

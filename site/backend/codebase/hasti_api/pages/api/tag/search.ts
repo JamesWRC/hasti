@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import tsClient from '@/clients/typesense';
+import tsClient from '@/backend/clients/typesense';
 import { SearchParams } from 'typesense/lib/Typesense/Documents';
 
 export default async function searchTags(

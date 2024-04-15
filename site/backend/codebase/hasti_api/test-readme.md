@@ -116,6 +116,11 @@ entity: camera.entrance
 poster: image.entrance_event_image
 ui: true
 shortcuts:
+type: custom:webrtc-camera
+entity: camera.entrance
+poster: image.entrance_event_image
+ui: true
+shortcuts:
   - name: Play
     icon: mdi:play
     service: camera.turn_on

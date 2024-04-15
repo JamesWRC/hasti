@@ -1,6 +1,6 @@
 
-  import { SignOut } from "@/components/authComp"
-  import UserNavigation from "@/components/user/Navigation"
+  import { SignOut } from "@/frontend/components/authComp"
+  import UserNavigation from "@/frontend/components/user/Navigation"
  
 
   export default function Example({

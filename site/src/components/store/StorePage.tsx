@@ -2,7 +2,7 @@ import {
 ArrowRightIcon
     
   } from '@heroicons/react/24/outline'
-import FeaturedGroup from '@/components/store/FeaturedGroup'
+import FeaturedGroup from '@/frontend/components/store/FeaturedGroup'
 import { ProjectType } from '@/backend/interfaces/project'
 import { Session } from 'next-auth'
 

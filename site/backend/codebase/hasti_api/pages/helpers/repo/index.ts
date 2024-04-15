@@ -1,5 +1,5 @@
-import { RepositoryData } from "@/interfaces/repo"
-import prisma from "@/clients/prisma/client"
+import { RepositoryData } from "@/backend/interfaces/repo"
+import prisma from "@/backend/clients/prisma/client"
 import type { User } from '@prisma/client'
 
 import { request } from "https"

@@ -1,10 +1,10 @@
 'use strict'
 'use client'
-import { groupPosts } from "@/interfaces/placeholders";
-import AuthorDescription from "@/components/store/AuthorDescription";
-import DescriptionItem from "@/components/store/DescriptionItem";
-import FeaturedGroup from "@/components/store/FeaturedGroup";
-import PaginationPanel from "@/components/store/PaginationPanel";
+import { ProjectType } from "@/backend/interfaces/project";
+import AuthorDescription from "@/frontend/components/store/AuthorDescription";
+import DescriptionItem from "@/frontend/components/store/DescriptionItem";
+import FeaturedGroup from "@/frontend/components/store/FeaturedGroup";
+import PaginationPanel from "@/frontend/components/store/PaginationPanel";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 // function renderThemesGrid(){
@@ -47,7 +47,7 @@ export default function Page() {
       <>
         {isFrontPage ? 
         <div className="pl-0">
-          <FeaturedGroup groupTitle={"Popular Themes"} groupPosts={groupPosts} /> 
+          <FeaturedGroup groupTitle={"Popular Themes"} type={ProjectType.THEME} /> 
         </div>: null}
       
       {/* {renderThemesGrid()} */}

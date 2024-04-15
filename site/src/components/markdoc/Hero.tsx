@@ -3,10 +3,10 @@ import Image from 'next/image'
 import clsx from 'clsx'
 import { Highlight } from 'prism-react-renderer'
 
-import { Button } from '@/components/markdoc/Button'
-import { HeroBackground } from '@/components/markdoc/HeroBackground'
-import blurCyanImage from '@/images/blur-cyan.png'
-import blurIndigoImage from '@/images/blur-indigo.png'
+import { Button } from '@/frontend/components/markdoc/Button'
+import { HeroBackground } from '@/frontend/components/markdoc/HeroBackground'
+import blurCyanImage from '@/frontend/images/blur-cyan.png'
+import blurIndigoImage from '@/frontend/images/blur-indigo.png'
 
 const codeLanguage = 'javascript'
 const code = `export default {

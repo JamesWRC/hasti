@@ -4,10 +4,10 @@ import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Grid } from '@mantine/core';
 
-import DescriptionItem from '@/components/store/DescriptionItem';
+import DescriptionItem from '@/frontend/components/store/DescriptionItem';
 
 import { useMediaQuery } from '@mantine/hooks';
-import Pagination from "@/components/store/Pagination";
+import Pagination from "@/frontend/components/store/Pagination";
 
 const arrayRange = (start: number, stop: number, step: number) =>
     Array.from({ length: (stop - start) / step + 1 },

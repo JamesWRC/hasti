@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { useSession } from 'next-auth/react'
-import { LoadProjects } from '@/interfaces/project';
+import { LoadProjects } from '@/frontend/interfaces/project';
 import { GetProjectsResponse, GetProjectsQueryParams } from '@/backend/interfaces/project/request';
 import { ProjectWithUser } from '@/backend/interfaces/project'
 
@@ -33,7 +33,8 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
 
         // Set the github userID
         if (props.githubUserID) queryStr += `${queryStr ? '&' : '?'}githubUserID=${props.githubUserID}`;
-
+        console.log("props server: ", props)
+        console.log("queryStr: ", queryStr)
         // sleep for 2 seconds to simulate a slow network
         await new Promise((resolve) => setTimeout(resolve, 4000));
         const response = await fetch(`${process.env.API_URL}/api/project` + queryStr, {

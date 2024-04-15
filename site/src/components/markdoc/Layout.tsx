@@ -5,12 +5,12 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 
-import { Hero } from '@/components/markdoc/Hero'
-import { Logo, Logomark } from '@/components/markdoc/Logo'
-import { MobileNavigation } from '@/components/markdoc/MobileNavigation'
-import { Navigation } from '@/components/markdoc/Navigation'
-import { Search } from '@/components/markdoc/Search'
-import { ThemeSelector } from '@/components/markdoc/ThemeSelector'
+import { Hero } from '@/frontend/components/markdoc/Hero'
+import { Logo, Logomark } from '@/frontend/components/markdoc/Logo'
+import { MobileNavigation } from '@/frontend/components/markdoc/MobileNavigation'
+import { Navigation } from '@/frontend/components/markdoc/Navigation'
+import { Search } from '@/frontend/components/markdoc/Search'
+import { ThemeSelector } from '@/frontend/components/markdoc/ThemeSelector'
 
 function GitHubIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
   return (

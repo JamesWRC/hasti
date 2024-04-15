@@ -1,4 +1,4 @@
-import { DarkMode, Gradient, LightMode } from '@/components/markdoc/Icon'
+import { DarkMode, Gradient, LightMode } from '@/frontend/components/markdoc/Icon'
 
 export function ThemingIcon({
   id,

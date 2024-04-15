@@ -1,9 +1,8 @@
-import { signIn, signOut } from "@/app/auth"
+import { signIn, signOut } from "@/frontend/app/auth"
 import React from 'react';
 import { MarkGithubIcon } from '@primer/octicons-react';
-import { HastiSession } from "@/interfaces/user";
 import { ArrowLeftOnRectangleIcon } from "@heroicons/react/24/outline";
-
+import { Button } from "@mantine/core";
 
 
 export function SignIn({

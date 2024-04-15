@@ -8,11 +8,12 @@ import {
 import type { Project } from  '@/backend/interfaces/project';
 import PackageCard from './ProjectCard';
 import type { ProjectWithUser } from '@/backend/clients/prisma/client';
-import useProjects from '@/components/project'
-import { FeaturedGroup } from '@/interfaces/ui';
+import useProjects from '@/frontend/components/project'
+import { FeaturedGroup } from '@/frontend/interfaces/ui';
 
 
 export default function FeaturedGroupSection({...props}: FeaturedGroup) {
+
     const {projects, reqStatus} = useProjects({...props});
 
 

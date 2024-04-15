@@ -1,6 +1,6 @@
-import { Callout } from '@/components/markdoc/Callout'
-import { QuickLink, QuickLinks } from '@/components/markdoc/QuickLinks'
-import { group } from '@/components/markdoc/Loop'
+import { Callout } from '@/frontend/components/markdoc/Callout'
+import { QuickLink, QuickLinks } from '@/frontend/components/markdoc/QuickLinks'
+import { group } from '@/frontend/components/markdoc/Loop'
 const tags = {
   callout: {
     attributes: {

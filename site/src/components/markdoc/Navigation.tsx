@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import clsx from 'clsx'
 
-import { navigation } from '@/components/markdoc/lib/navigation'
+import { navigation } from '@/frontend/components/markdoc/lib/navigation'
 
 export function Navigation({
   className,

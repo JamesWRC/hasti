@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 
 import { useSession } from 'next-auth/react'
 import { GetNotificationsQueryParams, GetNotificationsResponse } from '@/backend/interfaces/notification/request';
-import { LoadNotifications } from '@/interfaces/notification';
+import { LoadNotifications } from '@/frontend/interfaces/notification';
 import type { Notification } from '@/backend/interfaces/notification';
 
 export default function useNotifications({...props}: GetNotificationsQueryParams):LoadNotifications {

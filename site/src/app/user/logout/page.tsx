@@ -1,8 +1,7 @@
 
 'use client'
 import React, { useEffect } from 'react';
-import { auth, signOut } from "@/app/auth"
-import { Session } from '@/interfaces/user'
+import { auth, signOut } from "@/frontend/app/auth"
 import { useRouter } from 'next/navigation';
 
 

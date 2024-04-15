@@ -1,10 +1,10 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from 'next'
-import prisma from '@/clients/prisma/client'
+import prisma from '@/backend/clients/prisma/client'
 import fs from 'fs'
 import path from 'path'
 
-import checkHost, { badHost } from '@/pages/helpers/requestRules'
+import checkHost, { badHost } from '@/backend/pages/helpers/requestRules'
 
 type Data = {
   content: string,

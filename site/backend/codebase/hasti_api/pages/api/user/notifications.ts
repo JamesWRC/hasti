@@ -1,13 +1,13 @@
-import prisma from '@/clients/prisma/client';
-import type { ProjectWithUser } from '@/clients/prisma/client'
+import prisma from '@/backend/clients/prisma/client';
+import type { ProjectWithUser } from '@/backend/clients/prisma/client'
 import { Prisma, Notification, User } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { GetProjectsResponse } from '@/interfaces/project/request';
-import { getAllProjectTypes } from '@/interfaces/project';
-import { handleUserJWTPayload } from '@/pages/helpers/user';
-import type { JWTResult } from '@/pages/helpers/user'
-import type { GetNotificationsQueryParams, GetNotificationsResponse, UpdateNotificationReadStatus, UpdateNotificationReadStatusResponse } from '@/interfaces/notification/request';
-import { getAllNotificationAbout, getAllNotificationTypes, getNotificationType } from '@/interfaces/notification';
+import { GetProjectsResponse } from '@/backend/interfaces/project/request';
+import { getAllProjectTypes } from '@/backend/interfaces/project';
+import { handleUserJWTPayload } from '@/backend/pages/helpers/user';
+import type { JWTResult } from '@/backend/pages/helpers/user'
+import type { GetNotificationsQueryParams, GetNotificationsResponse, UpdateNotificationReadStatus, UpdateNotificationReadStatusResponse } from '@/backend/interfaces/notification/request';
+import { getAllNotificationAbout, getAllNotificationTypes, getNotificationType } from '@/backend/interfaces/notification';
 
 
 const NOTIFICATION_MAX_TAKE = 100

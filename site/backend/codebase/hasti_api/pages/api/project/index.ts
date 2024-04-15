@@ -1,10 +1,10 @@
-import prisma from '@/clients/prisma/client';
-import type { ProjectWithUser } from '@/clients/prisma/client'
+import prisma from '@/backend/clients/prisma/client';
+import type { ProjectWithUser } from '@/backend/clients/prisma/client'
 import { Prisma, Project, User } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { GetProjectsResponse } from '@/interfaces/project/request';
-import { GetProjectsQueryParams } from '@/interfaces/project/request';
-import { getAllProjectTypes } from '@/interfaces/project';
+import { GetProjectsResponse } from '@/backend/interfaces/project/request';
+import { GetProjectsQueryParams } from '@/backend/interfaces/project/request';
+import { getAllProjectTypes } from '@/backend/interfaces/project';
 
 
 const PROJECT_MAX_TAKE = 50

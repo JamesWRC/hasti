@@ -20,9 +20,9 @@ import {
 } from '@algolia/autocomplete-core'
 import { Dialog } from '@headlessui/react'
 import clsx from 'clsx'
-import { type Result } from '@/markdoc/search.mjs'
+import { type Result } from '@/frontend/markdoc/search.mjs'
 
-import { navigation } from '@/components/markdoc/lib/navigation'
+import { navigation } from '@/frontend/components/markdoc/lib/navigation'
 
 type EmptyObject = Record<string, never>
 
@@ -87,7 +87,7 @@ function useAutocomplete({
         navigate,
       },
       getSources({ query }) {
-        return import('@/markdoc/search.mjs').then(({ search }) => {
+        return import('@/frontend/markdoc/search.mjs').then(({ search }) => {
           return [
             {
               sourceId: 'documentation',

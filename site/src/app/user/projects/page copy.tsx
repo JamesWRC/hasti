@@ -6,7 +6,7 @@ import {
 
 import { useDisclosure } from '@mantine/hooks';
 import { Modal, Button } from '@mantine/core';
-import SelectRepo from '@/components/repo/SelectRepo';
+import SelectRepo from '@/frontend/components/repo/SelectRepo';
 import { useEffect, useState } from 'react'
 
 import { Repo } from '@/backend/interfaces/repo'
@@ -17,17 +17,17 @@ import { useForm } from '@mantine/form';
 import { TextInput, Textarea,  } from '@mantine/core';
 import { useSession } from 'next-auth/react'
 import { TagSearchResponse } from '@/backend/interfaces/tag/request'
-import SearchTagComboBox from '@/components/ui/SearchComboBox'
+import SearchTagComboBox from '@/frontend/components/ui/SearchComboBox'
 import { SearchParams } from 'typesense/lib/Typesense/Documents';
 import { ProjectType, HAInstallType } from '@/backend/interfaces/project'
-import { ProjectTypeSelectDropdownBox } from '@/components/ui/ProjectTypeSelectDropdownBox'
+import { ProjectTypeSelectDropdownBox } from '@/frontend/components/ui/ProjectTypeSelectDropdownBox'
 
 import { FileInput } from '@mantine/core';
-import { HAInstallTypeSelectDropdownBox } from '@/components/ui/HAInstallTypeSelectDropdownBox'
+import { HAInstallTypeSelectDropdownBox } from '@/frontend/components/ui/HAInstallTypeSelectDropdownBox'
 import { AddProjectResponse, MAX_FILE_SIZE } from '@/backend/interfaces/project/request'
 
 
-import ProjectGrid from '@/components/project/ProjectGrid';
+import ProjectGrid from '@/frontend/components/project/ProjectGrid';
 
 
 export function CreateNewProject() {

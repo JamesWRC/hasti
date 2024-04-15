@@ -1,9 +1,9 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import axios from 'axios';
-import { getGitHubUserToken, updateGitHubUserToken } from '@/pages/helpers/user';
-import { UserJWT } from '@/interfaces/user';
+import { getGitHubUserToken, updateGitHubUserToken } from '@/backend/pages/helpers/user';
+import { UserJWT } from '@/backend/interfaces/user';
 import { jwtVerify } from 'jose';
-import prisma from '@/clients/prisma/client';
+import prisma from '@/backend/clients/prisma/client';
 import { User } from '@prisma/client';
 
 

@@ -1,7 +1,7 @@
 import cx from 'clsx';
 import { useState } from 'react';
 import { Table, ScrollArea } from '@mantine/core';
-import classes from '@/app/page.module.css';
+import classes from '@/frontend/app/page.module.css';
 import { Container, Grid, SimpleGrid, Skeleton, rem } from '@mantine/core';
 import { Button } from '@mantine/core';
 

@@ -3,7 +3,7 @@ import './globals.css'
 import '@mantine/core/styles.css';
 
 // Imports
-import MainLayout from '@/app/mainLayout'
+import MainLayout from '@/frontend/app/mainLayout'
 import Head from './head'
 
 import { MantineProvider, ColorSchemeScript } from '@mantine/core';
@@ -12,7 +12,7 @@ import React from 'react';
 import { auth } from "./auth"
 import { SessionProvider } from "next-auth/react"
 
-// import { NextAuthProvider } from '@/app/providers'
+// import { NextAuthProvider } from '@/frontend/app/providers'
 
 export default async function RootLayout({
   children,

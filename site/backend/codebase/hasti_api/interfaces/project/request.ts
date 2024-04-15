@@ -1,5 +1,5 @@
 import { Project } from "@prisma/client";
-import type { ProjectWithUser, ProjectType } from '@/interfaces/project';
+import type { ProjectWithUser, ProjectType } from '@/backend/interfaces/project';
 
 export const MAX_FILE_SIZE:number = 10 * 1024 * 1024 // 10MB. this is actually 10.48576MB... but let's just call it 10MB :)
 export interface AddProjectResponse {

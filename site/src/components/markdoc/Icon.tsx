@@ -1,12 +1,12 @@
 import { useId } from 'react'
 import clsx from 'clsx'
 
-import { InstallationIcon } from '@/components/markdoc/icons/InstallationIcon'
-import { LightbulbIcon } from '@/components/markdoc/icons/LightbulbIcon'
-import { PluginsIcon } from '@/components/markdoc/icons/PluginsIcon'
-import { PresetsIcon } from '@/components/markdoc/icons/PresetsIcon'
-import { ThemingIcon } from '@/components/markdoc/icons/ThemingIcon'
-import { WarningIcon } from '@/components/markdoc/icons/WarningIcon'
+import { InstallationIcon } from '@/frontend/components/markdoc/icons/InstallationIcon'
+import { LightbulbIcon } from '@/frontend/components/markdoc/icons/LightbulbIcon'
+import { PluginsIcon } from '@/frontend/components/markdoc/icons/PluginsIcon'
+import { PresetsIcon } from '@/frontend/components/markdoc/icons/PresetsIcon'
+import { ThemingIcon } from '@/frontend/components/markdoc/icons/ThemingIcon'
+import { WarningIcon } from '@/frontend/components/markdoc/icons/WarningIcon'
 
 const icons = {
   installation: InstallationIcon,

@@ -1,6 +1,6 @@
-import { UserJWT } from "@/interfaces/user";
-import type { JWTBodyRequest } from "@/interfaces/user/requests";
-import prisma from "@/clients/prisma/client";
+import { UserJWT } from "@/backend/interfaces/user";
+import type { JWTBodyRequest } from "@/backend/interfaces/user/request";
+import prisma from "@/backend/clients/prisma/client";
 import { User } from "@prisma/client";
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 import { jwtVerify } from "jose";

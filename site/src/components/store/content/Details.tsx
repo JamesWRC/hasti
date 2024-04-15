@@ -1,4 +1,4 @@
-import SidePaneContent from '@/components/store/content/SidePanelContent'
+import SidePaneContent from '@/frontend/components/store/content/SidePanelContent'
 
 const people = [
     { title: 'Developer', description: 'INSERT DEVELOPER NAME HERE'},

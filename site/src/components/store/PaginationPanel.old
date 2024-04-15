@@ -3,7 +3,7 @@ import { ArrowLongLeftIcon, ArrowLongRightIcon } from "@heroicons/react/24/outli
 import { useEffect, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
-import DescriptionItem from '@/components/store/DescriptionItem';
+import DescriptionItem from '@/frontend/components/store/DescriptionItem';
 const arrayRange = (start: number, stop: number, step: number) =>
     Array.from({ length: (stop - start) / step + 1 },
         (value, index) => start + index * step

@@ -1,6 +1,6 @@
 // import { getServerSession } from "next-auth/next"
 
-import { auth } from "@/app/auth"
+import { auth } from "@/frontend/app/auth"
 import { SignIn, SignOut } from "../authComp"
 import { Session } from 'next-auth';
 

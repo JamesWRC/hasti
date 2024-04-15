@@ -1,5 +1,5 @@
-import { auth } from '@/app/auth'
-import UpdateRepoAccess from '@/components/user/UpdateRepoAccess'
+import { auth } from '@/frontend/app/auth'
+import UpdateRepoAccess from '@/frontend/components/user/UpdateRepoAccess'
 import { PaperClipIcon } from '@heroicons/react/20/solid'
 
 

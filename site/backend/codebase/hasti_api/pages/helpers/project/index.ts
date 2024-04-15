@@ -1,8 +1,8 @@
-import prisma from "@/clients/prisma/client";
+import prisma from "@/backend/clients/prisma/client";
 import markdownit from 'markdown-it'
 import AWS from 'aws-sdk';
 
-import { getGitHubUserToken } from "@/pages/helpers/user";
+import { getGitHubUserToken } from "@/backend/pages/helpers/user";
 
 export async function updateContent(repoID: string, projectID: string, userID: string) {
 

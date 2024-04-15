@@ -1,6 +1,6 @@
-import { UserProjectCountResponse } from '@/interfaces/user/request';
-import { JWTResult, handleUserJWTPayload } from '@/pages/helpers/user';
-import prisma from '@/clients/prisma/client';
+import { UserProjectCountResponse } from '@/backend/interfaces/user/request';
+import { JWTResult, handleUserJWTPayload } from '@/backend/pages/helpers/user';
+import prisma from '@/backend/clients/prisma/client';
 import { User } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 
