@@ -9,6 +9,7 @@ import {
   BellIcon
 } from '@heroicons/react/24/outline'
 import { useSession } from 'next-auth/react';
+import { GetNotificationsQueryParams } from '@/interfaces/notification/request';
 
 
 const UserNavigation: React.FC = () => {

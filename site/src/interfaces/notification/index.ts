@@ -7,6 +7,6 @@ import { GetNotificationsQueryParams } from '@/backend/interfaces/notification/r
 
 export interface LoadNotifications {
     reqStatus: string,
-    loadedNotifications: Notification[]
+    loadedNotifications: Notification[] | null
     setSearchProps: React.Dispatch<React.SetStateAction<GetNotificationsQueryParams>>
   }

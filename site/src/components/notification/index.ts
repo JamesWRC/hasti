@@ -78,7 +78,7 @@ export default function useNotifications({...props}: GetNotificationsQueryParams
 
     const retVal:LoadNotifications = {
         reqStatus,
-        loadedNotifications: notifications ? notifications.notifications : null,
+        loadedNotifications: notifications.notifications || null,
         setSearchProps: setSearchProps
     }
     return retVal;

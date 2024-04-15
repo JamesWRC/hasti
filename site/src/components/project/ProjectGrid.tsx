@@ -11,10 +11,15 @@ import { Grid } from '@mantine/core';
 
 import type { ProjectWithUser } from '@/backend/clients/prisma/client'
 import useProjects from '@/components/project'
+import { GetProjectsQueryParams } from '@/backend/interfaces/project/request';
 
 export default function ProjectGrid() {
+    const fetchProjects:GetProjectsQueryParams = {
+      limit: 2
+      
+    }
 
-    const {projects, reqStatus} = useProjects({});
+    const {projects, reqStatus} = useProjects(fetchProjects);
 
 
     return (

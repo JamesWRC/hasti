@@ -23,5 +23,7 @@ export interface GetProjectsQueryParams {
     userID?: string;
     username?: string;
     githubUserID?: number;
+    orderBy?: 'createdAt' | 'updatedAt' | 'title' | 'author';
+    orderDirection?: 'asc' | 'desc';
 
 }

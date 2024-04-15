@@ -98,12 +98,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 }
             }
 
-            // query.include = {
-            //     user: true
-            // }
-
-            // const users:ProjectWithUser = await prisma.project.findMany({ include: { user: true } })
-            console.log('query:', query)
+            // set order by and direction
+            if(queryParams.orderBy){
+                // Will order by the defined field, default is descending
+                query.orderBy ={
+                    [queryParams.orderBy]: queryParams.orderDirection ? queryParams.orderDirection : 'desc'
+                }
+            }else{
+                // Default order by is createdAt, descending
+                query.orderBy = {
+                    createdAt: 'desc'
+                }
+            }
 
 
             const projects:ProjectWithUser[] = await prisma.project.findMany({...query, include: {user:true}})

@@ -1,6 +1,6 @@
 
 import type { Notification } from "@prisma/client";
-import type { NotificationAbout, NotificationType } from '@/interfaces/notification';
+import { NotificationAbout, NotificationType } from '@/interfaces/notification';
 
 export interface GetNotificationsQueryParams {
     limit?: number;
@@ -10,6 +10,8 @@ export interface GetNotificationsQueryParams {
     userID?: string;
     username?: string;
     githubUserID?: number;
+    orderBy?: 'createdAt' | 'updatedAt' | 'title' | 'author';
+    orderDirection?: 'asc' | 'desc';
 }
 
 export interface GetNotificationsResponse {

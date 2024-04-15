@@ -230,7 +230,7 @@ export default function Notifications() {
 
           </li>
 
-        )) : (notifications.length === 0 && loadedNotifications.length !== 0) ? loadedNotifications.map((notification: Notification, notificationIndex: number) => ( 
+        )) : (notifications.length === 0 && loadedNotifications && loadedNotifications.length !== 0) ? loadedNotifications.map((notification: Notification, notificationIndex: number) => ( 
           <li key={`notif-skeleton-${notification.id}`} className="relative flex gap-x-4 first:pt-4 md:first:pt-8 last:pb-24 md:last:pb-12 pl-12">
                         <div
               className={classNames(
@@ -242,7 +242,7 @@ export default function Notifications() {
             {renderSkeletonPlaceholder(notification, notificationIndex)}
           </li>
           ))
-        :  <div className='p-10'>no notifs{notifications.length} | {loadedNotifications.length} | {loading}</div> }
+        :  <div className='p-10'>No Notifications</div> }
 
       </ul>
       <div className=' justify-self-center text-content-body '>
