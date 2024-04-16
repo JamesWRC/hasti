@@ -1,6 +1,12 @@
 Welcome to Alpha release of Eufy Security Integration for Home Assistant. Congratulations on being a brave heart and trying this version.
  
 - [Gratitude](#gratitude)
+          - [Gratitude](#gratitude-1)
+        - [Gratitude](#gratitude-2)
+      - [Gratitude](#gratitude-3)
+    - [Gratitude](#gratitude-4)
+  - [Gratitude](#gratitude-5)
+- [Gratitude](#gratitude-6)
 - [How is this working?](#how-is-this-working)
 - [Supported or Known Working devices](#supported-or-known-working-devices)
 - [Installation](#installation)
@@ -20,6 +26,15 @@ Welcome to Alpha release of Eufy Security Integration for Home Assistant. Congra
   - [Features](#features-1)
   - [Contributing](#contributing)
   - [License](#license)
+
+###### Gratitude
+##### Gratitude
+#### Gratitude
+### Gratitude
+## Gratitude
+# Gratitude
+
+- @bropat for building docker image (https://github.com/bropat/eufy-security-ws) so I can wrap it as Home Assistant Add-on. You can also thank him over here: https://ko-fi.com/bropat
 
 # Gratitude
 - @bropat for building docker image (https://github.com/bropat/eufy-security-ws) so I can wrap it as Home Assistant Add-on. You can also thank him over here: https://ko-fi.com/bropat

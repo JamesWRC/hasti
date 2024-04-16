@@ -5,7 +5,7 @@ import { MultiSelect } from '@mantine/core';
 import { useDebouncedState } from '@mantine/hooks';
 import { useSession } from 'next-auth/react'
 import { TagSearchResponse } from '@/backend/interfaces/tag/request'
-import { SearchParams } from 'typesense/lib/Typesense/Documents';
+import { SearchParams } from '@/backend/interfaces/tag/request';
 import { GetInputProps } from '@mantine/form/lib/types';
 
 export default function SearchComboBox({

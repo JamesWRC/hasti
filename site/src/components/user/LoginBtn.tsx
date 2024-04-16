@@ -15,7 +15,7 @@ export default async function Component() {
       >
       <img
         className="h-8 w-8 rounded-full bg-gray-50"
-        src={session.user.image}
+        src={session.user.image || 'undefined_user_img'}
         alt=""
       />
       {/* <span className="sr-only">Your profile {session.user.name}</span> */}

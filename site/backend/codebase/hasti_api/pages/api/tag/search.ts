@@ -11,7 +11,7 @@ export default async function searchTags(
         const query = req.query;
         console.log('query', query);
 
-        let searchParameters = {
+        let searchParameters:SearchParams = {
             'q'         : query.q as string,
             'query_by'  : query.query_by as string,
             ...query

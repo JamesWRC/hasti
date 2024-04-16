@@ -89,6 +89,20 @@ function generatePlaceHolderProjects(count:number):GetProjectsResponse {
 
 
     const userProject:ProjectWithUser = {
+      id: random.toString(),
+      title: "Project Title",
+      content: "Project Content",
+      description: "Project Description",
+      published: true,
+      userID: i.toString(),
+      repoID: i.toString(),
+      haInstallType: "ha",
+      projectType: "project",
+      profileImage: "SKELETON",
+      backgroundImage: "SKELETON",
+      contentImages: ["SKELETON"],
+      createdAt: new Date(),
+      updatedAt: new Date(),
       user: {
         id: random.toString(),
         githubID: i,
@@ -97,23 +111,7 @@ function generatePlaceHolderProjects(count:number):GetProjectsResponse {
         ghuToken: "Name",
         createdAt: new Date(),
         updatedAt: new Date(),
-      },
-      project: {
-        id: random.toString(),
-        title: "Project Title",
-        content: "Project Content",
-        description: "Project Description",
-        published: true,
-        userID: i.toString(),
-        repoID: i.toString(),
-        haInstallType: "ha",
-        projectType: "project",
-        profileImage: "SKELETON",
-        backgroundImage: "SKELETON",
-        contentImages: ["SKELETON"],
-        createdAt: new Date(),
-        updatedAt: new Date()
-      },
+      }
     }
     userProjects.push(userProject);
   }

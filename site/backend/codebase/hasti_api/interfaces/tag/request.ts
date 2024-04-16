@@ -1,3 +1,4 @@
+export type {SearchParams} from 'typesense/lib/Typesense/Documents';
 export interface TagSearchResponse {
     facet_counts:   any[];
     found:          number;

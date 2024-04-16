@@ -18,7 +18,7 @@ import { TextInput, Textarea, } from '@mantine/core';
 import { useSession } from 'next-auth/react'
 import { TagSearchResponse } from '@/backend/interfaces/tag/request'
 import SearchTagComboBox from '@/frontend/components/ui/SearchComboBox'
-import { SearchParams } from 'typesense/lib/Typesense/Documents';
+import { SearchParams } from '@/backend/interfaces/tag/request';
 import { ProjectType, HAInstallType } from '@/backend/interfaces/project'
 import { ProjectTypeSelectDropdownBox } from '@/frontend/components/ui/ProjectTypeSelectDropdownBox'
 
@@ -35,36 +35,20 @@ import ProjectGrid from '@/frontend/components/project/ProjectGrid';
 
 
   export default function Page() {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const [opened, { open, close }] = useDisclosure(false);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+
     const [selectRepo, setSelectedRepo] = useState<Repo | null>(null)
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const [projectType, setProjectType] = useState<ProjectType>();
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const [haInstallType, setHaInstallType] = useState<HAInstallType>(HAInstallType.ANY);
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const [tags, setTags] = useState(['']);
-    // eslint-disable-next-line react-hooks/rules-of-hooks
+
     const [existingTags, setExistingTags] = useState(['']);
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const { data: session, status } = useSession()
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const [iconImage, setIconImage] = useState<File | null>(null);
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const [backgroundImage, setBackgroundImage] = useState<File | null>(null);
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const [loading, setLoading] = useState<boolean>(false);
-
-    // eslint-disable-next-line react-hooks/rules-of-hooks
     const [projectResponse, setProjectResponse] = useState<AddProjectResponse>({ success: true, message: '' });
+    
+    const { data: session, status } = useSession()
 
 
     // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -99,8 +83,7 @@ import ProjectGrid from '@/frontend/components/project/ProjectGrid';
     // eslint-disable-next-line react-hooks/rules-of-hooks
     useEffect(() => {
       const fetchPopularTags = async () => {
-
-        const params = new URLSearchParams({
+        const searchParams = new URLSearchParams({
           q: '*', // Get most popular tags
           query_by: 'name',
           filter_by: 'type:integration',
@@ -110,7 +93,7 @@ import ProjectGrid from '@/frontend/components/project/ProjectGrid';
           per_page: '10'
         })
 
-        const res = await fetch(`${process.env.API_URL}/api/tag/search?` + params, {
+        const res = await fetch(`${process.env.API_URL}/api/tag/search?` + searchParams, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

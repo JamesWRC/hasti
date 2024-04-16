@@ -100,8 +100,6 @@ function setAboutIcon(notification: Notification): React.ReactNode {
   <div className='text-bold flex justify-between'>Event type:<div className='text-sm'>{notification.about}</div></div>
   <div className='text-bold flex justify-between'>Title:<div className='text-sm'>{notification.title}</div></div>
 
-  {/* <div className='text-bold'>About</div><div className='text-sm'>{notification.about}</div>
-  <div className='text-bold'>Title</div><div className='text-sm'>{notification.title}</div> */}
   <div className='text-bold'>Notified at:</div><div className='text-sm'>{new Date(notification.createdAt).toISOString()}</div>
 </HoverCard.Dropdown>
   </HoverCard>
