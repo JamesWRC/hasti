@@ -28,7 +28,7 @@ export default async function updateContent(repoID: string, projectID: string, u
         }
     })
 
-    // get user's token
+    // get user's token 
     const user = await prisma.user.findUnique({
         where: {
             id: userID
