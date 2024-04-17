@@ -12,7 +12,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import fs from 'fs';
 import { AddProjectResponse, MAX_FILE_SIZE } from '@/backend/interfaces/project/request';
 import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
-import { updateContent } from '@/backend/pages/helpers/project';
+import updateContent from '@/backend/pages/helpers/project';
 
 export const config = {
     api: {

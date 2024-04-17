@@ -4,7 +4,7 @@ import AWS from 'aws-sdk';
 
 import { getGitHubUserToken } from "@/backend/pages/helpers/user";
 
-export async function updateContent(repoID: string, projectID: string, userID: string) {
+export default async function updateContent(repoID: string, projectID: string, userID: string) {
 
 
     // Init s3
@@ -21,7 +21,7 @@ export async function updateContent(repoID: string, projectID: string, userID: s
     // get repo owner and name
     const repo = await prisma.repo.findUnique({
         where: {
-            id: repoID
+            id: repoID as string
         },
         select: {
             fullName: true

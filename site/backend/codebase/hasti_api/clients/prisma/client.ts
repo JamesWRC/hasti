@@ -15,7 +15,7 @@ if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 // Hacky way to create type for what a find many query WITH the user relation is included.
 async function getProjectWithUser() {
-  return await prisma.project.findFirst({ include: { user: true } })
+  return await prisma.project.findFirst({where: {id: 'null'}, include: { user: true } })
 }
 // Extract `ProjectWithUser` type with
 type ThenArg<T> = T extends PromiseLike<infer U> ? U : T

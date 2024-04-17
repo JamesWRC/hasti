@@ -10,7 +10,7 @@ COPY --from=dependencies /home/app/node_modules ./node_modules
 COPY ./codebase/hasti_api .
 ENV NEXT_TELEMETRY_DISABLED 1
 ENV NODE_ENV=production
-RUN yarn prisma generate
+RUN yarn prisma generate --schema=clients/prisma/schema.prisma
 RUN yarn build
 FROM node:20.5.0-alpine AS runner
 WORKDIR /home/app

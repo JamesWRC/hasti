@@ -6,7 +6,7 @@ import { request } from "https"
 
 
 // Add repository to the database
-export async function addOrUpdateRepo(repo: RepositoryData, user: User) {
+export default async function addOrUpdateRepo(repo: RepositoryData, user: User) {
   // Add repo to database
   const repoExists = await prisma.repo.findUnique({
     where: {

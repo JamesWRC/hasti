@@ -1,5 +1,5 @@
 import { GitHubAddRepoRequest } from '@/backend/interfaces/repo';
-import { addOrUpdateRepo, removeRepo } from '@/backend/pages/helpers/repo';
+import addOrUpdateRepo, { removeRepo } from '@/backend/pages/helpers/repo';
 import prisma from '@/backend/clients/prisma/client';
 import { User } from '@prisma/client';
 import crypto from 'crypto';

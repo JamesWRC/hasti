@@ -20,7 +20,7 @@ const key = Buffer.from(DB_ENCRYPTION_KEY, 'utf-8');
 const JWT_SECRET__KEY = process.env.JWT_SECRET_KEY as string
 
 
-export async function addOrUpdateUser(user: JWTBodyRequest): Promise<User|null> {
+export default async function addOrUpdateUser(user: JWTBodyRequest): Promise<User|null> {
   // Add user to database
   const userExists = await prisma.user.findUnique({
     where: {

@@ -11,7 +11,7 @@ import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 import { JWTBodyRequest, JWTBodyResponse } from '@/backend/interfaces/user/request';
 import type { UserJWT, UserJWTPayload } from '@/backend/interfaces/user';
 import prisma from '@/backend/clients/prisma/client';
-import { addOrUpdateUser } from '@/backend/pages/helpers/user';
+import addOrUpdateUser from '@/backend/pages/helpers/user';
 import { User } from '@prisma/client';
 
 const JWT_SECRET__KEY = process.env.JWT_SECRET_KEY as string
