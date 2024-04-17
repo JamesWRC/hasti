@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "vercel-install": "next install --production --prefer-offline",
+    "vercel-build": "/bin/sh -c 'cd backend/codebase/hasti_api/ && yarn run vercel-install && cd - && yarn run vercel-install'"
   },
   "dependencies": {
     "@algolia/autocomplete-core": "^1.12.1",
