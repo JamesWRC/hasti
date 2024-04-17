@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "vercel-install": "cd backend/codebase/hasti_api/ && install --production --prefer-offline && cd - && install --production --prefer-offline"
+    "vercel-install": "cd backend/codebase/hasti_api/ && yarn install --production --prefer-offline && cd - && yarn install --production --prefer-offline"
   },
   "dependencies": {
     "@algolia/autocomplete-core": "^1.12.1",
