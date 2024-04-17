@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "vercel-install": "yarn install && cd backend/codebase/hasti_api/ && yarn install --production --prefer-offline"
+    "vercel-install": "yarn install && cd backend/codebase/hasti_api/ && yarn install --production --prefer-offline && yarn prisma generate --schema=clients/prisma/schema.prisma"
   },
   "dependencies": {
     "@algolia/autocomplete-core": "^1.12.1",
