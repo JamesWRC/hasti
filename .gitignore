@@ -1,3 +1,7 @@
 
 site/backend/codebase/search_engine/typesense-data*
 *.env
+/.next
+/backend/codebase/hasti_api/.next
+/backend/codebase/hasti_api/node_modules
+/node_modules
