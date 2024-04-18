@@ -2,7 +2,7 @@ version: "3.8"  # optional since v1.27.0
 services:
   hastidb:
     image: postgres:14-alpine
-    container_name: hastidb
+    container_name: hastidb-prod
     ports:
       - 5432:5432
     networks:
@@ -46,14 +46,14 @@ services:
   ###                                           ###
   #################################################
   hasti-db-backup:
-    container_name: hasti-db-backup
+    container_name: hasti-prod-db-backup
     image: tiredofit/db-backup
     links:
      - hastidb:hastidb
     networks:
       - hastinet
     volumes:
-      - /mnt/dbstore/databases/backups:/backup
+      - /mnt/dbstore/databases/hasti/prod/backups:/backup
       #- ./post-script.sh:/assets/custom-scripts/post-script.sh
     env_file:
       - .env
