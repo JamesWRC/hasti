@@ -1,27 +1,39 @@
-# TESTING WITH EUFY INTEGRATION READ ME AS ITS A GREAT EXAMPLE OF DIFFERENT MARKDOWN CONTENT
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
-# Debugging Issues
+## Getting Started
 
-First, check all issues (open or close) to find out if there was any similar question rather than duplicating it.
-Focus on enabling push notification settings, lowering camera streaming/recording quality and removing any network level isoloation/restriction. Most of the issues could be eliminated via these.
-Later on, if you find a similar issue, please just put +1 on it, sharing same logs over and over does not help at all.
-Lastly, create your issue following the template. I will probably ask follow up questions later on.
+First, run the development server:
 
-I am more than happy to debug individual issues as long as you follow setup instructions. I need you to share your problematic cameras with me so that I can use my own machine to debug the issue. For each debugging request, please create a github issue so we can track from there. Do not forget to remove the sharing settings after we are done :)
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+```
 
-- If you are located in EU, use my account: fuatakgun@gmail.com
-- If you are located in US, use shared test account: eufydeveloper@gmail.com
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-To schedule the time, please use this link: https://calendly.com/fuatakgun/office-hour
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-# Show Off
+[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.ts`.
 
-![image](https://user-images.githubusercontent.com/11085566/210081589-43ce2e52-a9e7-4f25-9238-bcdd6212852d.png)
-![image](https://user-images.githubusercontent.com/11085566/210081619-6cc1e0d1-ecca-49ee-b18c-d1348db1feee.png)
-![image](https://user-images.githubusercontent.com/11085566/210081657-a839623a-1d89-4a15-93d9-1025fd44803d.png)
-![image](https://user-images.githubusercontent.com/11085566/210081673-b2a92eaa-9763-4913-a955-c6a48753d5ba.png)
-![image](https://user-images.githubusercontent.com/11085566/210081687-148d63d4-9bf8-4d47-81f1-6ed09584141a.png)
-![image](https://user-images.githubusercontent.com/11085566/210081954-14e83d45-7bc6-4623-b13b-fb458d0caad5.png)
-![image](https://user-images.githubusercontent.com/11085566/210081967-46926dad-55de-4a36-b4ba-a4b6ae99c7ac.png)
+The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
 
-https://user-images.githubusercontent.com/11085566/210083674-bbf082ab-5f20-4d1c-ab61-e687c7ce7506.mp4
+This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+

@@ -1,0 +1,14 @@
+# Use postgres/example user/password credentials
+version: '3.9'
+
+services:
+  typesense:
+    image: typesense/typesense:26.0
+    restart: unless-stopped
+    ports:
+      - "${TYPESENSE_PORT}:8108"
+    volumes:
+      - /mnt/dbstore/typesense/data:/data
+    env_file:
+      - .env
+    command: '--data-dir /data --api-key=${TYPESENSE_KEY} --enable-cors'
