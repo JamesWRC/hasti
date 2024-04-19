@@ -8,7 +8,7 @@ services:
     ports:
       - "${TYPESENSE_PORT}:8108"
     volumes:
-      - /mnt/dbstore/typesense/data:/data
+      - ${TYPESENSE_HOST_PATH}:/data
     env_file:
       - .env
     command: '--data-dir /data --api-key=${TYPESENSE_KEY} --enable-cors'
