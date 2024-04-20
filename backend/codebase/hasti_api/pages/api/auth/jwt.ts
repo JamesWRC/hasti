@@ -54,7 +54,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } else if (req.method === 'POST') {
 
         // get body from request
-        const body:JWTBodyRequest = await req.body
+        const body:JWTBodyRequest = await req.body as JWTBodyRequest
         let response:JWTBodyResponse = {
             success: false,
             jwt: '',

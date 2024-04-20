@@ -13,7 +13,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method === 'GET') {
         try {
             const reqHeaders = req.headers;
-            const token = reqHeaders.authorization?.replace('Bearer ', '') as string;
+            const token = reqHeaders.authorization?.replace('Bearer ', '')
             // const tokenResult:JWTResult<User, string> = await handleUserJWTPayload(token)
 
             // if(!tokenResult.success){

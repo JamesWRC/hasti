@@ -3,7 +3,7 @@ import prisma from '@/backend/clients/prisma/client';
 import { Project, User } from '@prisma/client';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { NextRequest } from 'next/server';
-import * as formidable from 'formidable';
+import { IncomingForm, Fields, Files, Options } from 'formidable';
 
 import { PutObjectCommand, S3, S3Client } from "@aws-sdk/client-s3";
 import AWS from 'aws-sdk';
@@ -31,7 +31,7 @@ export const config = {
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method === 'POST') {
         try {
-            const options: formidable.Options = {
+            const options: Options = {
                 maxFileSize: MAX_FILE_SIZE,
                 keepExtensions: true,
               };
@@ -52,11 +52,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 return res.status(401).json({ message: 'Unauthorized. Bad user.' });
             }
             try{
-                const form = new formidable.IncomingForm(options);
+                const form = new IncomingForm(options);
 
-                const { code, json } = await new Promise<{ code: any, json: any }>((resolve, reject) => {
+                const { code, json } = await new Promise<{ code: number, json: Object }>((resolve, reject) => {
 
-                    form.parse(req, async (err, fields, files) => {
+                    form.parse(req, async function(err, fields:Fields, files:Files) {
                         if (err) {
 
                             // File size too large code
@@ -92,13 +92,34 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                             return resolve({code: 500, json: response});
                         }
                         
+                        if(!fields || !files){
+                            const response:AddProjectResponse = {
+                                success: false,
+                                message: 'Missing form fields or files.',
+                            }
+                            return resolve({code: 400, json: response});
+                        }
+
+                        if(!(fields.repositoryID instanceof Array 
+                            && fields.repositoryID instanceof Array
+                            && fields.projectType instanceof Array
+                            && fields.haInstallType instanceof Array
+                            && fields.name instanceof Array
+                            && fields.description instanceof Array
+                            && fields.tags instanceof Array)){
+                            const response:AddProjectResponse = {
+                                success: false,
+                                message: 'Invalid form field types.',
+                            }
+                            return resolve({code: 400, json: response});
+                        }
                         // Get form fields
-                        const repositoryID:string|null = fields.repositoryID ? fields.repositoryID[0] : null;
-                        const projectType:string|null = fields.projectType ? fields.projectType[0] : null;
-                        const haInstallType:string|null = fields.haInstallType ? fields.haInstallType[0] : null;
-                        const title:string|null = fields.name ? fields.name[0] : null; // The name becomes the title
-                        const description:string|null = fields.description ? fields.description[0] : null;
-                        const tags:string|null = fields.tags ? fields.tags[0] : null;
+                        let repositoryID:string = fields.repositoryID[0];
+                        const projectType:string = fields.projectType[0]
+                        const haInstallType:string = fields.haInstallType[0]
+                        const title:string = fields.name[0]; // The name becomes the title
+                        const description:string = fields.description[0];
+                        const tags:string = fields.tags[0];
                         
                         console.log(repositoryID, projectType, haInstallType, title, description, tags)
         
@@ -204,6 +225,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                             })
 
                             // Update content and images
+                            // if(repositoryID instanceof String && repoID instanceof String && userID instanceof String){
+                            // }
+                            repositoryID = "as"
                             const updateResponse = await updateContent(repositoryID, addProject.id, user.id)
 
                             if (!updateResponse.success) {

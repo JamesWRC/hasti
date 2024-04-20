@@ -1,8 +1,9 @@
-import prisma from "@/backend/clients/prisma/client";
+import prisma from '@/backend/clients/prisma/client';
 import markdownit from 'markdown-it'
 import AWS from 'aws-sdk';
 
 import { getGitHubUserToken } from "@/backend/pages/helpers/user";
+import isNotString from "@/backend/pages/helpers";
 
 export default async function updateContent(repoID: string, projectID: string, userID: string) {
 
@@ -17,11 +18,29 @@ export default async function updateContent(repoID: string, projectID: string, u
 
 
     const token = "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"
+    
+    if (isNotString(repoID)) {
+        return { success: false, message: "Invalid repo ID." }
+    }
+
+    if (isNotString(projectID)) {
+        return { success: false, message: "Invalid project ID." }
+    }
+
+    if (isNotString(userID)) {
+        return { success: false, message: "Invalid user ID." }
+    }
+    
+
+    console.log("repoID", repoID)
+    console.log(typeof repoID)
+    console.log(repoID === null)
+    console.log(repoID === undefined)
 
     // get repo owner and name
     const repo = await prisma.repo.findUnique({
         where: {
-            id: repoID as string
+           id: repoID as string
         },
         select: {
             fullName: true

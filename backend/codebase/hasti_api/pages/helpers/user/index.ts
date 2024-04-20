@@ -21,6 +21,12 @@ const JWT_SECRET__KEY = process.env.JWT_SECRET_KEY as string
 
 
 export default async function addOrUpdateUser(user: JWTBodyRequest): Promise<User|null> {
+
+  // Check if user is valid
+  if(!user.user || !user.user.id || !user.user.username || !user.user.image){
+    return null
+  }
+
   // Add user to database
   const userExists = await prisma.user.findUnique({
     where: {
