@@ -46,7 +46,7 @@ export default function UpdateRepoAccess() {
             }
             try {
               // API Call 1
-              const response1 = await fetch(`${process.env.API_URL}/api/auth/gitUserToken`, {
+              const response1 = await fetch(`${process.env.API_URL}/api/v1/auth/gitUserToken`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
@@ -64,7 +64,7 @@ export default function UpdateRepoAccess() {
               await new Promise(resolve => setTimeout(resolve, 1000));
 
               // API Call 2
-              const response2 = await fetch(`${process.env.API_URL}/api/auth/gitUserToken`, {
+              const response2 = await fetch(`${process.env.API_URL}/api/v1/auth/gitUserToken`, {
                   method: 'GET',
                   headers: {
                     'Content-Type': 'application/json',

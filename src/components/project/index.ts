@@ -37,7 +37,7 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
         console.log("queryStr: ", queryStr)
         // sleep for 2 seconds to simulate a slow network
         await new Promise((resolve) => setTimeout(resolve, 4000));
-        const response = await fetch(`${process.env.API_URL}/api/project` + queryStr, {
+        const response = await fetch(`${process.env.API_URL}/api/v1/projects` + queryStr, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',

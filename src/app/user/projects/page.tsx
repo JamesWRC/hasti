@@ -93,7 +93,7 @@ import ProjectGrid from '@/frontend/components/project/ProjectGrid';
           per_page: '10'
         })
 
-        const res = await fetch(`${process.env.API_URL}/api/tag/search?` + searchParams, {
+        const res = await fetch(`${process.env.API_URL}/api/v1/tags/search?` + searchParams, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -160,7 +160,7 @@ import ProjectGrid from '@/frontend/components/project/ProjectGrid';
         }
 
 
-        const response = await fetch(`${process.env.API_URL}/api/project/add`, {
+        const response = await fetch(`${process.env.API_URL}/api/v1/projects/add`, {
           method: 'POST',
           body: formData,
           headers: {

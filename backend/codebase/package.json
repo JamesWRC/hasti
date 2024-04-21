@@ -1,0 +1,42 @@
+{
+  "name": "codebase",
+  "version": "1.0.0",
+  "description": "Hasti API",
+  "main": "index.ts",
+  "repository": "https://github.com/jameWRC/hasti",
+  "author": "JamesWRC",
+  "target": "ES2020",
+  "module": "commonjs",
+  "scripts": {
+    "dev": "nodemon",
+    "start": "node index.ts",
+    "build": "yarn build",
+    "test": "echo \"Error: no tests atm ;)\" && exit 1"
+  },
+  "license": "GPL",
+  "private": false,
+  "dependencies": {
+    "@babel/runtime": "^7.24.4",
+    "@prisma/client": "^5.12.1",
+    "@types/aws-sdk": "^2.7.0",
+    "@types/cors": "^2.8.17",
+    "@types/csurf": "^1.11.5",
+    "@types/express": "^4.17.21",
+    "@types/formidable": "^3.4.5",
+    "@types/markdown-it": "^14.0.1",
+    "aws-sdk": "^2.1603.0",
+    "cors": "^2.8.5",
+    "csurf": "^1.11.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "formidable": "^3.5.1",
+    "markdown-it": "^14.1.0",
+    "nodemon": "^3.1.0",
+    "prisma": "^5.12.1",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typesense": "^1.8.2",
+    "winston": "^3.13.0",
+    "winston-daily-rotate-file": "^5.0.0"
+  }
+}

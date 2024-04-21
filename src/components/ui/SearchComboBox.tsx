@@ -49,7 +49,7 @@ export default function SearchComboBox({
                 searchParams.q = debounceValue
                 const params = new URLSearchParams(searchParams as Record<string, any>)
 
-                const res = await fetch(`${process.env.API_URL}/api/tags/search?` + params, {
+                const res = await fetch(`${process.env.API_URL}/api/v1/tags/search?` + params, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',

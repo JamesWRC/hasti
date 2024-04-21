@@ -21,7 +21,7 @@ export default function SelectRepo({ selectRepo, setSelectRepo }: { selectRepo: 
 
     useEffect(() => {
         const fetchRepos = async () => {
-            const res = await fetch(`${process.env.API_URL}/api/user/repos`, {
+            const res = await fetch(`${process.env.API_URL}/api/v1/repos/exampleUserID`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
