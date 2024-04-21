@@ -448,7 +448,6 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                         // Update content and images
                         // if(repositoryID instanceof String && repoID instanceof String && userID instanceof String){
                         // }
-                        repositoryID = "as"
                         const updateResponse = await updateContent(repositoryID, addProject.id, user.id)
 
                         if (!updateResponse.success) {
