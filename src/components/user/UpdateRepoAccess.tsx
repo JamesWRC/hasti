@@ -38,7 +38,9 @@ export default function UpdateRepoAccess() {
             const code = searchParams.get('code') as string
             const installation_id = searchParams.get('installation_id') as string
             const setup_action = searchParams.get('setup_action') as string
-
+            if(!code || !installation_id || !setup_action){
+              return false
+            }
             const reqBody:GitHubUserTokenRequest = {
               code: code,
               installation_id: installation_id,

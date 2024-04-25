@@ -11,9 +11,11 @@ import { getAllNotificationAbout, getAllNotificationTypes } from '@/backend/app/
 import logger from '../logger';
 import type { SearchResponse } from '@/backend/app/interfaces/search';
 import tsClient from '@/backend/app/clients/typesense';
-import { GitHubAddRepoRequest } from '@/backend/app/interfaces/repo';
+import { GHAppInstallation, GHAppSenderWHSender, GitHubRepoRequest, RepositoryData } from '@/backend/app/interfaces/repo';
 import verifySignature from '@/backend/app/helpers/webhook';
-import addOrUpdateRepo, { removeRepo } from '@/backend/app/helpers/repo';
+import addOrUpdateRepo, { removeRepo, setGitAppHasAccess } from '@/backend/app/helpers/repo';
+import { getGitHubUserToken } from '../helpers/user';
+import { getGitHubUserAuth } from '../helpers/auth/GitHub';
 
 const webhookRouter = Router();
 
@@ -25,17 +27,38 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
         const signature = req.headers['x-hub-signature'] as string;
         const event = req.headers['x-github-event'] as string;
 
-        const payload = req.body as GitHubAddRepoRequest;
+        const payload = req.body;
         const action = payload.action;
-        console.log('signature', signature)
-        console.log('event', event)
+        const installation:GHAppInstallation = {
+            id: payload.installation.id,
+            account: {
+                login: payload.installation.account.login,
+                id: payload.installation.account.id,
+                type: payload.installation.account.type
+            }
+        };
+        const sender:GHAppSenderWHSender = {
+            id: payload.sender.id,
+            login: payload.sender.login,
+            node_id: payload.sender.node_id,
+            type: payload.sender.type
+        };
+
+        const gitHubRepoRequest:GitHubRepoRequest = {
+            action: action,
+            installation: installation,
+            sender: sender,
+            repositories_added: payload.repositories_added,
+            repositories_removed: payload.repositories_removed
+        }
+
         // console.log('body', payload)
 
         // Verify the signature and event type
         if (verifySignature(signature, payload)) {
 
-            const GitHubUserID = payload.installation.account.id;
-            const GitHubUsername = payload.installation.account.login;
+            const GitHubUserID = gitHubRepoRequest.sender.id;
+            const GitHubUsername = gitHubRepoRequest.sender.login;
             console.log('GitHubUserID', GitHubUserID)
             const user: User|null = await prisma.user.findUnique({
                 where: {
@@ -50,25 +73,52 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
                     console.log('event', event)
                     console.log('action', action)
                     // Add repos
+                    const dbPromises: Promise<boolean>[] = []
+
+                    
+  
+
                     if(action === 'added'){
                         console.log('payload.repositoriesAdded', payload.repositories_added)
 
-                        for (const repo of payload.repositories_added) {
-                            console.log('add repo', repo)    
-                            await addOrUpdateRepo(repo, user)
+                        for (const repo of gitHubRepoRequest.repositories_added) {
+                            console.log(repo)
+                            const addedRepo:RepositoryData = {
+                                id: repo.id,
+                                node_id: repo.node_id,
+                                name: repo.name,
+                                full_name: repo.full_name,
+                                private: repo.private,
+                               
+                            }
+                            console.log('add repo', addedRepo)     
+                            
+                           const dbActions = addOrUpdateRepo(addedRepo, user, sender, installation)
+                           dbPromises.push(dbActions)
                         }
                     }
                     // Remove repos 
                     if(action === 'removed'){
-                        for (const repo of payload.repositories_removed) {
-                            console.log('del repo', repo)
-                            await removeRepo(repo)
+                        for (const repo of gitHubRepoRequest.repositories_removed) {
+                            const addedRemoved:RepositoryData = {
+                                id: repo.id,
+                                node_id: repo.node_id,
+                                name: repo.name,
+                                full_name: repo.full_name,
+                                private: repo.private,
+                            }
+                            console.log('del repo', addedRemoved)
+                            const hasAccess: boolean = false
+                            const dbActions = setGitAppHasAccess(addedRemoved, hasAccess)
+                            dbPromises.push(dbActions)
                         }
                     }
+                    await Promise.all(dbPromises)
+
                 }
 
             }else{
-                res.status(400).json({success: false, message: 'User not found' });
+                res.status(400).json({success: false, message: 'User not found. Cannot add repository. User making request must have already signed up.' });
             }
                  
 

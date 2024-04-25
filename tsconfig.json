@@ -23,7 +23,7 @@
     "baseUrl": ".",
     "paths": {
       "@/frontend*": ["./src/*"],
-      "@/backend/*": ["./backend/codebase/hasti_api/*"]
+      "@/backend/*": ["./backend/codebase/app/*"],
     },
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

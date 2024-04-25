@@ -86,7 +86,6 @@ export const isAuthenticated: Middleware = async (req: Request, res: Response, n
         const reqHeaders = req.headers;
         const token = reqHeaders.authorization?.replace('Bearer ', '')
         let tokenResult: JWTResult<User, string> = { success: false, message: 'Unauthorized. No token provided.' };
-        console.log('middleware token', token)
         if(token){
             // const token = reqHeaders.authorization?.replace('Bearer ', '') as string;
             tokenResult = await handleUserJWTPayload(token)
@@ -94,7 +93,6 @@ export const isAuthenticated: Middleware = async (req: Request, res: Response, n
             res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
             return;
         }
-        console.log('middleware tokenResult', tokenResult)
 
 
         if (!tokenResult.success) {
@@ -104,7 +102,6 @@ export const isAuthenticated: Middleware = async (req: Request, res: Response, n
 
         // Check if user is valid
         if (tokenResult.success && tokenResult.user) {
-                console.log('middleware user', tokenResult.user)
                 req.user = tokenResult.user;
                 next();
         }

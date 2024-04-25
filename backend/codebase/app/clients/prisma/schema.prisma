@@ -59,6 +59,10 @@ model Repo {
   fullName          String        @db.VarChar(255)
   private           Boolean       @default(false)
   
+  ownerGithubID     Int           @default(0)
+  ownerType         String        @default("user") @db.VarChar(255) // Lowercase "user" or "organization"
+  addedByGithubID   Int           @default(0)
+ 
   userID            String
   user              User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
@@ -66,6 +70,8 @@ model Repo {
 
   gitHubStars       Int           @default(0)
   gitHubWatchers    Int           @default(0)
+
+  gitAppHasAccess   Boolean       @default(false) // If the app has access to the repo
 
   createdAt         DateTime      @default(now()) @db.Timestamp(6)
   updatedAt         DateTime      @updatedAt

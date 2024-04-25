@@ -37,7 +37,7 @@ export default function SelectRepo({ selectRepo, setSelectRepo }: { selectRepo: 
     }, [])
 
     return (
-        <Listbox value={selectRepo} onChange={setSelectRepo}>
+        <Listbox value={selectRepo} onChange={setSelectRepo} >
             {({ open }) => (
                 <>
                     <Listbox.Label className="block text-sm font-medium leading-6 text-gray-900">Repository</Listbox.Label>

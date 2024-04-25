@@ -4,6 +4,7 @@ import next from 'next';
 import v1Router from '@/backend/app/routes/v1routes';
 import logger from '@/backend/app/logger';
 import 'dotenv/config'
+import responseTime from 'response-time';
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
@@ -25,8 +26,16 @@ app.prepare().then(async () => {
     server.use(express.json());
     server.use(express.urlencoded({ extended: true }));
     server.use((req, _res, next) => {
-        logger.info( 'Request: ',{ label: 'server.ts' });
+          const start = Date.now();
+          if(dev){
+            _res.on('finish', () => {
+              if(req.method === 'OPTIONS') return;
+              const duration = Date.now() - start;
+              logger.info( req.path ,{ label: `${req.method}][${duration}ms` });
+            });
+          }
         next();
+      
         })
     server.use('/api/v1', v1Router);
 

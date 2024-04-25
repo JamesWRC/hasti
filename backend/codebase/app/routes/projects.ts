@@ -10,16 +10,17 @@ import { GetNotificationsQueryParams, GetNotificationsResponse, UpdateNotificati
 import { getAllNotificationAbout, getAllNotificationTypes } from '@/backend/app/interfaces/notification';
 import logger from '../logger';
 import { IncomingForm, Fields, Files, Options } from 'formidable';
-import { AddProjectResponse, GetProjectContentResponse, GetProjectsQueryParams, GetProjectsResponse, MAX_FILE_SIZE } from '@/backend/app/interfaces/project/request';
+import { AddProjectResponse, GetProjectContentResponse, GetProjectsQueryParams, GetProjectsResponse, MAX_FILE_SIZE, ProjectAddMethod, getProjectAddMethod } from '@/backend/app/interfaces/project/request';
 import { NotificationAbout, NotificationType } from '@/backend/app/interfaces/notification';
 import { Project, getAllProjectTypes, ProjectWithUser } from '@/backend/app/interfaces/project';
 import AWS from 'aws-sdk';
 import fs from 'fs';
-import updateContent from '@/backend/app/helpers/project';
+import updateContent, { getGitHubRepoData } from '@/backend/app/helpers/project';
 import tsClient from '@/backend/app/clients/typesense';
 import type { SearchResponse } from '@/backend/app/interfaces/search';
 import path from 'path'
 import { isAuthenticated } from '@/backend/app/helpers/auth';
+import { OctokitResponse } from '@octokit/types';
 
 const projectsRouter = Router();
 export const config = {
@@ -316,23 +317,74 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                     if (!fields || !files) {
                         const response: AddProjectResponse = {
                             success: false,
-                            message: 'Missing form fields or files.',
+                            message: 'Missing form fields or files or.',
                         }
                         return resolve({ code: 400, json: response });
                     }
 
-                    if (!(fields.repositoryID instanceof Array
-                        && fields.repositoryID instanceof Array
+                    // Handle invalid form field types & missing fields
+                    const addMethod:string|null = fields.addMethod ? fields.addMethod[0] : null;
+                    const badFormResponse: AddProjectResponse = {
+                        success: false,
+                        message: 'Invalid form field types.',
+                    }
+                    console.log("fields", fields)
+                    if (!(addMethod
+                        && fields.repoURL instanceof Array
                         && fields.projectType instanceof Array
                         && fields.haInstallType instanceof Array
                         && fields.name instanceof Array
                         && fields.description instanceof Array
                         && fields.tags instanceof Array)) {
-                        const response: AddProjectResponse = {
-                            success: false,
-                            message: 'Invalid form field types.',
+                        
+                            console.log(fields.addMethod instanceof Array)
+                            console.log(fields.repoURL instanceof Array)
+                            console.log(fields.projectType instanceof Array)
+                            console.log(fields.haInstallType instanceof Array)
+                            console.log(fields.name instanceof Array)
+                            console.log(fields.description instanceof Array)
+                            console.log(fields.tags instanceof Array)
+                            
+                        
+                        return resolve({ code: 402, json: badFormResponse });
+                    }else if(addMethod === ProjectAddMethod.REPO_SELECT.toString() && !(fields.repositoryID instanceof Array)){
+                        return resolve({ code: 401, json: badFormResponse });
+                    }
+
+                    console.log("addMethod", addMethod)
+                    console.log(getProjectAddMethod(addMethod) === ProjectAddMethod.REPO_SELECT)
+                    console.log(getProjectAddMethod(addMethod) === ProjectAddMethod.URL_IMPORT)
+                    if(getProjectAddMethod(addMethod) === ProjectAddMethod.URL_IMPORT){
+                        const repoURLData:string[] = fields.repoURL[0].split('/')
+                        const repoOwner:string = repoURLData[3]
+                        const repoName:string = repoURLData[4]
+                        const repoData:OctokitResponse<any, number> | null = await getGitHubRepoData(repoOwner, repoName)
+
+
+                        if(repoData){
+                            const repoID:number = repoData.data.id
+                            const userOwnsRepo:boolean = repoData.data.owner.login === user.username // add to db
+                            const ownerType:string = (repoData.data.owner.type as string).toLowerCase() // add to db
+                            // Create new repo
+                            await prisma.repo.create({
+                                data:{
+                                    repoID: repoID,
+                                    name: repoData.data.name,
+                                    fullName: repoData.data.full_name,
+                                    private: repoData.data.private,
+                                    
+                                    userID: user.id,    // User ID of the importer
+
+                                    nodeID: repoData.data.node_id,
+                                    gitHubStars: repoData.data.stargazers_count,
+                                    gitHubWatchers: repoData.data.watchers_count,
+                                }
+                            })
                         }
-                        return resolve({ code: 400, json: response });
+                    }
+                    if(!(fields.repositoryID instanceof Array)){
+                        console.log("not array")
+                        return resolve({ code: 400, json: badFormResponse });
                     }
                     // Get form fields
                     let repositoryID: string = fields.repositoryID[0];

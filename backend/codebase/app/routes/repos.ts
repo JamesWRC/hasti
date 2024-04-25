@@ -58,7 +58,8 @@ reposRouter.get<Record<string, string>, UserReposResponse | BadRequestResponse>(
             // Get count of user's repositories
             const userRepos:Repo[] = await prisma.repo.findMany({
                 where: {
-                    userID: user.id
+                    userID: user.id,
+                    gitAppHasAccess: true
                 }
             })
 

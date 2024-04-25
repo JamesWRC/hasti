@@ -4,6 +4,10 @@ import AWS from 'aws-sdk';
 
 import { getGitHubUserToken } from "@/backend/app/helpers/user";
 import isNotString from "@/backend/app/helpers";
+import { Octokit } from "octokit";
+import installationOctokit from '../auth/GitHub';
+import logger from '../../logger';
+import { OctokitResponse } from "@octokit/types";
 
 export default async function updateContent(repoID: string, projectID: string, userID: string) {
 
@@ -236,4 +240,18 @@ function extractImageUrls(markdownContent: string): string[] {
     }
 
     return mediaUrls;
+}
+
+export async function getGitHubRepoData(owner: string, repo: string): Promise<OctokitResponse<any, number> | null> {
+
+    try {
+        const resp = await installationOctokit.request('GET /repos/{owner}/{repo}', {
+            owner: owner,
+            repo: repo
+        });
+        return resp
+    } catch (error) {
+        logger.error(`Error getting repo data: ${error}`);
+        return null;
+    }
 }
