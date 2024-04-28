@@ -5,9 +5,10 @@ import AWS from 'aws-sdk';
 import { getGitHubUserToken } from "@/backend/app/helpers/user";
 import isNotString from "@/backend/app/helpers";
 import { Octokit } from "octokit";
-import installationOctokit from '../auth/GitHub';
-import logger from '../../logger';
+import { getGitHubUserAuth } from "@/backend/app/helpers/auth/github";
+import logger from "@/backend/app/logger";
 import { OctokitResponse } from "@octokit/types";
+import { User } from '@prisma/client';
 
 export default async function updateContent(repoID: string, projectID: string, userID: string) {
 
@@ -20,8 +21,6 @@ export default async function updateContent(repoID: string, projectID: string, u
         secretAccessKey: process.env.CLOUDFLARE_BUCKET_SECRET_KEY,
       });
 
-
-    const token = "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"
     
     if (isNotString(repoID)) {
         return { success: false, message: "Invalid repo ID." }
@@ -82,10 +81,16 @@ export default async function updateContent(repoID: string, projectID: string, u
         message: ""
     }
     console.log(`https://api.github.com/repos/${repo.fullName}/contents/README.md`)
+    // Branch of readme
+    const branch = ''
+    let path = `https://api.github.com/repos/${repo.fullName}/contents/README.md`
+    if(branch){
+        path += `?ref=${branch}`
+    }
     // Fetch repos README.md file
-    const response = await fetch(`https://api.github.com/repos/${repo.fullName}/contents/README.md?ref=test`, {
+    const response = await fetch(path, {
         headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${decryptedToken}`,
         },
     });
     console.log("response", response)
@@ -242,10 +247,11 @@ function extractImageUrls(markdownContent: string): string[] {
     return mediaUrls;
 }
 
-export async function getGitHubRepoData(owner: string, repo: string): Promise<OctokitResponse<any, number> | null> {
+export async function getGitHubRepoData(user: User, owner: string, repo: string): Promise<OctokitResponse<any, number> | null> {
 
     try {
-        const resp = await installationOctokit.request('GET /repos/{owner}/{repo}', {
+        const gitHubUserAuth = await getGitHubUserAuth(user);
+        const resp = await gitHubUserAuth.request('GET /repos/{owner}/{repo}', {
             owner: owner,
             repo: repo
         });
@@ -254,4 +260,12 @@ export async function getGitHubRepoData(owner: string, repo: string): Promise<Oc
         logger.error(`Error getting repo data: ${error}`);
         return null;
     }
+}
+
+export async function deleteProject(projectID: string){
+    await prisma.project.delete({
+        where: {
+            id: projectID
+        }
+    })
 }

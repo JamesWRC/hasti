@@ -5,6 +5,7 @@ import v1Router from '@/backend/app/routes/v1routes';
 import logger from '@/backend/app/logger';
 import 'dotenv/config'
 import responseTime from 'response-time';
+import { redeliverFailedWebhookInvocations } from './helpers/github';
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
@@ -41,7 +42,7 @@ app.prepare().then(async () => {
 
     server.use('/health', (_req, res) => {
       
-        res.status(200).send('OK');
+        res.status(200).send('⌂ :)');
     });
 
     server.all('*', (req, res) => {
@@ -49,6 +50,7 @@ app.prepare().then(async () => {
     });
 
     server.listen(port, () => {
+      redeliverFailedWebhookInvocations()
         logger.info(`Server ready on port ${port}`, {
           label: 'Server',
         });

@@ -53,6 +53,8 @@ export interface GetProjectsQueryParams {
     userID?: string;
     username?: string;
     githubUserID?: number;
+    checkImported?: boolean;
+    ownedOrImported?: boolean;
     orderBy?: 'createdAt' | 'updatedAt' | 'title' | 'author';
     orderDirection?: 'asc' | 'desc';
 

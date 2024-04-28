@@ -12,24 +12,32 @@ import { Grid } from '@mantine/core';
 import type { ProjectWithUser } from '@/backend/clients/prisma/client'
 import useProjects from '@/frontend/components/project'
 import { GetProjectsQueryParams } from '@/backend/interfaces/project/request';
+import { Dispatch, SetStateAction, useEffect } from 'react';
+import { LoadProjects } from '@/frontend/interfaces/project';
 
-export default function ProjectGrid() {
-    const fetchProjects:GetProjectsQueryParams = {
-      limit: 2
-      
+export default function ProjectGrid({projectParams, setProjectState}: {projectParams: GetProjectsQueryParams, setProjectState?: Dispatch<SetStateAction<LoadProjects | undefined>>}) {
+    let fetchProjects:GetProjectsQueryParams;
+    if(projectParams){
+      fetchProjects = projectParams;
+    }else {
+      fetchProjects = {
+        limit: 10,
+      }
     }
 
     const {projects, reqStatus} = useProjects(fetchProjects);
+    
+    useEffect(() => {
+      
+      setProjectState ? setProjectState({projects, reqStatus}) : null;
 
+    }, [reqStatus])
 
     return (
         <div className="bg-white w-full">
           <div className="mx-auto max-w-[150%] px-6 lg:px-2">
             <Grid>
             <div className={!projects || projects.length <= 0 ? "mx-auto max-w-2xl text-center" : "m-auto w-full h-full"}>
-                {!projects || !projects || projects.length <= 0 ? <h4 className="text-sm font-bold tracking-tight text-gray-900 sm:text-sm py-4 px-3">
-                You projects will be shown below when you create a project.
-                </h4>: null }
                 {reqStatus === 'loading' ? 
               <div className="mx-auto max-w-2xl text-center">
                 <h4 className="text-sm font-bold tracking-tight text-gray-900 sm:text-sm py-4 px-3">Loading...</h4>

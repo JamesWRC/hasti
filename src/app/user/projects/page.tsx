@@ -30,6 +30,7 @@ import { AddProjectResponse, MAX_FILE_SIZE } from '@/backend/interfaces/project/
 import ProjectGrid from '@/frontend/components/project/ProjectGrid';
 import { v4 as uuidv4 } from 'uuid';
 import { ProjectAddMethod, getProjectAddMethod, getAllProjectAddMethods } from '@/backend/interfaces/project/request';
+import { LoadProjects } from '@/frontend/interfaces/project';
 
 
 
@@ -49,12 +50,21 @@ export default function Page() {
   const [backgroundImage, setBackgroundImage] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [projectResponse, setProjectResponse] = useState<AddProjectResponse>({ success: true, message: '' });
-
+  const [projectsLoadedState, setProjectsLoadedState] = useState<LoadProjects>()
+  const [unclaimedProjectsLoadedState, setUnclaimedProjectsLoadedState] = useState<LoadProjects>()
+  
   const { data: session, status } = useSession()
   // This regex is used to validate the importRepoURL field has a valid GitHub repository URL format.
   const importRepoURLRegex = /^(https?:\/\/)?(www\.)?github\.com\/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+?$/
 
   function validateProjectName(value: string | undefined) {
+      if(!value){
+        console.log('value is undefined')
+        value = selectRepo?.name.trim()
+        form.values.projectName = value
+      }
+      console.log('value:',value)
+
       let retVal = null
       if(!selectRepo){
         console.log(value)
@@ -267,7 +277,7 @@ export default function Page() {
     <div className="bg-white py-24 sm:py-28 w-full">
       <div className="mx-auto max-w-[150%] px-6 lg:px-2">
         <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl py-4">Your Packages</h2>
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl py-4">Your Projects</h2>
         </div>
         <div className=" w-full h-full">
           <div key={`create-new-project`} className="mx-auto col-span-1 relative isolate flex flex-col justify-end overflow-hidden rounded-2xl px-8 py-8 my-4 min-w-[10.5rem] sm:max-h-none max-h-[15rem]">
@@ -417,7 +427,28 @@ export default function Page() {
           </div>
 
         </div>
-        <ProjectGrid />
+        {unclaimedProjectsLoadedState 
+        && unclaimedProjectsLoadedState.reqStatus === 'success'
+        && unclaimedProjectsLoadedState.projects
+        && unclaimedProjectsLoadedState.projects.length > 0 ? 
+        <div className="flex min-w-0 px-6">
+          <h3 className="inline-block text-2xl sm:text-lg font-extrabold text-slate-900 tracking-tight dark:text-slate-900 py-2">Your projects imported by others:
+          </h3>
+        </div> : null}
+        
+        <ProjectGrid projectParams={{githubUserID:session?.user.githubID, checkImported:true}} setProjectState={setUnclaimedProjectsLoadedState}/>
+        {unclaimedProjectsLoadedState && unclaimedProjectsLoadedState.reqStatus === 'success' 
+        && unclaimedProjectsLoadedState.projects && unclaimedProjectsLoadedState.projects.length > 0 ? 
+        <div className="flex min-w-0 px-6">
+          <h3 className="inline-block text-2xl sm:text-lg font-extrabold text-slate-900 tracking-tight dark:text-slate-900 py-2 pt-6">Your projects:
+          </h3>
+        </div> : null}
+
+        {projectsLoadedState && projectsLoadedState.projects && projectsLoadedState.projects.length > 0 ? null 
+        : <h4 className="text-sm font-bold tracking-tight text-gray-900 sm:text-sm py-4 px-3 mx-auto text-center">
+            Your projects will be shown below when you create a project.
+          </h4>}
+        <ProjectGrid projectParams={{githubUserID:session?.user.githubID, ownedOrImported:true}} setProjectState={setProjectsLoadedState}/>
       </div>
     </div>
 

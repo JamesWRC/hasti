@@ -15,7 +15,9 @@ import { GHAppInstallation, GHAppSenderWHSender, GitHubRepoRequest, RepositoryDa
 import verifySignature from '@/backend/app/helpers/webhook';
 import addOrUpdateRepo, { removeRepo, setGitAppHasAccess } from '@/backend/app/helpers/repo';
 import { getGitHubUserToken } from '../helpers/user';
-import { getGitHubUserAuth } from '../helpers/auth/GitHub';
+import { getGitHubUserAuth } from '../helpers/auth/github';
+
+
 
 const webhookRouter = Router();
 
@@ -26,6 +28,7 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
             // Verify the request is coming from GitHub
         const signature = req.headers['x-hub-signature'] as string;
         const event = req.headers['x-github-event'] as string;
+        const deliveryUID = req.headers['x-github-delivery'] as string;
 
         const payload = req.body;
         const action = payload.action;
@@ -53,9 +56,28 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
         }
 
         // console.log('body', payload)
-
+        console.log('signature', signature)
+        console.log('payload', payload)
         // Verify the signature and event type
         if (verifySignature(signature, payload)) {
+
+            //See if event already been processed
+            const eventExists = await prisma.webhookEvents.findFirst({
+                where: {
+                    AND: [
+                        {
+                            webhookId: deliveryUID
+                        },
+                        {
+                            source: "github"
+                        }
+                    ]
+                }
+            })
+
+            if(eventExists){
+                return res.status(200).json({success: true, message: 'Webhook already processed' });
+            }
 
             const GitHubUserID = gitHubRepoRequest.sender.id;
             const GitHubUsername = gitHubRepoRequest.sender.login;
@@ -76,7 +98,22 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
                     const dbPromises: Promise<boolean>[] = []
 
                     
-  
+                      // Remove repos 
+                      if(action === 'removed'){
+                        for (const repo of gitHubRepoRequest.repositories_removed) {
+                            const addedRemoved:RepositoryData = {
+                                id: repo.id,
+                                node_id: repo.node_id,
+                                name: repo.name,
+                                full_name: repo.full_name,
+                                private: repo.private,
+                            }
+                            console.log('del repo', addedRemoved)
+                            const hasAccess: boolean = false
+                            const dbActions = setGitAppHasAccess(addedRemoved, hasAccess)
+                            dbPromises.push(dbActions)
+                        }
+                    }
 
                     if(action === 'added'){
                         console.log('payload.repositoriesAdded', payload.repositories_added)
@@ -97,30 +134,21 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
                            dbPromises.push(dbActions)
                         }
                     }
-                    // Remove repos 
-                    if(action === 'removed'){
-                        for (const repo of gitHubRepoRequest.repositories_removed) {
-                            const addedRemoved:RepositoryData = {
-                                id: repo.id,
-                                node_id: repo.node_id,
-                                name: repo.name,
-                                full_name: repo.full_name,
-                                private: repo.private,
-                            }
-                            console.log('del repo', addedRemoved)
-                            const hasAccess: boolean = false
-                            const dbActions = setGitAppHasAccess(addedRemoved, hasAccess)
-                            dbPromises.push(dbActions)
-                        }
-                    }
+
                     await Promise.all(dbPromises)
 
                 }
 
             }else{
-                res.status(400).json({success: false, message: 'User not found. Cannot add repository. User making request must have already signed up.' });
+                return res.status(400).json({success: false, message: 'User not found. Cannot add repository. User making request must have already signed up.' });
             }
-                 
+            console.log('eventExists', deliveryUID)
+            await prisma.webhookEvents.create({
+                data: {
+                    webhookId: deliveryUID,
+                    source: "github",
+                }
+            })
 
             // Send a success response
             res.status(200).json({success: true, message: 'Webhook received successfully' });

@@ -4,7 +4,7 @@ import type { User } from '@prisma/client'
 
 import { request } from "https"
 import logger from "@/backend/app/logger"
-import { getGitHubUserAuth } from "@/backend/app/helpers/auth/GitHub"
+import { getGitHubUserAuth } from "@/backend/app/helpers/auth/github"
 import { getGitHubUserToken } from "@/backend/app/helpers/user"
 
 
@@ -17,7 +17,7 @@ export default async function addOrUpdateRepo(repo: RepositoryData, user: User, 
 
   const repoExists = await prisma.repo.findUnique({
     where: {
-      repoID: repo.id
+      gitHubRepoID: repo.id
     }
   })
 
@@ -32,32 +32,49 @@ export default async function addOrUpdateRepo(repo: RepositoryData, user: User, 
   })
   
   console.log('collaborators', collaborators)
+  console.log('permissions', collaborators.data.map((c:any) => c.permissions))
 
   // Already exists.
   if(repoExists){
-
-    // check if name has changed
+    // Only update if repo is a User repo (not an org) and was added by the user.
+    // Else whoever has access to the project can manually update it.
+    if(repoExists.ownerType === 'user' && repoExists.addedByGithubID === sender.id){
       await prisma.repo.update({
         where: {
-          repoID: repo.id
+          gitHubRepoID: repo.id
         },
         data: {
           name: repo.name,
           fullName: repo.full_name,
           gitAppHasAccess: true,
           ownerGithubID: installation.account.id,
-          ownerType: installation.account.type,
+          ownerType: installation.account.type.toLowerCase(),
           addedByGithubID: sender.id,
         }
       })
+    }
+    // // check if name has changed
+    //   await prisma.repo.update({
+    //     where: {
+    //       repoID: repo.id
+    //     },
+    //     data: {
+    //       name: repo.name,
+    //       fullName: repo.full_name,
+    //       gitAppHasAccess: true,
+    //       ownerGithubID: installation.account.id,
+    //       ownerType: installation.account.type,
+    //       addedByGithubID: sender.id,
+    //     }
+    //   })
 
   }else{
     try{
 
       await prisma.repo.create({
         data: {
-          repoID: repo.id,
-          nodeID: repo.node_id,
+          gitHubRepoID: repo.id,
+          gitHubNodeID: repo.node_id,
           name: repo.name,
           fullName: repo.full_name,
           private: repo.private,
@@ -86,7 +103,7 @@ export async function removeRepo(repo: RepositoryData) {
     // Add repo to database
     const repoExists = await prisma.repo.findUnique({
         where: {
-        repoID: repo.id
+          gitHubRepoID: repo.id
         }
     })
     
@@ -99,7 +116,7 @@ export async function removeRepo(repo: RepositoryData) {
             // Delete repo
             const delRepo = await prisma.repo.delete({
                 where: {
-                    repoID: repo.id,
+                    gitHubRepoID: repo.id,
                     updatedAt: {
                         lt: oneMinuteAgo.toISOString(), // Use ISO string format for comparison
                     },
@@ -117,17 +134,13 @@ export async function removeRepo(repo: RepositoryData) {
 
 
 export async function setGitAppHasAccess(repo: RepositoryData, hasAccess: boolean){
-  // Only update if it was updated more than a minute ago. 
-  // Prevents GitHub events from updating this field as the added event is fired before the remove is sent.
+
   const oneMinuteAgo = new Date();
   oneMinuteAgo.setMinutes(oneMinuteAgo.getMinutes() - 1);
   
   await prisma.repo.update({
         where: {
-            repoID: repo.id,
-            updatedAt: {
-              lt: oneMinuteAgo.toISOString(), 
-          },
+          gitHubRepoID: repo.id,
         },
         data: {
           gitAppHasAccess: hasAccess
@@ -146,4 +159,14 @@ export async function getRepoTopics(username: string, repo: string){
     })
 
     return topics
+}
+
+
+export async function deleteRepo(id: string){
+    await prisma.repo.delete({
+        where: {
+            id: id
+        }
+    })
+    return true
 }

@@ -33,6 +33,19 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
 
         // Set the github userID
         if (props.githubUserID) queryStr += `${queryStr ? '&' : '?'}githubUserID=${props.githubUserID}`;
+
+        // Set the ownedByGithubUserID
+        if (props.checkImported) queryStr += `${queryStr ? '&' : '?'}checkImported=${props.checkImported}`;
+
+        // Set the ownedOrImported
+        if (props.ownedOrImported) queryStr += `${queryStr ? '&' : '?'}ownedOrImported=${props.ownedOrImported}`;
+
+        // Set the orderBy
+        if (props.orderBy) queryStr += `${queryStr ? '&' : '?'}orderBy=${props.orderBy}`;
+
+        // Set the orderDirection
+        if (props.orderDirection) queryStr += `${queryStr ? '&' : '?'}orderDirection=${props.orderDirection}`;
+
         console.log("props server: ", props)
         console.log("queryStr: ", queryStr)
         // sleep for 2 seconds to simulate a slow network
@@ -47,10 +60,22 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
         if (!response.ok) {
           throw new Error('Failed to fetch data');
         }
-        const jsonData:GetProjectsResponse = await response.json();
-        console.log("jsonData: ", jsonData)
-        setProjects(jsonData);
-        setReqStatus('success');
+        // return the projects found.
+        if(response.status === 200){
+          const jsonData:GetProjectsResponse = await response.json();
+          console.log("jsonData: ", jsonData)
+          setProjects(jsonData);
+          setReqStatus('success');
+        // If HTTP 204, return success, with empty projects. As there are no projects to return.
+        }else if(response.status === 204){
+          const emptyProjectsResponse:GetProjectsResponse = {
+            success: true,
+            userProjects: []
+          }
+          setProjects(emptyProjectsResponse);
+          setReqStatus('success');
+        }
+
       } catch (error) {
         setReqStatus('error');
         console.error('Error fetching data:', error); 

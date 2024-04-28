@@ -32,6 +32,19 @@ export interface GitHubRepoRequest {
     repositories_removed: RepositoryData[];
 }
 
+export interface GHContributorPermissions {
+    pull: boolean;
+    triage: boolean;
+    push: boolean;
+    maintain: boolean;
+    admin: boolean;
+}
+export interface GHContributor {
+    id: number;
+    type: string;
+    role_name: 'pull' | 'triage' | 'push' | 'maintain' | 'admin';
+    permissions: GHContributorPermissions;
+}
 
 export enum RepoOwnerType {
     USER = 'user',

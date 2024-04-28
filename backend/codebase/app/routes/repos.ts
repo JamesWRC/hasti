@@ -49,7 +49,7 @@ reposRouter.get<Record<string, string>, UserReposResponse | BadRequestResponse>(
     isAuthenticated,
     async (req, res) => {
         try {
-            // console.log('req:', req.params.userID)
+            console.log('req:', req.params.userID)
             const user: User | undefined = req.user;
             if (!user) {
                 return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });

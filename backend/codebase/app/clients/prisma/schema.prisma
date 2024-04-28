@@ -37,6 +37,7 @@ model Project {
 
   repoID            String
   repo              Repo          @relation(fields: [repoID], references: [id])
+  
   haInstallType     String        @default("core") @db.VarChar(255)
   projectType       String        @default("integration") @db.VarChar(255)
 
@@ -49,12 +50,36 @@ model Project {
   updatedAt         DateTime      @updatedAt
 }
 
+//  A collaborator is a github user who has access to a project and/or repo.
+//  Depending on the permissions, they can do different things.
+model Collaborator {
+  id                String        @id @default(uuid())
+
+  repoID            String
+  repo              Repo          @relation(fields: [repoID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  userID            String
+  user              User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  // Permissions for the collaborator to a projects AND/OR repo.
+  type              String        @default("user") @db.VarChar(255) // Lowercase "user" or "admin"
+  admin             Boolean       @default(false)
+  maintain          Boolean       @default(false)
+  push              Boolean       @default(false)
+  triage            Boolean       @default(false)
+  pull              Boolean       @default(false)
+
+  createdAt         DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime      @updatedAt
+
+}
+ 
 // Repo fullName can change if a user changes the name of the repo. 
 // Can look up repo details via https://api.github.com/repositories/<repoID>
 model Repo {
   id                String        @id @default(uuid())
-  repoID            Int           @unique                 
-  nodeID            String        @db.VarChar(255)
+  gitHubRepoID      Int           @unique @default(-1)            
+  gitHubNodeID      String        @db.VarChar(255) @default("")
   name              String        @db.VarChar(255)
   fullName          String        @db.VarChar(255)
   private           Boolean       @default(false)
@@ -73,8 +98,14 @@ model Repo {
 
   gitAppHasAccess   Boolean       @default(false) // If the app has access to the repo
 
+  collaborators     Collaborator[]
+
+
   createdAt         DateTime      @default(now()) @db.Timestamp(6)
   updatedAt         DateTime      @updatedAt
+
+  @@index([gitHubRepoID], name: "gitHubRepoID_index")
+
 }
 
 model User {
@@ -82,13 +113,18 @@ model User {
   githubID          Int           @unique
   username          String        @db.VarChar(255)
   image             String        @db.VarChar(255)
+  type              String        @db.VarChar(255) @default("user")
   repos             Repo[]
   projects          Project[]
   notifications     Notification[]
+  collaborations    Collaborator[] // records where the user is a collaborator on repo.
   ghuToken          String        @db.VarChar(255) @default("")// GitHub User Token used to access GitHub API
 
   createdAt         DateTime      @default(now()) @db.Timestamp(6)
   updatedAt         DateTime      @updatedAt
+
+  @@index([githubID], name: "githubID_index")
+
 }
 
 model Notification {
@@ -98,6 +134,7 @@ model Notification {
     message         String        @db.Text
     about           String        @db.VarChar(255)
     read            Boolean       @default(false)
+
     userID          String
     user            User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
@@ -106,27 +143,11 @@ model Notification {
 }
 
 
-// model Post {
-//   id        Int      @id @default(autoincrement())
-//   title     String   @db.VarChar(255)
-//   createdAt DateTime @default(now()) @db.Timestamp(6)
-//   content   String?
-//   published Boolean  @default(false)
-//   authorId  Int
-//   author    User     @relation(fields: [authorId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-// }
+model WebhookEvents {
+  id                Int           @id @default(autoincrement())
+  webhookId         String        @db.VarChar(255) @unique
+  source            String        @db.VarChar(255) @default("github")
+  createdAt         DateTime      @default(now())
 
-// model Profile {
-//   id     Int     @id @default(autoincrement())
-//   bio    String?
-//   userId Int     @unique
-//   user   User    @relation(fields: [userId], references: [id], onDelete: NoAction, onUpdate: NoAction)
-// }
-
-// model User {
-//   id      Int      @id @default(autoincrement())
-//   name    String?  @db.VarChar(255)
-//   email   String   @unique @db.VarChar(255)
-//   posts   Post[]
-//   profile Profile?
-// }
+  @@index([webhookId], name: "webhookId_index")
+}

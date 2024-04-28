@@ -1,4 +1,4 @@
-import { UserJWT } from "@/backend/app/interfaces/user";
+import { UserJWT, UserType, getUserType } from "@/backend/app/interfaces/user";
 import type { JWTBodyRequest } from "@/backend/app/interfaces/user/request";
 import prisma from "@/backend/app/clients/prisma/client";
 import { User } from "@prisma/client";
@@ -25,19 +25,22 @@ export default async function addOrUpdateUser(user: JWTBodyRequest): Promise<Use
 
   // Already exists.
   if(userExists){
-
-    // check if image has changed
-    if(userExists.image !== user.user.image){
+      // Update user type if needed. Temp users are now users.
+      let userType: UserType = getUserType(userExists.type)
+      if(userType === UserType.TEMP){
+        userType = UserType.USER
+      }
 
       const updatedUser = await prisma.user.update({
         where: {
           githubID: user.user.id
         },
         data: {
-          image: user.user.image
+          image: user.user.image,
+          type: userType
         }
       })
-    }
+    
 
     return userExists
   }
