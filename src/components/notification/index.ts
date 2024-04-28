@@ -26,7 +26,7 @@ export default function useNotifications({...props}: GetNotificationsQueryParams
 
         // sleep for 2 seconds to simulate a slow network
         await new Promise((resolve) => setTimeout(resolve, 4000));
-        const response = await fetch(`${process.env.API_URL}/api/user/notifications` + queryStr, {
+        const response = await fetch(`${process.env.API_URL}/api/v1/notifications/exampleUserID` + queryStr, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -54,7 +54,7 @@ export default function useNotifications({...props}: GetNotificationsQueryParams
         if(jsonData.notifications){
           notificationIDs = jsonData.notifications.filter((n:Notification)=> !n.read).map((n:Notification) => n.id);
         }
-        await fetch(`${process.env.API_URL}/api/user/notifications`, {
+        await fetch(`${process.env.API_URL}/api/v1/notifications`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',

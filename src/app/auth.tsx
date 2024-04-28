@@ -15,9 +15,10 @@ const getTokenFromAPIServer = async (provider: string, user: any) => {
         provider,
         user
     }
+    console.log("JWTBodyRequest req", JWTBodyRequest)
 
     // Make request to your API
-    const response = await fetch(`${process.env.API_URL}/api/auth/jwt`, {
+    const response = await fetch(`${process.env.API_URL}/api/v1/auth/jwt`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -26,7 +27,7 @@ const getTokenFromAPIServer = async (provider: string, user: any) => {
     });
 
     const data:JWTBodyResponse = await response.json();
-
+    console.log("JWTBodyRequest resp", data)
     return data;
 
 }

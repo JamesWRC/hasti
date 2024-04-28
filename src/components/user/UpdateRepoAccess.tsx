@@ -38,7 +38,9 @@ export default function UpdateRepoAccess() {
             const code = searchParams.get('code') as string
             const installation_id = searchParams.get('installation_id') as string
             const setup_action = searchParams.get('setup_action') as string
-
+            if(!code || !installation_id || !setup_action){
+              return false
+            }
             const reqBody:GitHubUserTokenRequest = {
               code: code,
               installation_id: installation_id,
@@ -46,7 +48,7 @@ export default function UpdateRepoAccess() {
             }
             try {
               // API Call 1
-              const response1 = await fetch(`${process.env.API_URL}/api/auth/gitUserToken`, {
+              const response1 = await fetch(`${process.env.API_URL}/api/v1/auth/gitUserToken`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
@@ -64,7 +66,7 @@ export default function UpdateRepoAccess() {
               await new Promise(resolve => setTimeout(resolve, 1000));
 
               // API Call 2
-              const response2 = await fetch(`${process.env.API_URL}/api/auth/gitUserToken`, {
+              const response2 = await fetch(`${process.env.API_URL}/api/v1/auth/gitUserToken`, {
                   method: 'GET',
                   headers: {
                     'Content-Type': 'application/json',

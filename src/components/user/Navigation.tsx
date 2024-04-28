@@ -28,13 +28,14 @@ const UserNavigation: React.FC = () => {
       }
 
       useEffect(() => {
+        console.log("session", session)
         const fetchRepoCount = async () => {
-          const res = await fetch(`${process.env.API_URL}/api/user/projectCount`, {
+          const res = await fetch(`${process.env.API_URL}/api/v1/projects/${session?.user.id}/count`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${session?.user.jwt}`
-            }
+            },
           })
           const data = await res.json()
           if (data.success) {
@@ -42,7 +43,7 @@ const UserNavigation: React.FC = () => {
           }
         }
         const fetchNotificationCount = async () => {
-          const res = await fetch(`${process.env.API_URL}/api/user/notificationCount`, {
+          const res = await fetch(`${process.env.API_URL}/api/v1/notifications/${session?.user.id}/count`, {
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
