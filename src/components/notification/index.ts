@@ -33,10 +33,23 @@ export default function useNotifications({...props}: GetNotificationsQueryParams
                 'Authorization': `Bearer ${session?.user.jwt}`
             }
         })
-        if (!response.ok) {
-          throw new Error('Failed to fetch data');
+        let jsonData:GetNotificationsResponse | null = null;
+        if(response.status === 200){
+          jsonData = await response.json();
+        }else{
+          jsonData = {
+            success: true,
+            notifications: []
+          }
         }
-        const jsonData:GetNotificationsResponse = await response.json();
+
+        if(!jsonData) {
+          jsonData = {
+            success: true,
+            notifications: []
+          }
+        }
+
         setNotifications(jsonData);
         updateData(jsonData);
 

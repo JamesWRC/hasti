@@ -1,3 +1,4 @@
+import { Avatar } from "@mantine/core";
 
 
 export default function AuthorDescription({ name, link, imageUrl, loaded }: { name: string|undefined, link: string, imageUrl: string, loaded:boolean }) {
@@ -9,7 +10,10 @@ export default function AuthorDescription({ name, link, imageUrl, loaded }: { na
                     <circle cx={1} cy={1} r={1} />
                 </svg>
                 <div className="flex gap-x-2.5">
-                    <img src={imageUrl} alt="" className={loaded ? "h-6 w-6 flex-none rounded-full bg-white/10" : "hidden"}/>
+                    {/* <img src={imageUrl} alt="" className={loaded ? "h-6 w-6 flex-none rounded-full bg-white/10" : "hidden"}/> */}
+                    <Avatar.Group spacing="md">
+                    <Avatar src={imageUrl} radius="xl" size={"sm"} className={loaded ? "flex-none rounded-full bg-white/10" : "hidden"}/>
+                    </Avatar.Group>
                     <div className="hover:underline underline-offset-4 line-clamp-1">{loaded ? name ? name: <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</>:null}</div>
                 </div>
             </a>

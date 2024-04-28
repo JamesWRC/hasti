@@ -422,6 +422,20 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
 
                                             }
                                         })
+
+                                        // Notify the owner of the repo that a temp user has been created. And someone added a project to HASTI
+                                        await prisma.notification.create({
+                                            data: {
+                                                type: NotificationType.SUCCESS,
+                                                title: projectOwnerUser.username,
+                                                message: `Temporary user created, as the user: '${user.username}' added a project to HASTI using a repo you own, called: '${repoName}'.`,
+                                                about: NotificationAbout.USER,
+                                                read: false,
+                
+                                                userID: projectOwnerUser.id,
+                    
+                                            }
+                                        });
                                     }
                                 }
 
@@ -595,6 +609,21 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
         
                                         }
                                     });
+                                    // Notify the owner of the repo that a project has been added to HASTI
+                                    if(projectOwnerUser && projectOwnerUser.id !== user.id){
+                                        await prisma.notification.create({
+                                            data: {
+                                                type: NotificationType.SUCCESS,
+                                                title: createdProject.title,
+                                                message: `Project add. Added by user: '${user.username}'.`,
+                                                about: NotificationAbout.USER,
+                                                read: false,
+                
+                                                userID: projectOwnerUser.id,
+                                            }
+                                        });
+                                    }
+
                                 }
 
 

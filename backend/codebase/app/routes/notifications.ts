@@ -149,16 +149,14 @@ const NOTIFICATION_MAX_TAKE = 100
 
             const notification: Notification[] = await prisma.notification.findMany(query)
             console.log('projects:', notification)
+            const response: GetNotificationsResponse = {
+                success: true,
+                notifications: notification
+            }
             if (notification.length > 0) {
-
-                const response: GetNotificationsResponse = {
-                    success: true,
-                    notifications: notification
-                }
-
                 return res.status(200).json(response);
             } else {
-                return res.status(404).json({success:false, message: 'No Projects made by any user were able to be found. Please specify the proper params.' });
+                return res.status(204).json(response);
             }
 
 
