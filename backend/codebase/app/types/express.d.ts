@@ -1,4 +1,4 @@
-import type { User } from '@/backend/app/interfaces/user'
+import type { User } from '@/backend/interfaces/user'
 import type { NextFunction, Request, Response } from 'express';
 
 declare global {

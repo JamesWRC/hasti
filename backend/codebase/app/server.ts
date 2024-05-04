@@ -1,8 +1,8 @@
 import express, { NextFunction } from 'express';
 import next from 'next';
 
-import v1Router from '@/backend/app/routes/v1routes';
-import logger from '@/backend/app/logger';
+import v1Router from '@/backend/routes/v1routes';
+import logger from '@/backend/logger';
 import 'dotenv/config'
 import responseTime from 'response-time';
 import { redeliverFailedWebhookInvocations } from './helpers/github';

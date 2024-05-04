@@ -46,6 +46,12 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
         // Set the orderDirection
         if (props.orderDirection) queryStr += `${queryStr ? '&' : '?'}orderDirection=${props.orderDirection}`;
 
+        // Set the projectTitle
+        if (props.projectTitle) queryStr += `${queryStr ? '&' : '?'}projectTitle=${props.projectTitle}`;
+
+        // Set the allContent
+        if (props.allContent) queryStr += `${queryStr ? '&' : '?'}allContent=${props.allContent}`;
+
         console.log("props server: ", props)
         console.log("queryStr: ", queryStr)
         // sleep for 2 seconds to simulate a slow network
@@ -133,9 +139,9 @@ function generatePlaceHolderProjects(count:number):GetProjectsResponse {
         githubID: i,
         username: "username",
         image: "SKELETON",
-        ghuToken: "Name",
         createdAt: new Date(),
         updatedAt: new Date(),
+        type: "user",
       }
     }
     userProjects.push(userProject);

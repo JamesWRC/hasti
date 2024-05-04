@@ -11,7 +11,7 @@ import { collectSections } from '@/frontend/components/markdoc/lib/sections'
 
 import { useState } from 'react';
 import { Group, Box, Collapse, ThemeIcon, Text, UnstyledButton, rem } from '@mantine/core';
-import { IconListNumbers , IconChevronUp } from '@tabler/icons-react';
+import { IconListNumbers, IconChevronUp } from '@tabler/icons-react';
 import classes from '@/frontend/app/page.module.css';
 
 
@@ -25,7 +25,7 @@ interface LinksGroupProps {
 
 function LinksGroup({ icon: Icon, label, initiallyOpened, tableOfContents }: LinksGroupProps) {
   const [opened, setOpened] = useState(initiallyOpened || false);
- 
+
 
   return (
     <>
@@ -37,22 +37,22 @@ function LinksGroup({ icon: Icon, label, initiallyOpened, tableOfContents }: Lin
             </ThemeIcon>
             <Box ml="md" mr={"xs"}>{label}</Box>
             {tableOfContents && (
-            <IconChevronUp
-              className={classes.chevron}
-              stroke={1.5}
-              style={{
-                width: rem(16),
-                height: rem(16),
-                transform: opened ? 'rotate(180deg)' : 'none',
-              }}
-            />
-          )}
+              <IconChevronUp
+                className={classes.chevron}
+                stroke={1.5}
+                style={{
+                  width: rem(16),
+                  height: rem(16),
+                  transform: opened ? 'rotate(180deg)' : 'none',
+                }}
+              />
+            )}
           </Box>
-          
+
         </Group>
       </UnstyledButton>
       {tableOfContents ? <Collapse in={opened}>
-      <TableOfContents tableOfContents={tableOfContents} />
+        <TableOfContents tableOfContents={tableOfContents} />
       </Collapse> : null}
     </>
   );
@@ -73,39 +73,39 @@ export function DocsLayout({
   let tableOfContents = collectSections(nodes)
   const mockdata = {
     label: 'Table of Contents',
-    icon: IconListNumbers ,
+    icon: IconListNumbers,
     tableOfContents: tableOfContents,
   };
   return (
-    <div className='flex'> 
-        {/* <Box mih={220} p="md" className='visible md:hidden'>
+    <div className='flex'>
+      {/* <Box mih={220} p="md" className='visible md:hidden'>
       <LinksGroup {...mockdata} />
 
     </Box> */}
-    <div className='hidden 2xl:block '>
-    <TableOfContents tableOfContents={tableOfContents} />
+      
+      {/* // ---------------------------------------------- TABLE OF CONTENTS FOR PAGE */}
 
-    </div>
-    {/* flex w-full max-w-full items-start gap-x-8 px-4 py-32 sm:px-6 lg:px-8 z-10 */}
-    {/* flex w-full max-w-full items-start gap-x-8 px-2 py-56 sm:py-32 md:py-20 sm:px-6 lg:px-8 z-10 */}
+      {/* <div className='hidden 2xl:block'>
+        <TableOfContents tableOfContents={tableOfContents} />
+      </div> */}
 
-        {/* <div className="min-w-0 max-w-2xl flex-auto py-16 lg:max-w-none lg:pl-8 lg:pr-0 px-4 2xl:px-16"> */}
-        {/* <div className="min-w-0 max-w-2xl flex-auto py-16 lg:max-w-none lg:pl-8 lg:pr-0 "> */}
-        <div className="flex-auto py-16 lg:pl-8 lg:pr-0 w-0">
+      <div className="flex-auto py-16 w-0 max-w-full">
         <article>
-        <div className='2xl:hidden '>
-        <LinksGroup {...mockdata} />
-    </div>
+          {/* // ---------------------------------------------- TABLE OF CONTENTS FOR PAGE FOR MOBILE */}
+
+          {/* <div className='2xl:hidden '>
+            <LinksGroup {...mockdata} />
+          </div> */}
           <DocsHeader title={title} />
 
           <Prose>
             {children}
 
           </Prose>
-          
+
         </article>
 
-        <PrevNextLinks />
+        {/* <PrevNextLinks /> */}
 
       </div>
     </div>

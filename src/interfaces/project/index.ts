@@ -2,7 +2,7 @@
 
 import { ProjectType } from "@/backend/interfaces/project";
 import type { Project } from  '@/backend/interfaces/project';
-import { ProjectWithUser } from "@/backend/clients/prisma/client";
+import { ProjectWithUser, ProjectAllInfo } from "@/backend/clients/prisma/client";
 
 
 export interface Author {
@@ -13,7 +13,7 @@ export interface Author {
 
 export interface LoadProjects {
   reqStatus: string,
-  projects: ProjectWithUser[] | null
+  projects: ProjectWithUser[] | ProjectAllInfo[] | null
 
 }
 

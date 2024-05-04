@@ -1,27 +1,28 @@
 import { Router } from 'express';
-import { UserNotificationCountResponse, UserProjectCountResponse } from '@/backend/app/interfaces/user/request';
-import { UserType, type User } from '@/backend/app/interfaces/user';
-import type { Notification } from '@/backend/app/interfaces/notification';
-// import { JWTResult, handleUserJWTPayload } from '@/backend/app/helpers/user';
-import { BadRequestResponse } from '@/backend/app/interfaces/request';
-import prisma from '@/backend/app/clients/prisma/client';
+import { UserNotificationCountResponse, UserProjectCountResponse } from '@/backend/interfaces/user/request';
+import { UserType, type User } from '@/backend/interfaces/user';
+import type { Notification } from '@/backend/interfaces/notification';
+// import { JWTResult, handleUserJWTPayload } from '@/backend/helpers/user';
+import { BadRequestResponse } from '@/backend/interfaces/request';
+import prisma from '@/backend/clients/prisma/client';
 import { Prisma, Repo } from '@prisma/client';
-import { GetNotificationsQueryParams, GetNotificationsResponse, UpdateNotificationReadStatus, UpdateNotificationReadStatusResponse } from '@/backend/app/interfaces/notification/request';
-import { getAllNotificationAbout, getAllNotificationTypes } from '@/backend/app/interfaces/notification';
+import { GetNotificationsQueryParams, GetNotificationsResponse, UpdateNotificationReadStatus, UpdateNotificationReadStatusResponse } from '@/backend/interfaces/notification/request';
+import { getAllNotificationAbout, getAllNotificationTypes } from '@/backend/interfaces/notification';
 import logger from '../logger';
 import { IncomingForm, Fields, Files, Options } from 'formidable';
-import { AddProjectResponse, GetProjectContentResponse, GetProjectsQueryParams, GetProjectsResponse, MAX_FILE_SIZE, ProjectAddMethod, getProjectAddMethod } from '@/backend/app/interfaces/project/request';
-import { NotificationAbout, NotificationType } from '@/backend/app/interfaces/notification';
-import { Project, getAllProjectTypes, ProjectWithUser } from '@/backend/app/interfaces/project';
+import { AddProjectResponse, GetProjectContentResponse, GetProjectsQueryParams, GetProjectsResponse, MAX_FILE_SIZE, ProjectAddMethod, getProjectAddMethod } from '@/backend/interfaces/project/request';
+import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
+import { Project, getAllProjectTypes, ProjectWithUser } from '@/backend/interfaces/project';
 import AWS from 'aws-sdk';
 import fs from 'fs';
-import updateContent, { deleteProject, getGitHubRepoData } from '@/backend/app/helpers/project';
-import tsClient from '@/backend/app/clients/typesense';
-import type { SearchResponse } from '@/backend/app/interfaces/search';
+import isValidProjectName, { updateContent, deleteProject, getGitHubRepoData } from '@/backend/helpers/project';
+import tsClient from '@/backend/clients/typesense';
+import type { SearchResponse } from '@/backend/interfaces/search';
 import path from 'path'
-import { isAuthenticated } from '@/backend/app/helpers/auth';
+import { isAuthenticated } from '@/backend/helpers/auth';
 import { OctokitResponse } from '@octokit/types';
 import { deleteRepo } from '../helpers/repo';
+import { use } from 'react';
 
 const projectsRouter = Router();
 export const config = {
@@ -226,31 +227,39 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
     });
 
 projectsRouter.get<Record<string, string>, GetProjectContentResponse | BadRequestResponse, any>(
-    '/:projectID/content',
+    '/:projectName/content',
     async (req, res) => {
         try {
-            // Read and get the text of the text.md file
-            const filePath = path.join(process.cwd(), 'test-readme.md');
-            const fileContents = fs.readFileSync(filePath, 'utf8');
+            const projectName:string = req.params.projectName
+            
+            // Make sure the project name is valid
+            if(isValidProjectName(projectName)){
+                // Fetch ALL the project info
+                const projectInfo = await prisma.project.findFirst({
+                    where: {
+                        title: projectName
+                    },
+                    include: {
+                        user: {
+                            omit: {
+                                ghuToken: true
+                            },
+                        },
+                        tags: true,
+                        repo: true
+                    }
+                })
 
-            // const host = checkHost(req)
+                console.log('projectInfo:', projectInfo)
 
-            // if(!host){
-            // return badHost(res)
-            // }
-
-            // // Add cors headers
-            // res.setHeader('Access-Control-Allow-Credentials', 'true')
-            // res.setHeader('Access-Control-Allow-Origin', host)
-            // res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT')
-            // res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version')
-            // res.setHeader('Content-Type', 'text/plain')
-
-
-            // Return the text of the text.md file
-            // Set headers as text/plain
-            return res.status(200).json({success:true, content: fileContents})
-
+                // Set headers to cache for 10 mins
+                res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate')
+                
+                return res.status(200).json({success:true, projectAllInfo: projectInfo})
+            }else{
+                return res.status(400).json({success:false, message: 'Invalid project name.'})
+            }
+            
         } catch (error) {
             logger.warn(`Request threw an exception: ${error}`, {
                 label: 'GET: /projects/:userid/count: ',

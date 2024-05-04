@@ -1,16 +1,16 @@
 import { Router } from 'express';
 
 // Import routers
-import authRouter from '@/backend/app/routes/auth';
-import notificationsRouter from '@/backend/app/routes/notifications';
+import authRouter from '@/backend/routes/auth';
+import notificationsRouter from '@/backend/routes/notifications';
 
-import projectsRouter from '@/backend/app/routes/projects';
-import reposRouter from '@/backend/app/routes/repos';
-import tagsRouter from '@/backend/app/routes/tags';
-import userRouter from '@/backend/app/routes/user';
-import webhookRouter from '@/backend/app/routes/webhook';
+import projectsRouter from '@/backend/routes/projects';
+import reposRouter from '@/backend/routes/repos';
+import tagsRouter from '@/backend/routes/tags';
+import userRouter from '@/backend/routes/user';
+import webhookRouter from '@/backend/routes/webhook';
 
-import { isAuthenticated } from '@/backend/app/helpers/auth';
+import { isAuthenticated } from '@/backend/helpers/auth';
 
 
 const v1Router = Router();

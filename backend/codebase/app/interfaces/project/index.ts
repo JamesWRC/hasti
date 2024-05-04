@@ -1,6 +1,6 @@
 import { Project, User } from '@prisma/client';
 export type {Project} from "@prisma/client";
-export type {ProjectWithUser} from '@/backend/app/clients/prisma/client';
+export type {ProjectWithUser, ProjectAllInfo} from '@/backend/clients/prisma/client';
 
 // Used for differentiating between theme and integration projects and other projects in the future
 export enum ProjectType {

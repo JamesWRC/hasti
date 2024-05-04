@@ -1,6 +1,6 @@
 
 import type { Notification } from "@prisma/client";
-import { NotificationAbout, NotificationType } from '@/backend/app/interfaces/notification';
+import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
 
 export interface GetNotificationsQueryParams {
     limit?: number;

@@ -1,11 +1,11 @@
-import { GHAppInstallation, GHAppSenderWHSender, RepositoryData } from "@/backend/app/interfaces/repo"
-import prisma from "@/backend/app/clients/prisma/client"
+import { GHAppInstallation, GHAppSenderWHSender, RepositoryData } from "@/backend/interfaces/repo"
+import prisma from "@/backend/clients/prisma/client"
 import type { User } from '@prisma/client'
 
 import { request } from "https"
-import logger from "@/backend/app/logger"
-import { getGitHubUserAuth } from "@/backend/app/helpers/auth/github"
-import { getGitHubUserToken } from "@/backend/app/helpers/user"
+import logger from "@/backend/logger"
+import { getGitHubUserAuth } from "@/backend/helpers/auth/github"
+import { getGitHubUserToken } from "@/backend/helpers/user"
 
 
 // Add repository to the database

@@ -1,16 +1,16 @@
 import { Router } from 'express';
-import { JWTBodyRequest, JWTBodyResponse, UserRepoCountResponse, UserReposResponse } from '@/backend/app/interfaces/user/request';
-import type { User, UserJWT, UserJWTPayload } from '@/backend/app/interfaces/user';
-// import { JWTResult, handleUserJWTPayload } from '@/backend/app/helpers/user';
-import { BadRequestResponse, OkResponse } from '@/backend/app/interfaces/request';
-import prisma from '@/backend/app/clients/prisma/client';
+import { JWTBodyRequest, JWTBodyResponse, UserRepoCountResponse, UserReposResponse } from '@/backend/interfaces/user/request';
+import type { User, UserJWT, UserJWTPayload } from '@/backend/interfaces/user';
+// import { JWTResult, handleUserJWTPayload } from '@/backend/helpers/user';
+import { BadRequestResponse, OkResponse } from '@/backend/interfaces/request';
+import prisma from '@/backend/clients/prisma/client';
 
-import logger from '@/backend/app/logger';
-import { Repo } from '@/backend/app/interfaces/repo';
+import logger from '@/backend/logger';
+import { Repo } from '@/backend/interfaces/repo';
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
-import addOrUpdateUser, { getGitHubUserToken, updateGitHubUserToken } from '@/backend/app/helpers/user';
+import addOrUpdateUser, { getGitHubUserToken, updateGitHubUserToken } from '@/backend/helpers/user';
 import axios from 'axios';
-import { isAuthenticated } from '@/backend/app/helpers/auth';
+import { isAuthenticated } from '@/backend/helpers/auth';
 
 const authRouter = Router();
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY as string

@@ -1,11 +1,16 @@
-import SidePaneContent from '@/frontend/components/store/content/SidePanelContent'
+import { Project, ProjectAllInfo } from '@/backend/interfaces/project'
+import { Tag } from '@/backend/interfaces/tag'
+import SidePanelTagsContent from '@/frontend/components/store/content/SidePanelContent'
+import AuthorDescription from '@/frontend/components/store/AuthorDescription';
 
 const people = [
     { title: 'Developer', description: 'INSERT DEVELOPER NAME HERE'},
     // More people...
   ]
   
-  export default function Details() {
+  export default function Details({project}:{project:ProjectAllInfo | undefined}) {
+    const tags: Tag[] = project?.tags || []
+
     return (
       <div className="bg-gray-900 rounded-3xl">
         <div className="mx-auto max-w-7xl">
@@ -13,11 +18,17 @@ const people = [
             <div className="px-4 sm:px-6 lg:px-8">
               <div className="sm:flex sm:items-center">
                 <div className="sm:flex-auto">
-                  <h1 className="text-base font-semibold leading-6 text-white">Users</h1>
+                  <h1 className="text-base font-semibold leading-6 text-white font-bold">
+                    {project?.title}
+                    </h1>
+                    <hr className="mt-2 mb-2 border-gray-700"/>
+                    <span className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0'>Description</span>
                   <p className="mt-2 text-sm text-gray-300">
-                    A list of all the users in your account including their name, title, email and role.
+                    {project?.description} adsa sad asd asfasfasfasf fwef ew dasd asdas fd asfwfqwfqw fqwfq wfqwfqqwqwfq wwqqwf qf qwf qwf qf q
                   </p>
-                  <SidePaneContent/>
+                  <hr className="mt-2 mb-2 border-gray-700"/>
+
+                  <SidePanelTagsContent tags={tags}/>
                 </div>
                 {/* <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
                   <button
@@ -34,13 +45,20 @@ const people = [
                     <table className="min-w-full divide-y divide-gray-700">
 
                       <tbody className="divide-y divide-gray-800">
-                        {people.map((person) => (
-                          <tr key={person.title}>
-                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">{person.title}</td>
-                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">{person.description}</td>
+                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">Developer</td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">
+                              <AuthorDescription 
+                              name={project?.user?.username} 
+                              link={`https://github.com/${project?.user.username}`} 
+                              imageUrl={`https://avatars.githubusercontent.com/u/${project?.user.githubID}?v=4`} loaded={true}/>
+                            </td>
+                        {/* {project?.tags.map((tag) => (
+                          <tr key={tag.id}>
+                            <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0">{tag.name}</td>
+                            <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-300">{tag.type}</td>
                             
                           </tr>
-                        ))}
+                        ))} */}
                       </tbody>
                     </table>   
                   </div>

@@ -1,13 +1,13 @@
 import { Router } from 'express';
-import { UserRepoCountResponse, UserReposResponse } from '@/backend/app/interfaces/user/request';
-import type { User } from '@/backend/app/interfaces/user';
-// import { JWTResult, handleUserJWTPayload } from '@/backend/app/helpers/user';
-import { BadRequestResponse } from '@/backend/app/interfaces/request';
-import prisma from '@/backend/app/clients/prisma/client';
+import { UserRepoCountResponse, UserReposResponse } from '@/backend/interfaces/user/request';
+import type { User } from '@/backend/interfaces/user';
+// import { JWTResult, handleUserJWTPayload } from '@/backend/helpers/user';
+import { BadRequestResponse } from '@/backend/interfaces/request';
+import prisma from '@/backend/clients/prisma/client';
 
 import logger from '../logger';
-import { Repo } from '@/backend/app/interfaces/repo';
-import { isAuthenticated } from '@/backend/app/helpers/auth';
+import { Repo } from '@/backend/interfaces/repo';
+import { isAuthenticated } from '@/backend/helpers/auth';
 
 const reposRouter = Router();
 

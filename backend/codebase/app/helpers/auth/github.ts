@@ -3,8 +3,8 @@ import { createAppAuth } from "@octokit/auth-app";
 import { createTokenAuth  } from "@octokit/auth-token";
 import fs from 'fs';
 import 'dotenv/config'
-import { getGitHubUserToken } from "@/backend/app/helpers/user";
-import { User } from "@/backend/app/interfaces/user";
+import { getGitHubUserToken } from "@/backend/helpers/user";
+import { User } from "@/backend/interfaces/user";
 
 
 const AUTH_GITHUB_APP_ID = process.env.NODE_ENV === 'production' ? process.env.AUTH_GITHUB_APP_ID : process.env.DEV_AUTH_GITHUB_APP_ID;

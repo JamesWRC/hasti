@@ -1,16 +1,16 @@
-import prisma from '@/backend/app/clients/prisma/client';
+import prisma from '@/backend/clients/prisma/client';
 import markdownit from 'markdown-it'
 import AWS from 'aws-sdk';
 
-import { getGitHubUserToken } from "@/backend/app/helpers/user";
-import isNotString from "@/backend/app/helpers";
+import { getGitHubUserToken } from "@/backend/helpers/user";
+import isNotString from "@/backend/helpers";
 import { Octokit } from "octokit";
-import { getGitHubUserAuth } from "@/backend/app/helpers/auth/github";
-import logger from "@/backend/app/logger";
+import { getGitHubUserAuth } from "@/backend/helpers/auth/github";
+import logger from "@/backend/logger";
 import { OctokitResponse } from "@octokit/types";
 import { User } from '@prisma/client';
 
-export default async function updateContent(repoID: string, projectID: string, userID: string) {
+export async function updateContent(repoID: string, projectID: string, userID: string) {
 
 
     // Init s3
@@ -268,4 +268,10 @@ export async function deleteProject(projectID: string){
             id: projectID
         }
     })
+}
+
+
+export default function isValidProjectName(name: string): boolean {
+    const regex = /^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*(_[a-zA-Z0-9]+)*$/;
+    return regex.test(name);
 }

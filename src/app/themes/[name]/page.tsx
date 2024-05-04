@@ -10,18 +10,22 @@ import { useHeadroom } from '@mantine/hooks';
 import UGCDocument from '@/frontend/components/store/content/UGCDocument';
 import TableOfContents from '@/frontend/components/store/content/TableOfContents';
 
-import Prism from 'prismjs';
 import '@/frontend/app/prism.css'
 import ColorBackground from '@/frontend/components/project/ColorBackground';
 // import prism from "prismjs";
 
 // import 'prismjs/components/prism-json'; // need this
+import { ProjectAllInfo } from '@/backend/interfaces/project';
+import { useSession } from 'next-auth/react';
+import isValidProjectName from '@/frontend/helpers/user';
+import { GetProjectContentResponse } from '@/backend/interfaces/project/request';
 
 export default function Page({ params }: { params: { name: string } }) {
+  const { data: session, status } = useSession()
 
   const [scrollPosition, setScrollPosition] = useState(0);
   const pinned = useHeadroom({ fixedAt: 10 });
-  const [pkgContent, setPkgContent] = useState({} as any);
+  const [projectContent, setProjectContent] = useState<GetProjectContentResponse | undefined>();
 
   const stats = [
     { name: 'Type', value: 'Theme', change: '', changeType: 'positive' },
@@ -47,143 +51,57 @@ export default function Page({ params }: { params: { name: string } }) {
   }, []);
 
   // // Handle the canvas that renders random color hues 
-  // useEffect(() => {
-  //   const canvas = document.getElementById('myCanvas') as HTMLCanvasElement;
-  //   const ctx = canvas.getContext('2d');
-  //   const randPkgName = params.name.replace(/[^a-z0-9]/gi, '');
-  //   const moreColor = true
-
-  //   // var rand = require('random-seed').create(randPkgName);
-  //   var rand = require('random-seed').create(Math.random());
-  //   const seed = rand.intBetween(0, 10);
-
-  //   let x1, y1, x2, y2, x3, y3, rngCount = 100;
-  //   do {
-  //     x1 = Math.floor(rand.intBetween(0, canvas.width));
-  //     y1 = Math.floor(rand.intBetween(1, canvas.height));
-
-  //     x2 = Math.floor(rand.intBetween(2, canvas.width));
-  //     y2 = Math.floor(rand.intBetween(3, canvas.height));
-
-  //     x3 = Math.floor(rand.intBetween(1, canvas.width));
-  //     y3 = Math.floor(rand.intBetween(1, canvas.height));
-
-  //     rngCount--;
-  //     console.log(rngCount)
-  //   } while (Math.hypot(x2 - x1, y2 - y1) <= 100 || rngCount <= 0); // ensure the circles never touch
-
-  //   const rotation = Math.random() * 1 * 0.025; // random rotation in radians
-
-  //   if (!ctx) return;
-  //   const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  //   // gradient.addColorStop(0, 'cyan');
-  //   // gradient.addColorStop(1, 'red');
-
-  //   ctx.save(); // save the current state
-  //   ctx.rotate(rotation); // rotate the canvas
-
-
-  //   const hue = Math.floor(Math.random() * 360);
-
-  //   // Generate complementary hue
-  //   const complementaryHue = (hue + 140) % 360;
-
-  //   // Convert hues to CSS HSL strings
-  //   const color1 = `hsl(${hue}, 100%, 50%)`;
-  //   const color2 = `hsl(${complementaryHue}, 100%, 50%)`;
-
-  //   gradient.addColorStop(0, color1);
-  //   gradient.addColorStop(1, color2);
-
-  //   ctx.beginPath();
-
-  //   ctx.arc(x1, y1, 7.5, 0, 2 * Math.PI, false);
-  //   ctx.arc(x2, y2, 7.5, 0, 2 * Math.PI, false);
-
-  //   const distanceToEdge = Math.min(x1, y1, canvas.width - x1, canvas.height - y1);
-
-  //   ctx.shadowBlur = (canvas.width / 2 - distanceToEdge) / 2;
-
-  //   ctx.arc(x3, y3, rand.intBetween(10, 25), 0, 2 * Math.PI, false);
-
-  //   ctx.arc(0, y1 - 50, 7.5, 0, 2 * Math.PI, false);
-  //   ctx.arc(100, 100, 15, 20, 2 * Math.PI, false);
-
-  //   ctx.fillStyle = gradient;
-  //   if (moreColor) {
-  //     const hue2 = Math.floor(Math.random() * 360);
-
-  //     // Generate complementary hue
-  //     const complementaryHue2 = (hue2 + 140) % 360;
-
-  //     // Convert hues to CSS HSL strings
-  //     const color21 = `hsl(${hue2}, 100%, 50%)`;
-  //     const color22 = `hsl(${complementaryHue2}, 100%, 50%)`;
-  //     const gradient2 = ctx.createLinearGradient(0, 0, 0, canvas.height);
-
-  //     gradient2.addColorStop(0, color21);
-  //     gradient2.addColorStop(1, color22);
-
-
-  //     ctx.arc(canvas.width, canvas.height, rand.intBetween(10, 25), 0, 2 * Math.PI, false);
-  //     ctx.fillStyle = gradient2;
-  //   }
-
-
-  //   ctx.fill();
-  // }, []);
-
-
-  // Map an API call to /api/content 
-  // This will return a JSON object with the content for the page
   useEffect(() => {
     const fetchData = async () => {
-      // add headers to allow all cors
-      const res = await fetch(`${process.env.API_URL}/api/v1/projects/exampleProjectID/content`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        cache: 'default'
-      });
+      const projectName = params.name
 
-      // const res = await fetch(`http://localhost:3002/api/content?name=hello`);
-      let json;
-      try {
-        json = await res.json();
-        console.log("setPkgContent", json);
-        setPkgContent(json);
-      } catch (e) {
-        console.log(e)
-      }
+      if (isValidProjectName(projectName)) {
+        // add headers to allow all cors
+        const res = await fetch(`${process.env.API_URL}/api/v1/projects/${projectName}/content`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+
+          },
+          cache: 'default'
+        });
+
+        // const res = await fetch(`http://localhost:3002/api/content?name=hello`);
+        let json;
+        try {
+          json = await res.json();
+          console.log("setPkgContent", json);
+          setProjectContent(json);
+        } catch (e) {
+          console.log(e)
+        }
+      
       // const json = await res.json();
       console.log(json);
-      setPkgContent(json);
+      setProjectContent(json);
+      }
     };
     fetchData();
   }, []);
 
-  function renderDetails() {
+  function renderDetails(projecInfo: GetProjectContentResponse | undefined) {
+    let isUserOwner = false;
+    if (projecInfo && session?.user) {
+      isUserOwner = session?.user?.id === projecInfo.projectAllInfo?.user.id;
+    }
+    if(!projecInfo) {
+      return null;
+    }
+    
     return (
-      <aside className="transition-all duration-700 sticky top-8 xl:w-96 shrink-0 2xl:-mr-16 3xl:-mr-32 5xl:-mr-80 ">
-        <Details />
+      <aside className="transition-all duration-700 sticky top-8 xl:w-96 shrink-0">
+        {isUserOwner ? <>Edit</> : null}
+        <Details project={projectContent?.projectAllInfo} />
       </aside>
 
     )
   }
 
-
-  function renderTableOfContents() {
-    return (
-      <aside className="transition-all duration-700 sticky top-8 xl:w-96 shrink-0 2xl:-mr-16 3xl:-mr-32 5xl:-mr-80 ">
-        <TableOfContents />
-        <div>
-          Hello worl, abit about the author blah blah balj
-        </div>
-      </aside>
-
-    )
-  }
 
   return (
     // Using tailwindcss design a page that showcases a a developers application
@@ -197,7 +115,7 @@ export default function Page({ params }: { params: { name: string } }) {
       <div className="relative bg-white -mt-3 max-h-full">
         {/* <canvas id="myCanvas" className="absolute top-0 left-0 w-full h-28 lg:h-96 z-0 rounded-xl"></canvas> */}
         {/* <canvas id="myCanvas" className="absolute top-0 left-0 w-full h-28 z-0 rounded-xl"></canvas> */}
-        <ColorBackground projectID={"b"}/>
+        <ColorBackground projectID={"b"} />
         <div className="relative z-10 rounded-b-2xl">
           <div className="sm:py-24 sm:px-6 lg:px-8 bg-opacity-30 backdrop-filter backdrop-blur-2xl h-40 w-full">
             {/* <div className=""> */}
@@ -244,35 +162,35 @@ export default function Page({ params }: { params: { name: string } }) {
             </div>
           </div>
         </div>
-        
+
         {/* // Square image of package header */}
         {/* <div className='bg-white h-16 w-16 md:h-24 md:w-24 ml-7 2xl:ml-28 -mt-16 md:-mt-20 z-20 relative rounded-2xl transition-all duration-700 '> */}
         <div className='bg-white h-16 w-16 md:h-24 md:w-24 ml-7 md:ml-14 2xl:ml-20 -mt-10 md:-mt-20 z-20 relative rounded-2xl transition-all duration-700'>
           <img src="https://www.freepnglogos.com/uploads/512x512-logo/512x512-transparent-instagram-logo-icon-5.png" alt="Theme Icon" className="h-16 w-16 md:h-24 md:w-24 p-1" />
         </div>
 
-        {/* // user generated content */}
-        <div className="flex w-full max-w-full items-start gap-x-8 px-4 py-32 sm:px-6 lg:px-8 z-10">
 
-          <main className="flex-1">
+      </div>
+      {/* // user generated content */}
+      <div className="flex w-full max-w-full items-start gap-x-8 py-32 z-10 px-10 md:pl-10 md:pr-3">
 
-            <Prose>
-              {pkgContent && pkgContent.content ? <UGCDocument source={pkgContent.content}></UGCDocument> : null}
-            </Prose>
-            {/* <div className='block xl:hidden'>
+        <main className="flex-1">
+
+          <Prose>
+            {projectContent && projectContent.projectAllInfo?.content ? <UGCDocument source={projectContent.projectAllInfo?.content}></UGCDocument> : null}
+          </Prose>
+          {/* <div className='block xl:hidden'>
               {renderDetails()}
             </div> */}
-          </main>
-          <div className='hidden xl:block sticky top-0'>
-            <div className=''>
-              {renderTableOfContents()}
-            </div>
+        </main>
+        <div className='hidden xl:block sticky top-0 pt-5'>
+          <div className=''>
+            {renderDetails(projectContent)}
           </div>
-
         </div>
+
       </div>
       {/* // End of the main content */}
-
 
 
     </>
