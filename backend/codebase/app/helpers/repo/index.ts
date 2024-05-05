@@ -1,4 +1,4 @@
-import { GHAppInstallation, GHAppSenderWHSender, RepositoryData } from "@/backend/interfaces/repo"
+import { GHAppInstallation, GHAppSenderWHSender, RepoOwnerType, RepositoryData } from "@/backend/interfaces/repo"
 import prisma from "@/backend/clients/prisma/client"
 import type { User } from '@prisma/client'
 
@@ -38,7 +38,7 @@ export default async function addOrUpdateRepo(repo: RepositoryData, user: User, 
   if(repoExists){
     // Only update if repo is a User repo (not an org) and was added by the user.
     // Else whoever has access to the project can manually update it.
-    if(repoExists.ownerType === 'user' && repoExists.addedByGithubID === sender.id){
+    if(repoExists.ownerType === RepoOwnerType.USER.toLowerCase() && repoExists.addedByGithubID === sender.id){
       await prisma.repo.update({
         where: {
           gitHubRepoID: repo.id
@@ -81,7 +81,7 @@ export default async function addOrUpdateRepo(repo: RepositoryData, user: User, 
           userID: user.id,
           gitAppHasAccess: true,
           ownerGithubID: installation.account.id,
-          ownerType: installation.account.type,
+          ownerType: installation.account.type.toLowerCase(),
           addedByGithubID: sender.id,
         }
       })

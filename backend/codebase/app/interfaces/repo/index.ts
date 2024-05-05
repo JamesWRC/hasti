@@ -46,6 +46,7 @@ export interface GHContributor {
     permissions: GHContributorPermissions;
 }
 
+// Any update from GitHub will be Capitalized ('User'), we will store is in lowercase ('user')
 export enum RepoOwnerType {
     USER = 'user',
     ORG = 'organization'

@@ -31,6 +31,9 @@ export default function SelectRepo({ selectRepo, setSelectRepo }: { selectRepo: 
                 })
                 const data:UserReposResponse = await res.json()
                 if (data.success) {
+                    // orde repos alphabetically
+                    data.repos.sort((a, b) => a.fullName.localeCompare(b.fullName))
+
                     setRepos(data.repos)
                 }
             }

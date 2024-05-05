@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react'
 import { LoadProjects } from '@/frontend/interfaces/project';
 import { GetProjectsResponse, GetProjectsQueryParams } from '@/backend/interfaces/project/request';
-import { ProjectWithUser } from '@/backend/interfaces/project'
+import { ProjectAllInfo, ProjectWithUser } from '@/backend/interfaces/project'
 
 
 export default function useProjects({...props}: GetProjectsQueryParams):LoadProjects {
@@ -119,7 +119,7 @@ function generatePlaceHolderProjects(count:number):GetProjectsResponse {
     const random = Math.floor(Math.random() * 1000) + 1;
 
 
-    const userProject:ProjectWithUser = {
+    const userProject:ProjectAllInfo = {
       id: random.toString(),
       title: "Project Title",
       content: "Project Content",
@@ -142,7 +142,34 @@ function generatePlaceHolderProjects(count:number):GetProjectsResponse {
         createdAt: new Date(),
         updatedAt: new Date(),
         type: "user",
-      }
+      },
+      tags: Array.from({ length:  Math.floor(Math.random() * 10) + 1 }).map((i) => {
+        return {
+          id: random.toString(),
+          name: "Tag Name",
+          type: "tag",
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }
+      }),
+      repo: {
+        id: random.toString(),
+        name: "Repo Name",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        addedByGithubID: i,
+        fullName: "Repo Full Name",
+        gitAppHasAccess: true,
+        gitHubNodeID: "Repo Node ID",
+        gitHubRepoID: i,
+        gitHubStars: i,
+        gitHubWatchers: i,
+        ownerGithubID: i,
+        private: false,
+        ownerType: "user",
+        userID: i.toString(),
+
+      },
     }
     userProjects.push(userProject);
   }

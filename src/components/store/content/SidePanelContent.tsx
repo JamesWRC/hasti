@@ -5,6 +5,7 @@ import classes from '@/frontend/app/page.module.css';
 import { Container, Grid, SimpleGrid, Skeleton, rem } from '@mantine/core';
 import { Button } from '@mantine/core';
 import { Tag } from '@/backend/interfaces/tag';
+import { DynamicSkeletonText } from '@/frontendcomponents/ui/skeleton';
 
 const data = [
   {
@@ -16,14 +17,14 @@ const data = [
 
 
 
-function Tags({ tags }: { tags: Tag[] }) {
+function Tags({ tags, loaded }: { tags: Tag[], loaded: boolean}) {
 
   // const PRIMARY_COL_HEIGHT = rem(300);
   // const SECONDARY_COL_HEIGHT = `calc(${PRIMARY_COL_HEIGHT} / 2 - var(--mantine-spacing-md) / 2)`;
 
-  const tagButtons = tags.map((tag) => (
+  const tagButtons = tags.map((tag, index) => (
     <Button
-      key={tag.name}
+      key={`project-tag-${index}`}
       className='text-white bg-gray-800 hover:bg-gray-700'
       size={'compact-xs'}
       p={3}
@@ -31,7 +32,7 @@ function Tags({ tags }: { tags: Tag[] }) {
       variant="default"
       m={2}>
       <a href={`/search?tags=${tag.name}`} className='px-1 pb-1'>
-        {tag.name}
+        {loaded ? tag.name : DynamicSkeletonText({max:1, min:1}) }
       </a>
     </Button>
   ));
@@ -50,7 +51,7 @@ function Tags({ tags }: { tags: Tag[] }) {
 
 
 
-export default function SidePanelTagsContent({ tags }: { tags: Tag[] }) {
+export default function SidePanelTagsContent({ tags, loaded }: { tags: Tag[], loaded: boolean}) {
   const [scrolled, setScrolled] = useState(false);
 
 
@@ -66,7 +67,7 @@ export default function SidePanelTagsContent({ tags }: { tags: Tag[] }) {
             <Table.Td>
               <div className='text-white'>Tags</div></Table.Td>
             <Table.Td>
-              <Tags tags={tags} />
+              <Tags tags={tags} loaded={loaded} />
             </Table.Td>
           </Table.Tr>
         </Table.Tbody>

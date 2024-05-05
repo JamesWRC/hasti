@@ -42,7 +42,7 @@ export interface AddProjectResponse {
 
 export interface GetProjectsResponse {
     success: boolean;
-    userProjects: ProjectWithUser[] | null;
+    userProjects: ProjectWithUser[] | ProjectAllInfo[] | null;
 }
 
 
@@ -62,7 +62,7 @@ export interface GetProjectsQueryParams {
 
 }
 
-export interface GetProjectContentResponse {
-    success: boolean;
-    projectAllInfo: ProjectAllInfo;
-}
+// export interface GetProjectContentResponse {
+//     success: boolean;
+//     projectAllInfo: ProjectAllInfo;
+// }

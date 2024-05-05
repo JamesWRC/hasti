@@ -57,7 +57,7 @@ import '@/frontend/app/prism.js'
 
 
 interface DocumentProps {
-    source: string;
+    source: string | undefined;
 }
 
 export function UGCDocument({ source }: DocumentProps) {
@@ -82,7 +82,9 @@ export function UGCDocument({ source }: DocumentProps) {
 // {% /callout %}
 
 // `
-
+    if (!source) {
+        source = 'No content :(';
+    }
     const ast = Markdoc.parse(source);
     // ignore the error
     const config  = {

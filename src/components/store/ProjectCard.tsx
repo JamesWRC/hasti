@@ -89,10 +89,10 @@ export default function ProjectCard({userProject, style, loaded}: {userProject: 
                 <a href={getProjectLink(userProject)}>
                     {/* <span className="absolute inset-0" /> */}
                     <span className={"inset-0"} />
-                    {loaded ? userProject?.title : <DynamicSkeletonTitle/>}
+                    {loaded ? userProject?.title : <DynamicSkeletonTitle max={10} min={4}/>}
                 </a>
             </h3>
-            <a className="mt-2 text-base text-gray-300 line-clamp-5 -mb-4" href={getProjectLink(userProject)}>{loaded ? userProject?.description : <DynamicSkeletonText/>}</a>
+            <a className="mt-2 text-base text-gray-300 line-clamp-5 -mb-4" href={getProjectLink(userProject)}>{loaded ? userProject?.description : <DynamicSkeletonText max={10} min={4}/>}</a>
 
         </div>
     </article>

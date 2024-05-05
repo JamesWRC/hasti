@@ -30,12 +30,15 @@ export function getAllProjectTypes(caseSensitive:Boolean=true): string[] {
     return ret;
   }
 
-export function getAllHaInstallTypes(): string[] {
+export function getAllHaInstallTypes(caseSensitive:Boolean=true): string[] {
     const ret: string[] = [];
     const tprojValues = Object.values(HAInstallType);
     for(const t in tprojValues){
-        const upperType = tprojValues[t][0].toUpperCase() + tprojValues[t].slice(1)
-        ret.push(upperType);
+      if(caseSensitive){
+        ret.push(tprojValues[t][0].toUpperCase() + tprojValues[t].slice(1)) 
+      }else{
+        ret.push(tprojValues[t]);
+      }
     }
     return ret;
   }

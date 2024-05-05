@@ -38,10 +38,10 @@ const navigation = [
   { name: 'Themes', href: '/themes', icon: SwatchIcon},
   { name: 'Integrations', href: '/integrations', icon: SquaresPlusIcon},
   { name: 'adfag', href: '/integrations', icon: SquaresPlusIcon},
-  { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
-  { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
-  { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
-  { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'sdfgsd', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'hdszxvhsd', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'hdsshsd', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'vv', href: '/integrations', icon: SquaresPlusIcon},
   
 ]
 const teams = [

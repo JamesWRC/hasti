@@ -4,15 +4,16 @@ import { UserType, type User } from '@/backend/interfaces/user';
 import type { Notification } from '@/backend/interfaces/notification';
 // import { JWTResult, handleUserJWTPayload } from '@/backend/helpers/user';
 import { BadRequestResponse } from '@/backend/interfaces/request';
-import prisma from '@/backend/clients/prisma/client';
+import prisma, { ProjectAllInfo } from '@/backend/clients/prisma/client';
 import { Prisma, Repo } from '@prisma/client';
 import { GetNotificationsQueryParams, GetNotificationsResponse, UpdateNotificationReadStatus, UpdateNotificationReadStatusResponse } from '@/backend/interfaces/notification/request';
 import { getAllNotificationAbout, getAllNotificationTypes } from '@/backend/interfaces/notification';
 import logger from '../logger';
 import { IncomingForm, Fields, Files, Options } from 'formidable';
-import { AddProjectResponse, GetProjectContentResponse, GetProjectsQueryParams, GetProjectsResponse, MAX_FILE_SIZE, ProjectAddMethod, getProjectAddMethod } from '@/backend/interfaces/project/request';
+import { AddProjectResponse, GetProjectsQueryParams, GetProjectsResponse, MAX_FILE_SIZE, ProjectAddMethod, getProjectAddMethod } from '@/backend/interfaces/project/request';
+// import { AddProjectResponse, GetProjectContentResponse, GetProjectsQueryParams, GetProjectsResponse, MAX_FILE_SIZE, ProjectAddMethod, getProjectAddMethod } from '@/backend/interfaces/project/request';
 import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
-import { Project, getAllProjectTypes, ProjectWithUser } from '@/backend/interfaces/project';
+import { Project, getAllProjectTypes, ProjectWithUser, HAInstallType } from '@/backend/interfaces/project';
 import AWS from 'aws-sdk';
 import fs from 'fs';
 import isValidProjectName, { updateContent, deleteProject, getGitHubRepoData } from '@/backend/helpers/project';
@@ -134,49 +135,75 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
              * In order from specific to less specific params
              */
 
-            // find where using specified type and userID
-            if (queryParams.type && user) {
-                // validate type
-                query.where = {
+            // Initialize the base where object
+            let where: Prisma.ProjectWhereInput = {};
+            let include: Prisma.ProjectInclude = {};
+            
+            // Check for user ID and adjust the where clause accordingly
+            if (user) {
+                
+                where.userID = user.id;
+            }
+
+            // Validate and add project type if specified
+            if (queryParams.type) {
+                const validTypes = getAllProjectTypes(false);
+                if (!validTypes.includes(queryParams.type)) {
+                    return res.status(400).json({ success: false, message: `Invalid project type specified. Type (case sensitive) must be one of: ${validTypes.join(', ')}` });
+                }
+                if(queryParams.username || queryParams.githubUserID || queryParams.userID){
+                    if(user){
+                        where = {
+                            AND: [
+                                { userID: user.id},
+                                { projectType: queryParams.type },
+                            ]
+                        }
+                    }
+                }else{
+                    where.projectType = queryParams.type;
+                }
+            }
+
+            // Handle checkImported condition
+            if (queryParams.checkImported && user) {
+                where.repo = {
                     AND: [
-                        { userID: user.id },
-                        { projectType: queryParams.type }
+                        { addedByGithubID: { not: user.githubID } },
+                        { ownerGithubID: user.githubID }
                     ]
-                }
-            // find find all projects that was added by a different user
-            } else if(queryParams.checkImported && user){
-                console.log('checkImported:', queryParams.checkImported)
-                query.where = {
-                    repo: {
-                        AND: [
-                            { addedByGithubID: { not: user.githubID } },
-                            { ownerGithubID: user.githubID }
-                        ]
+                };
+            }
+
+            // Handle ownedOrImported condition
+            if (queryParams.ownedOrImported && user) {
+                where.repo = {
+                    OR: [
+                        { addedByGithubID: user.githubID },
+                        { ownerGithubID: user.githubID }
+                    ]
+                };
+            }
+
+            // Searching by project title must also be user specific
+            if(queryParams.projectTitle){
+                // get user specific project
+                if(queryParams.username || queryParams.githubUserID || queryParams.userID){
+                    if(user){
+                        where = {
+                            AND: [
+                                { userID: user.id },
+                                { title: queryParams.projectTitle }
+                            ]
+                        }
                     }
                 }
-            // Will find all projects owned or imported by the user
-            } else if(queryParams.ownedOrImported && user){
-                console.log('ownedOrImported:', queryParams.ownedOrImported)
-                query.where = {
-                    repo: {
-                        OR: [
-                            { addedByGithubID: user.githubID },
-                            { ownerGithubID: user.githubID }
-                        ]
-                    }
-                }
-            // find where using specified type
-            } else if (queryParams.type) {
-                console.log('type:', queryParams.type)
-                query.where = {
-                    projectType: queryParams.type
-                }
-            // find where using specified userID
-            } else if (user) {
-                query.where = {
-                    userID: user.id
-                }
-            } 
+
+            }
+            console.log('where user:', user);
+            console.log('where:', where);
+            // Assign the dynamically built where clause to the query object
+            query.where = where;
 
 
             // if no cursor is provided, get a limited number of rows.
@@ -204,8 +231,24 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
                 }
             }
 
+            if(queryParams.allContent){
+                include.repo = true
+                include.tags = true
+            }
 
-            const projects: ProjectWithUser[] = await prisma.project.findMany({ ...query, include: { user: true } })
+            include.user = {
+                omit: {
+                    ghuToken: true
+                },
+            }
+
+            console.log('query:', query);
+            let projects: ProjectWithUser[] | ProjectAllInfo[] = [] 
+
+            // Check if any where conditions are set
+            if(Object.keys(where).length > 0){
+                projects = await prisma.project.findMany({ ...query, include })
+            }
 
             console.log('projects:', projects);
             const response: GetProjectsResponse = {
@@ -226,48 +269,6 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
         }
     });
 
-projectsRouter.get<Record<string, string>, GetProjectContentResponse | BadRequestResponse, any>(
-    '/:projectName/content',
-    async (req, res) => {
-        try {
-            const projectName:string = req.params.projectName
-            
-            // Make sure the project name is valid
-            if(isValidProjectName(projectName)){
-                // Fetch ALL the project info
-                const projectInfo = await prisma.project.findFirst({
-                    where: {
-                        title: projectName
-                    },
-                    include: {
-                        user: {
-                            omit: {
-                                ghuToken: true
-                            },
-                        },
-                        tags: true,
-                        repo: true
-                    }
-                })
-
-                console.log('projectInfo:', projectInfo)
-
-                // Set headers to cache for 10 mins
-                res.setHeader('Cache-Control', 's-maxage=600, stale-while-revalidate')
-                
-                return res.status(200).json({success:true, projectAllInfo: projectInfo})
-            }else{
-                return res.status(400).json({success:false, message: 'Invalid project name.'})
-            }
-            
-        } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
-                label: 'GET: /projects/:userid/count: ',
-            });
-            return res.status(500).json({ success: false, message: 'Error getting token' });
-        }
-    });
-    
 projectsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestResponse, any>(
     '/search',
     async (req, res) => {
@@ -316,6 +317,8 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
         let projectOwnerUser: User | undefined = user
         let createdRepo: Repo|null = null;
         let createdProject: Project|null = null;
+        let repoData:OctokitResponse<any, number> | null = null
+
         if (!user) {
             return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
         }
@@ -375,7 +378,6 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                             success: false,
                             message: 'Invalid form field types.',
                         }
-                        console.log("fields", fields)
                         if (!(addMethod
                             && fields.repoURL instanceof Array
                             && fields.projectType instanceof Array
@@ -398,14 +400,17 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                             return resolve({ code: 401, json: badFormResponse });
                         }
 
-                        console.log("addMethod", addMethod)
-                        console.log(getProjectAddMethod(addMethod) === ProjectAddMethod.REPO_SELECT)
-                        console.log(getProjectAddMethod(addMethod) === ProjectAddMethod.URL_IMPORT)
+
+
+                        /**
+                         * Contains logic for adding a project to HASTI via a URL import
+                         */
                         if(getProjectAddMethod(addMethod) === ProjectAddMethod.URL_IMPORT){
                             const repoURLData:string[] = fields.repoURL[0].split('/')
                             const repoOwner:string = repoURLData[3]
                             const repoName:string = repoURLData[4]
-                            const repoData:OctokitResponse<any, number> | null = await getGitHubRepoData(user, repoOwner, repoName)
+
+                            repoData = await getGitHubRepoData(user, repoOwner, repoName)
 
 
                             if(repoData){
@@ -487,7 +492,11 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                 }
                                 
                             }
+                        /**
+                         * Contains logic for adding a project to HASTI via already imported repo
+                         */
                         }else if(getProjectAddMethod(addMethod) === ProjectAddMethod.REPO_SELECT){
+
                             if(!(fields.repositoryID instanceof Array)){
                                 console.log("not array")
                                 createdProject ? await deleteProject(createdProject.id):null
@@ -501,12 +510,59 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                             }
                             return resolve({ code: 400, json: badFormResponse });
                         }
+                        /**
+                         * Contains logic for all project add methods
+                         */
+
+
                         // Get the repository ID
                         let repositoryID: string = ''
                         if(getProjectAddMethod(addMethod) === ProjectAddMethod.REPO_SELECT && fields.repositoryID instanceof Array){
                             repositoryID = fields.repositoryID[0]
                         }else if(getProjectAddMethod(addMethod) === ProjectAddMethod.URL_IMPORT && createdRepo){
                             repositoryID = createdRepo?.id.toString()
+                        }
+
+                        // Get the repo data if it doesn't exist
+                        if(!repoData){
+                            const savedRepoData = await prisma.repo.findFirst({
+                                select: {
+                                    fullName: true,
+                                },
+                                where: {
+                                    id: repositoryID
+                                }
+                            })
+                            const repoFullName:string[] | undefined = savedRepoData?.fullName.split('/')
+                            if(repoFullName){
+                                const repoOwner:string = repoFullName[0]
+                                const repoName:string = repoFullName[1]
+
+                                repoData = await getGitHubRepoData(user, repoOwner, repoName)
+                                
+                                // Update Repo with new data
+                                if(repoData){
+                                    await prisma.repo.update({
+                                        where: {
+                                            id: repositoryID
+                                        },
+                                        data: {
+                                            gitHubNodeID: repoData.data.node_id,
+                                            gitHubStars: repoData.data.stargazers_count,
+                                            gitHubWatchers: repoData.data.watchers_count,
+                                        }
+                                    })
+                                }
+
+                            }else{
+                                const response: AddProjectResponse = {
+                                    success: false,
+                                    message: 'Repo used for project not found.',
+                                }
+                                createdProject ? await deleteProject(createdProject.id):null
+                                createdRepo ? await deleteRepo(createdRepo.id):null
+                                return resolve({ code: 404, json: response });
+                            }
                         }
 
                         // Get form fields
@@ -516,14 +572,67 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                         const description: string = fields.description[0];
                         const tags: string = fields.tags[0];
 
-                        console.log("== DEBUG")
-                        console.log(repositoryID, projectType, haInstallType, title, description, tags)
 
                         if (repositoryID && projectOwnerUser && projectType && haInstallType && title && description && tags) {
+
+                            // Validate the project name
+                            if (!isValidProjectName(title)) {
+                                const response: AddProjectResponse = {
+                                    success: false,
+                                    message: 'Invalid project name. Project names must be alphanumeric, and may contain spaces, dashes, and underscores.',
+                                }
+                                createdProject ? await deleteProject(createdProject.id):null
+                                createdRepo ? await deleteRepo(createdRepo.id):null
+                                return resolve({ code: 400, json: response });
+                            }
+
                             // Split the tags into an array and remove any empty tags
                             const tagArray = tags.split(',').filter((tag) => tag.trim() !== '');
-                            console.log("== DEBUG")
-                            console.log(repositoryID, projectOwnerUser, projectType, haInstallType, title, description, tags)
+                            const haInstallTypesArray = haInstallType.split(',').filter((install) => install.trim() !== '');
+
+                            // Determine 'works with' types
+                            let worksWithOS:boolean = false
+                            let worksWithContainer:boolean = false
+                            let worksWithCore:boolean = false
+                            let worksWithSupervised:boolean = false
+                            let worksWithAny:boolean = haInstallTypesArray.includes(HAInstallType.ANY.toString().toLowerCase())
+                            
+                            if(haInstallTypesArray.includes(HAInstallType.OS.toString().toLowerCase()) || worksWithAny){
+                                worksWithOS = true
+                            }
+
+                            if(haInstallTypesArray.includes(HAInstallType.CONTAINER.toString().toLowerCase()) || worksWithAny){
+                                worksWithContainer = true
+                            }
+
+                            if(haInstallTypesArray.includes(HAInstallType.CORE.toString().toLowerCase()) || worksWithAny){
+                                worksWithCore = true
+                            }
+
+                            if(haInstallTypesArray.includes(HAInstallType.SUPERVISED.toString().toLowerCase()) || worksWithAny){
+                                worksWithSupervised = true
+                            }
+
+                            
+
+                            // Check if the project name already exists
+                            const existingProject = await prisma.project.findFirst({
+                                where: {
+                                    title: title
+                                }
+                            });
+
+                            if (existingProject) {
+                                const response: AddProjectResponse = {
+                                    success: false,
+                                    message: 'Project name already exists. Please choose a different name.',
+                                }
+                                createdProject ? await deleteProject(createdProject.id):null
+                                createdRepo ? await deleteRepo(createdRepo.id):null
+                                return resolve({ code: 400, json: response });
+                            }
+
+                            // Create the project
                             createdProject = await prisma.project.create({
                                 data: {
                                     title: title,
@@ -541,7 +650,15 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                     published: false, // Hard code false, as the repo needs to be cloned and processed.
                                     userID: projectOwnerUser.id,
                                     repoID: repositoryID,
-                                    haInstallType: haInstallType,
+                                    // Set the 'Works With' types
+                                    worksWithOS: worksWithOS,
+                                    worksWithContainer: worksWithContainer,
+                                    worksWithCore: worksWithCore,
+                                    worksWithSupervised: worksWithSupervised,
+
+                                    // Github data
+
+
                                     projectType: projectType,
                                 },
                                 include: {
@@ -639,8 +756,6 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                             })
 
                             // Update content and images
-                            // if(repositoryID instanceof String && repoID instanceof String && userID instanceof String){
-                            // }
                             const updateResponse = await updateContent(repositoryID, createdProject.id, user.id)
 
                             if (!updateResponse.success) {

@@ -4,12 +4,12 @@ import { Skeleton } from "@mantine/core";
 
 
 // Generate a function will return a skelton that wil have random  amounts to make it look more realistic
-export function DynamicSkeletonTitle() {
+export function DynamicSkeletonTitle({max=10, min=4}: {max: number, min: number}) {
     const [random, setRandom] = useState(0);
 
     useEffect(() => {
         // Generate random number on initial render
-        const randomValue = Math.floor(Math.random() * (10 - 4 + 1)) + 4;
+        const randomValue = Math.floor(Math.random() * (max - min + 1)) + min;
         setRandom(randomValue);
     }, []);
 
@@ -24,13 +24,26 @@ export function DynamicSkeletonTitle() {
     );
 }
 
+
+export function DynamicSkeletonImage({height=10, width=4}: {height: number, width: number}) {
+    const randomValue = Math.floor(Math.random() * (1000 - 4 + 1)) + 4;
+
+    return (
+        <div className="skeleton__text flex flex-wrap">
+            <div key={`skeleton-image-${randomValue}`}>
+                <Skeleton height={height} width={width} mt={6} radius="xl" className="mr-1.5"/>
+            </div>
+        </div>
+    );
+}
+
 // Generate a function will return a skelton that wil have random  amounts to make it look more realistic
-export function DynamicSkeletonText() {
+export function DynamicSkeletonText({max=30, min=6}: {max: number, min: number}) {
     const [random, setRandom] = useState(0);
 
     useEffect(() => {
         // Generate random number on initial render
-        const randomValue = Math.floor(Math.random() * (30 - 6 + 1)) + 6;
+        const randomValue = Math.floor(Math.random() * (max - min + 1)) + min;
         setRandom(randomValue);
     }, []);
 

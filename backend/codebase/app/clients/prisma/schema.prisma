@@ -39,7 +39,11 @@ model Project {
   repoID            String
   repo              Repo          @relation(fields: [repoID], references: [id])
   
-  haInstallType     String        @default("core") @db.VarChar(255)
+  worksWithOS               Boolean       @default(false)
+  worksWithContainer        Boolean       @default(false)
+  worksWithCore             Boolean       @default(false)
+  worksWithSupervised       Boolean       @default(false)
+  
   projectType       String        @default("integration") @db.VarChar(255)
 
   profileImage      String?       @default("") @db.VarChar(255)
