@@ -154,46 +154,6 @@ export default function Page({ params }: { params: { developer:string, name: str
 
     return (
       <aside className="transition-all duration-700 sticky top-8 xl:w-96 shrink-0">
-        {isUserOwner ? 
-        <div className='rounded-2xl bg-slate-200 my-5'>
-                <Title order={5} className='mx-5 pt-3'>Project Settings</Title>
-                <Group className='py-5' justify="center">
-
-        <Button
-        variant="default"
-        leftSection={<IconSettings size={25} 
-        />}
-      >
-        Project Config
-      </Button>
-        <Tooltip label="Publish or hide your project from being viewed publicly" refProp="rootRef">
-
-          <Switch
-            checked={projectPublished}
-            onChange={(event) => setProjectPublished(event.currentTarget.checked)}
-            color="white"
-            size="md"
-            label="Published"
-            thumbIcon={
-              projectPublished ? (
-                <IconCheck
-                  style={{ width: rem(12), height: rem(12) }}
-                  color={'teal'}
-                  stroke={3}
-                />
-              ) : (
-                <IconX
-                  style={{ width: rem(12), height: rem(12) }}
-                  color={'red'}
-                  stroke={3}
-                />
-              )
-            }
-          />
-          </Tooltip>
-        </Group> 
-        </div>
-        : null}
         <Details project={loadedProject} />
       </aside>
 

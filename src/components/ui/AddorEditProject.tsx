@@ -34,15 +34,13 @@ import { LoadProjects } from '@/frontend/interfaces/project';
 import isValidProjectName from '@/frontend/helpers/user';
 import { IconSettings } from '@tabler/icons-react';
 import Details from '@/frontendcomponents/store/content/Details';
-import AddorEditProject from '@/frontend/components/ui/AddorEditProject';
 
 
 
 
 
 
-export default function Page() {
-  const [opened, { open, close }] = useDisclosure(false);
+export default function AddorEditProject({opened, open, close, projectID}: {opened: boolean, open: any, close: any, projectID?: string}) {
 
   const [selectRepo, setSelectedRepo] = useState<Repo | null>(null)
   const [projectType, setProjectType] = useState<ProjectType>();
@@ -56,6 +54,8 @@ export default function Page() {
   const [projectResponse, setProjectResponse] = useState<AddProjectResponse>({ success: true, message: '' });
   const [projectsLoadedState, setProjectsLoadedState] = useState<LoadProjects>()
   const [unclaimedProjectsLoadedState, setUnclaimedProjectsLoadedState] = useState<LoadProjects>()
+
+  const [loadingProjectData, setLoadingProjectData] = useState<boolean>(projectID ? true : false)
 
   const { data: session, status } = useSession()
   // This regex is used to validate the importRepoURL field has a valid GitHub repository URL format.
@@ -88,10 +88,10 @@ export default function Page() {
       retVal = 'Project name must have at least 3 characters 1.'
     }
 
-    if(value && !isValidProjectName(value)) {
+    if (value && !isValidProjectName(value)) {
       retVal = 'Invalid project name. Project names must be alphanumeric, and may contain spaces, dashes, and underscores.'
     }
-    
+
     if (value !== undefined && value.length > 3 && importRepoURLRegex.test(form.values.importRepoURL)) {
       retVal = null
     }
@@ -101,18 +101,18 @@ export default function Page() {
   }
 
 
-  function validateHasInstallTypes(){
+  function validateHasInstallTypes() {
     form.values.haInstallTypes = haInstallTypes
     console.log('value', haInstallTypes)
     const errorMessage: string = 'Please select an install type.'
-    if(haInstallTypes === undefined || haInstallTypes.length <= 0){
+    if (haInstallTypes === undefined || haInstallTypes.length <= 0) {
       return errorMessage
     }
-    
-    for(const installType of haInstallTypes){
+
+    for (const installType of haInstallTypes) {
       console.log('installType', installType)
       console.log('allInstallTypes', getAllHaInstallTypes())
-      if(!getAllHaInstallTypes(false).includes(installType.toString().toLowerCase())){
+      if (!getAllHaInstallTypes(false).includes(installType.toString().toLowerCase())) {
         return errorMessage
       }
     }
@@ -147,7 +147,7 @@ export default function Page() {
   });
 
 
-  
+
   // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     const fetchPopularTags = async () => {
@@ -303,58 +303,132 @@ export default function Page() {
   }, [selectRepo])
 
   return (
-    <div className="bg-white py-24 sm:py-28 w-full">
-      <div className="mx-auto max-w-[150%] px-6 lg:px-2">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl py-4">Your Projects</h2>
-        </div>
-        <div className=" w-full h-full">
-          <div key={`create-new-project`} className="mx-auto col-span-1 relative isolate flex flex-col justify-end overflow-hidden rounded-2xl px-8 py-8 my-4 min-w-[10.5rem] sm:max-h-none max-h-[15rem]">
-            <button
-              type="button"
-              className="relative block w-full h-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-              onClick={open}
-            >
-              <svg
-                className="mx-auto h-12 w-12 text-gray-400"
-                stroke="currentColor"
-                fill="none"
-                viewBox="0 0 48 48"
-                aria-hidden="true"
-              >
-                <FolderPlusIcon />
-              </svg>
-              <span className="mt-2 block text-sm font-semibold text-gray-900">New Project</span>
-            </button>
+          <Modal
+            size={'xl'}
+            opened={opened}
+            onClose={close}
+            title="Create new Project"
+            overlayProps={{
+              backgroundOpacity: 0.55,
+              blur: 3,
+            }}>
+            { loadingProjectData ? <form onSubmit={createProject}>
+              <div className="space-y-12">
+                <div className="border-b border-gray-900/10 pb-12">
+                  {/* <h2 className="text-base font-semibold leading-7 text-gray-900">New Project</h2> */}
 
-            <AddorEditProject opened={opened} open={open} close={close}/>
-          </div>
+                  <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+                    <div className="sm:col-span-4">
 
-        </div>
-        {unclaimedProjectsLoadedState
-          && unclaimedProjectsLoadedState.reqStatus === 'success'
-          && unclaimedProjectsLoadedState.projects
-          && unclaimedProjectsLoadedState.projects.length > 0 ?
-          <div className="flex min-w-0 px-6">
-            <h3 className="inline-block text-2xl sm:text-lg font-extrabold text-slate-900 tracking-tight dark:text-slate-900 py-2">Your projects imported by others:
-            </h3>
-          </div> : null}
+                      <div className="mt-2">
+                        <SelectRepo selectRepo={selectRepo} setSelectRepo={setSelectedRepo} />
+                        <div className="relative py-3">
+                          <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                            <div className="w-full border-t border-gray-300" />
+                          </div>
+                          <div className="relative flex justify-center">
+                            <span className="bg-white px-2 text-sm text-gray-500">or import 3rd party repository</span>
+                          </div>
+                        </div>
+                        <TextInput className="w-full" placeholder="full repository URL" {...form.getInputProps('importRepoURL')} onFocus={(e) => setSelectedRepo(null)} />
 
-        <ProjectGrid projectParams={{ githubUserID: session?.user.githubID, checkImported: true }} setProjectState={setUnclaimedProjectsLoadedState} />
-        {unclaimedProjectsLoadedState && unclaimedProjectsLoadedState.reqStatus === 'success'
-          && unclaimedProjectsLoadedState.projects && unclaimedProjectsLoadedState.projects.length > 0 ?
-          <div className="flex min-w-0 px-6">
-            <h3 className="inline-block text-2xl sm:text-lg font-extrabold text-slate-900 tracking-tight dark:text-slate-900 py-2 pt-6">Your projects:
-            </h3>
-          </div> : null}
+                      </div>
+                    </div>
+                    <div className="sm:col-span-4">
 
-        {projectsLoadedState && projectsLoadedState.projects && projectsLoadedState.projects.length > 0 ? null
-          : <h4 className="text-sm font-bold tracking-tight text-gray-900 sm:text-sm py-4 px-3 mx-auto text-center">
-            Your projects will be shown below when you create a project.
-          </h4>}
-        <ProjectGrid projectParams={{ githubUserID: session?.user.githubID, ownedOrImported: true }} setProjectState={setProjectsLoadedState} />
-      </div>
-    </div>
+                      <div className="">
+                        <TextInput className="w-full" label="Project Name" placeholder={selectRepo?.name} defaultValue={selectRepo?.name} {...form.getInputProps('projectName')} />
+
+                      </div>
+                    </div>
+                    <div className="sm:col-span-4">
+
+                      <div className="mt-2">
+                        <ProjectTypeSelectDropdownBox projectType={projectType} setProjectType={setProjectType} inputProps={getInputProps} />
+
+                      </div>
+                      <div className="mt-2">
+                        <HAInstallTypeSelectDropdownBox haInstallTypes={haInstallTypes} setHaInstallTypes={setHaInstallTypes} inputProps={getInputProps} />
+
+                      </div>
+                    </div>
+
+                    <div className="col-span-full">
+
+                      <div className="mt-2">
+                        <Textarea
+                          placeholder="Short description of the project."
+                          autosize
+                          minRows={4}
+                          maxRows={4}
+                          label="Description"
+                          {...form.getInputProps('description')}
+                        />
+                      </div>
+                      <p className="mt-3 text-sm leading-6 text-gray-600">Write a short description. Recommended ~30 words.</p>
+                    </div>
+                    <div className='sm:col-span-4'>
+
+                      <SearchTagComboBox label="Select tags"
+                        placeholder="Select or add a tag..."
+                        searchable={true}
+                        nothingFoundMessage='Nothing found... Add to create a new tag, space delimited'
+                        existingTags={existingTags}
+                        tags={tags} setTags={setTags}
+                        searchParams={searchParams}
+                        maxSelectedValues={10}
+                        inputProps={getInputProps}
+                      />
+                    </div>
+                    <div className="col-span-full">
+
+                      <div className="w-40">
+                        <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">
+                          Upload Images
+
+                        </label>
+                        <FileInput className='w-60' clearable label="Icon image" placeholder="" accept="image/png,image/jpeg" onChange={setIconImage} error={form.getInputProps('iconImage').error} />
+
+                      </div>
+                    </div>
+                    <div className="col-span-full">
+
+                      <div className="w-40">
+                        <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">
+                        </label>
+                        <FileInput className='w-60' clearable label="Background Image" placeholder="" accept="image/png,image/jpeg" onChange={setBackgroundImage} error={form.getInputProps('backgroundImage').error} />
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+
+
+
+              </div>
+              <div className='mt-6 flex justify-between'>
+                <div className='justify-start'>
+                  {projectResponse.success ?
+                    <p className="text-sm font-semibold leading-6 text-green-500 justify-start">{projectResponse.message}</p> :
+                    <p className="text-sm font-semibold leading-6 text-red-500 justify-start">{projectResponse.message}</p>}
+                </div>
+                <div className="items-center justify-end gap-x-6">
+
+                  <Button type="button" className="text-sm font-semibold leading-6 text-gray-900" onClick={e => close()}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    tabIndex={1}
+                    className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                    loading={loading}
+                  >
+                    Save
+                  </Button>
+                </div>
+              </div>
+            </form> : 'loading projects...'}
+          </Modal>
 
   )
 }
