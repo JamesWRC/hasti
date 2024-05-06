@@ -41,7 +41,6 @@ import Details from '@/frontendcomponents/store/content/Details';
 
 
 export default function AddorEditProject({opened, open, close, projectID}: {opened: boolean, open: any, close: any, projectID?: string}) {
-
   const [selectRepo, setSelectedRepo] = useState<Repo | null>(null)
   const [projectType, setProjectType] = useState<ProjectType>();
   const [haInstallTypes, setHaInstallTypes] = useState<HAInstallType[]>([HAInstallType.ANY]);
@@ -312,7 +311,7 @@ export default function AddorEditProject({opened, open, close, projectID}: {open
               backgroundOpacity: 0.55,
               blur: 3,
             }}>
-            { loadingProjectData ? <form onSubmit={createProject}>
+            { !loadingProjectData ? <form onSubmit={createProject}>
               <div className="space-y-12">
                 <div className="border-b border-gray-900/10 pb-12">
                   {/* <h2 className="text-base font-semibold leading-7 text-gray-900">New Project</h2> */}

@@ -83,7 +83,7 @@ export default function SettingsButton({projectID}: {projectID: string}) {
       >
         <div className='text-white'>Settings</div> 
       </Button>
-      <AddorEditProject opened={opened} open={open} close={close}/>
+      <AddorEditProject opened={opened} open={open} close={close} projectID={projectID}/>
     </Group> 
   )
 }
