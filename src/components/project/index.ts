@@ -7,6 +7,8 @@ import { ProjectAllInfo, ProjectWithUser } from '@/backend/interfaces/project'
 
 
 export default function useProjects({...props}: GetProjectsQueryParams):LoadProjects {
+  const [searchProps, setSearchProps] = useState<GetProjectsQueryParams>(props);
+
   const [projects, setProjects] = useState<GetProjectsResponse>(generatePlaceHolderProjects(props.limit || 10));
   const [reqStatus, setReqStatus] = useState('idle'); // idle, loading, success, error
   
@@ -15,73 +17,88 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
     const fetchData = async () => {
         setReqStatus('loading');
       try {
-
+        console.log("useProjects props: ", searchProps)
         //Build query string
         // Set the limit of the number of notifications to fetch
-        let queryStr = props.limit ? `?limit=${props.limit}` : '';
+        let queryStr = searchProps.limit ? `?limit=${searchProps.limit}` : '';
+
+        // set the projectID
+        if (searchProps.projectID) queryStr += `${queryStr ? '&' : '?'}projectID=${searchProps.projectID}`;
+
         // set the project type
-        if (props.type) queryStr += `${queryStr ? '&' : '?'}type=${props.type}`;
+        if (searchProps.type) queryStr += `${queryStr ? '&' : '?'}type=${searchProps.type}`;
 
         // Set the cursor to the next 'page' of notifications
-        if (props.cursor) queryStr += `${queryStr ? '&' : '?'}cursor=${props.cursor}`;
+        if (searchProps.cursor) queryStr += `${queryStr ? '&' : '?'}cursor=${searchProps.cursor}`;
 
         // Set the userID
-        if (props.userID) queryStr += `${queryStr ? '&' : '?'}userID=${props.userID}`;
+        if (searchProps.userID) queryStr += `${queryStr ? '&' : '?'}userID=${searchProps.userID}`;
 
         // Set the username 
-        if (props.username) queryStr += `${queryStr ? '&' : '?'}username=${props.username}`;
+        if (searchProps.username) queryStr += `${queryStr ? '&' : '?'}username=${searchProps.username}`;
 
         // Set the github userID
-        if (props.githubUserID) queryStr += `${queryStr ? '&' : '?'}githubUserID=${props.githubUserID}`;
+        if (searchProps.githubUserID) queryStr += `${queryStr ? '&' : '?'}githubUserID=${searchProps.githubUserID}`;
 
         // Set the ownedByGithubUserID
-        if (props.checkImported) queryStr += `${queryStr ? '&' : '?'}checkImported=${props.checkImported}`;
+        if (searchProps.checkImported) queryStr += `${queryStr ? '&' : '?'}checkImported=${searchProps.checkImported}`;
 
         // Set the ownedOrImported
-        if (props.ownedOrImported) queryStr += `${queryStr ? '&' : '?'}ownedOrImported=${props.ownedOrImported}`;
+        if (searchProps.ownedOrImported) queryStr += `${queryStr ? '&' : '?'}ownedOrImported=${searchProps.ownedOrImported}`;
 
         // Set the orderBy
-        if (props.orderBy) queryStr += `${queryStr ? '&' : '?'}orderBy=${props.orderBy}`;
+        if (searchProps.orderBy) queryStr += `${queryStr ? '&' : '?'}orderBy=${searchProps.orderBy}`;
 
         // Set the orderDirection
-        if (props.orderDirection) queryStr += `${queryStr ? '&' : '?'}orderDirection=${props.orderDirection}`;
+        if (searchProps.orderDirection) queryStr += `${queryStr ? '&' : '?'}orderDirection=${searchProps.orderDirection}`;
 
         // Set the projectTitle
-        if (props.projectTitle) queryStr += `${queryStr ? '&' : '?'}projectTitle=${props.projectTitle}`;
+        if (searchProps.projectTitle) queryStr += `${queryStr ? '&' : '?'}projectTitle=${searchProps.projectTitle}`;
 
         // Set the allContent
-        if (props.allContent) queryStr += `${queryStr ? '&' : '?'}allContent=${props.allContent}`;
+        if (searchProps.allContent) queryStr += `${queryStr ? '&' : '?'}allContent=${searchProps.allContent}`;
 
-        console.log("props server: ", props)
+        console.log("searchProps server: ", searchProps)
         console.log("queryStr: ", queryStr)
-        // sleep for 2 seconds to simulate a slow network
-        await new Promise((resolve) => setTimeout(resolve, 4000));
-        const response = await fetch(`${process.env.API_URL}/api/v1/projects` + queryStr, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${session?.user.jwt}`
-            }
-        })
-        if (!response.ok) {
-          throw new Error('Failed to fetch data');
-        }
-        // return the projects found.
-        if(response.status === 200){
-          const jsonData:GetProjectsResponse = await response.json();
-          console.log("jsonData: ", jsonData)
-          setProjects(jsonData);
-          setReqStatus('success');
-        // If HTTP 204, return success, with empty projects. As there are no projects to return.
-        }else if(response.status === 204){
-          const emptyProjectsResponse:GetProjectsResponse = {
-            success: true,
-            userProjects: []
-          }
-          setProjects(emptyProjectsResponse);
-          setReqStatus('success');
+
+        const emptyProjectsResponse:GetProjectsResponse = {
+          success: true,
+          userProjects: []
         }
 
+        // If there are no search parameters, return success with empty projects.
+        if(queryStr === ''){
+          setReqStatus('success');
+          setProjects(emptyProjectsResponse);
+
+        
+        }else{
+          // Only fetch data if there are search parameters.
+          
+          // sleep for 2 seconds to simulate a slow network
+          await new Promise((resolve) => setTimeout(resolve, 4000));
+          const response = await fetch(`${process.env.API_URL}/api/v1/projects` + queryStr, {
+              method: 'GET',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${session?.user.jwt}`
+              }
+          })
+          if (!response.ok) {
+            throw new Error('Failed to fetch data');
+          }
+          // return the projects found.
+          if(response.status === 200){
+            const jsonData:GetProjectsResponse = await response.json();
+            console.log("jsonData: ", jsonData)
+            setProjects(jsonData);
+            setReqStatus('success');
+          // If HTTP 204, return success, with empty projects. As there are no projects to return.
+          }else if(response.status === 204){
+            setProjects(emptyProjectsResponse);
+            setReqStatus('success');
+          }
+        }
       } catch (error) {
         setReqStatus('error');
         console.error('Error fetching data:', error); 
@@ -93,12 +110,13 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
     return () => {
       // Cleanup function
     };
-  }, []);
+  }, [searchProps]);
 
 
     const retVal:LoadProjects = {
       projects: projects.userProjects,
-      reqStatus
+      reqStatus,
+      setSearchProps
     }
     console.log("retVal12: ", retVal)
     return retVal;

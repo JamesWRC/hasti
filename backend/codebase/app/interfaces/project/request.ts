@@ -46,8 +46,9 @@ export interface GetProjectsResponse {
 }
 
 
-export interface GetProjectsQueryParams {
+export interface GetProjectsQueryParams{
     limit?: number;
+    projectID?: string;
     type?: ProjectType;
     cursor?: string;
     userID?: string;

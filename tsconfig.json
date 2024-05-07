@@ -22,7 +22,7 @@
     "preserveSymlinks": true,
     "baseUrl": ".",
     "paths": {
-      "@/frontend*": ["./src/*"],
+      "@/frontend/*": ["./src/*"],
       "@/backend/*": ["./backend/codebase/app/*"],
     },
   },

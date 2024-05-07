@@ -5,7 +5,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 import { useDisclosure } from '@mantine/hooks';
-import { Modal, Button, Title, Group } from '@mantine/core';
+import { Modal, Button, Title, Group, Box, LoadingOverlay } from '@mantine/core';
 import SelectRepo from '@/frontend/components/repo/SelectRepo';
 import { useEffect, useState } from 'react'
 
@@ -24,7 +24,7 @@ import { ProjectTypeSelectDropdownBox } from '@/frontend/components/ui/ProjectTy
 
 import { FileInput } from '@mantine/core';
 import { HAInstallTypeSelectDropdownBox } from '@/frontend/components/ui/HAInstallTypeSelectDropdownBox'
-import { AddProjectResponse, MAX_FILE_SIZE } from '@/backend/interfaces/project/request'
+import { AddProjectResponse, GetProjectsQueryParams, MAX_FILE_SIZE } from '@/backend/interfaces/project/request'
 
 
 import ProjectGrid from '@/frontend/components/project/ProjectGrid';
@@ -33,14 +33,15 @@ import { ProjectAddMethod, getProjectAddMethod, getAllProjectAddMethods } from '
 import { LoadProjects } from '@/frontend/interfaces/project';
 import isValidProjectName from '@/frontend/helpers/user';
 import { IconSettings } from '@tabler/icons-react';
-import Details from '@/frontendcomponents/store/content/Details';
+import Details from '@/frontend/components/store/content/Details';
+import useProjects from '@/frontend/components/project';
 
 
 
 
 
 
-export default function AddorEditProject({opened, open, close, projectID}: {opened: boolean, open: any, close: any, projectID?: string}) {
+export default function AddorEditProject({ opened, open, close, projectID }: { opened: boolean, open: any, close: any, projectID?: string }) {
   const [selectRepo, setSelectedRepo] = useState<Repo | null>(null)
   const [projectType, setProjectType] = useState<ProjectType>();
   const [haInstallTypes, setHaInstallTypes] = useState<HAInstallType[]>([HAInstallType.ANY]);
@@ -51,12 +52,52 @@ export default function AddorEditProject({opened, open, close, projectID}: {open
   const [backgroundImage, setBackgroundImage] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [projectResponse, setProjectResponse] = useState<AddProjectResponse>({ success: true, message: '' });
-  const [projectsLoadedState, setProjectsLoadedState] = useState<LoadProjects>()
-  const [unclaimedProjectsLoadedState, setUnclaimedProjectsLoadedState] = useState<LoadProjects>()
-
-  const [loadingProjectData, setLoadingProjectData] = useState<boolean>(projectID ? true : false)
+  const [projectLoadedState, setProjectLoadedState] = useState<LoadProjects>()
 
   const { data: session, status } = useSession()
+
+
+  let fetchProjects: GetProjectsQueryParams = {};
+
+
+  
+
+  const { projects, reqStatus, setSearchProps } = useProjects(fetchProjects);
+
+
+  useEffect(() => {
+    // Reset state back to idle when the modal is closed
+    if (!opened) {
+      setProjectLoadedState({ projects, reqStatus:'idle', setSearchProps })
+    }
+    if(opened){
+      fetchProjects = {
+        limit: 1,
+        projectID: projectID,
+      }
+      console.log('projectID 1111:', projectID)  
+  
+      setSearchProps(fetchProjects)
+    }
+
+    
+
+  }, [opened])
+
+  useEffect(() => {
+    
+    setProjectLoadedState({ projects, reqStatus, setSearchProps})
+    
+
+  }, [projects])
+
+
+  useEffect(() => {
+    
+    console.log('projectLoadedState:', projectLoadedState)
+
+  }, [projectLoadedState])
+
   // This regex is used to validate the importRepoURL field has a valid GitHub repository URL format.
   const importRepoURLRegex = /^(https?:\/\/)?(www\.)?github\.com\/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+?$/
 
@@ -302,132 +343,142 @@ export default function AddorEditProject({opened, open, close, projectID}: {open
   }, [selectRepo])
 
   return (
-          <Modal
-            size={'xl'}
-            opened={opened}
-            onClose={close}
-            title="Create new Project"
-            overlayProps={{
-              backgroundOpacity: 0.55,
-              blur: 3,
-            }}>
-            { !loadingProjectData ? <form onSubmit={createProject}>
-              <div className="space-y-12">
-                <div className="border-b border-gray-900/10 pb-12">
-                  {/* <h2 className="text-base font-semibold leading-7 text-gray-900">New Project</h2> */}
+    <Box pos="relative">
+        {/* ...other content */}
+      {/* </Box> */}
+    <Modal
+      size={'xl'}
+      opened={opened}
+      onClose={close}
+      title="Create new Project"
+      overlayProps={{
+        backgroundOpacity: 0.55,
+        blur: 3,
+      }}>
+        <LoadingOverlay visible={!projectID || (projectLoadedState 
+          && projectLoadedState.reqStatus === "success" 
+          && projectLoadedState?.projects 
+          && projectLoadedState?.projects.length > 0) ? false : true} zIndex={1000} overlayProps={{ radius: "xl", blur: 2 }}
+        />
+      <form onSubmit={createProject}>
+        <div className="space-y-12">
+          <div className="border-b border-gray-900/10 pb-12">
+            {/* <h2 className="text-base font-semibold leading-7 text-gray-900">New Project</h2> */}
 
-                  <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-                    <div className="sm:col-span-4">
+            <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+              <div className="sm:col-span-4">
 
-                      <div className="mt-2">
-                        <SelectRepo selectRepo={selectRepo} setSelectRepo={setSelectedRepo} />
-                        <div className="relative py-3">
-                          <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                            <div className="w-full border-t border-gray-300" />
-                          </div>
-                          <div className="relative flex justify-center">
-                            <span className="bg-white px-2 text-sm text-gray-500">or import 3rd party repository</span>
-                          </div>
-                        </div>
-                        <TextInput className="w-full" placeholder="full repository URL" {...form.getInputProps('importRepoURL')} onFocus={(e) => setSelectedRepo(null)} />
-
-                      </div>
+                <div className="mt-2">
+                  <SelectRepo selectRepo={selectRepo} setSelectRepo={setSelectedRepo} />
+                  <div className="relative py-3">
+                    <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                      <div className="w-full border-t border-gray-300" />
                     </div>
-                    <div className="sm:col-span-4">
-
-                      <div className="">
-                        <TextInput className="w-full" label="Project Name" placeholder={selectRepo?.name} defaultValue={selectRepo?.name} {...form.getInputProps('projectName')} />
-
-                      </div>
-                    </div>
-                    <div className="sm:col-span-4">
-
-                      <div className="mt-2">
-                        <ProjectTypeSelectDropdownBox projectType={projectType} setProjectType={setProjectType} inputProps={getInputProps} />
-
-                      </div>
-                      <div className="mt-2">
-                        <HAInstallTypeSelectDropdownBox haInstallTypes={haInstallTypes} setHaInstallTypes={setHaInstallTypes} inputProps={getInputProps} />
-
-                      </div>
-                    </div>
-
-                    <div className="col-span-full">
-
-                      <div className="mt-2">
-                        <Textarea
-                          placeholder="Short description of the project."
-                          autosize
-                          minRows={4}
-                          maxRows={4}
-                          label="Description"
-                          {...form.getInputProps('description')}
-                        />
-                      </div>
-                      <p className="mt-3 text-sm leading-6 text-gray-600">Write a short description. Recommended ~30 words.</p>
-                    </div>
-                    <div className='sm:col-span-4'>
-
-                      <SearchTagComboBox label="Select tags"
-                        placeholder="Select or add a tag..."
-                        searchable={true}
-                        nothingFoundMessage='Nothing found... Add to create a new tag, space delimited'
-                        existingTags={existingTags}
-                        tags={tags} setTags={setTags}
-                        searchParams={searchParams}
-                        maxSelectedValues={10}
-                        inputProps={getInputProps}
-                      />
-                    </div>
-                    <div className="col-span-full">
-
-                      <div className="w-40">
-                        <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">
-                          Upload Images
-
-                        </label>
-                        <FileInput className='w-60' clearable label="Icon image" placeholder="" accept="image/png,image/jpeg" onChange={setIconImage} error={form.getInputProps('iconImage').error} />
-
-                      </div>
-                    </div>
-                    <div className="col-span-full">
-
-                      <div className="w-40">
-                        <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">
-                        </label>
-                        <FileInput className='w-60' clearable label="Background Image" placeholder="" accept="image/png,image/jpeg" onChange={setBackgroundImage} error={form.getInputProps('backgroundImage').error} />
-                      </div>
-
+                    <div className="relative flex justify-center">
+                      <span className="bg-white px-2 text-sm text-gray-500">or import 3rd party repository</span>
                     </div>
                   </div>
-                </div>
+                  <TextInput className="w-full" placeholder="full repository URL" {...form.getInputProps('importRepoURL')} onFocus={(e) => setSelectedRepo(null)} />
 
-
-
-              </div>
-              <div className='mt-6 flex justify-between'>
-                <div className='justify-start'>
-                  {projectResponse.success ?
-                    <p className="text-sm font-semibold leading-6 text-green-500 justify-start">{projectResponse.message}</p> :
-                    <p className="text-sm font-semibold leading-6 text-red-500 justify-start">{projectResponse.message}</p>}
-                </div>
-                <div className="items-center justify-end gap-x-6">
-
-                  <Button type="button" className="text-sm font-semibold leading-6 text-gray-900" onClick={e => close()}>
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    tabIndex={1}
-                    className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                    loading={loading}
-                  >
-                    Save
-                  </Button>
                 </div>
               </div>
-            </form> : 'loading projects...'}
-          </Modal>
+              <div className="sm:col-span-4">
+
+                <div className="">
+                  <TextInput className="w-full" label="Project Name" placeholder={selectRepo?.name} defaultValue={selectRepo?.name} {...form.getInputProps('projectName')} />
+
+                </div>
+              </div>
+              <div className="sm:col-span-4">
+
+                <div className="mt-2">
+                  <ProjectTypeSelectDropdownBox projectType={projectType} setProjectType={setProjectType} inputProps={getInputProps} />
+
+                </div>
+                <div className="mt-2">
+                  <HAInstallTypeSelectDropdownBox haInstallTypes={haInstallTypes} setHaInstallTypes={setHaInstallTypes} inputProps={getInputProps} />
+
+                </div>
+              </div>
+
+              <div className="col-span-full">
+
+                <div className="mt-2">
+                  <Textarea
+                    placeholder="Short description of the project."
+                    autosize
+                    minRows={4}
+                    maxRows={4}
+                    label="Description"
+                    {...form.getInputProps('description')}
+                  />
+                </div>
+                <p className="mt-3 text-sm leading-6 text-gray-600">Write a short description. Recommended ~30 words.</p>
+              </div>
+              <div className='sm:col-span-4'>
+
+                <SearchTagComboBox label="Select tags"
+                  placeholder="Select or add a tag..."
+                  searchable={true}
+                  nothingFoundMessage='Nothing found... Add to create a new tag, space delimited'
+                  existingTags={existingTags}
+                  tags={tags} setTags={setTags}
+                  searchParams={searchParams}
+                  maxSelectedValues={10}
+                  inputProps={getInputProps}
+                />
+              </div>
+              <div className="col-span-full">
+
+                <div className="w-40">
+                  <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">
+                    Upload Images
+
+                  </label>
+                  <FileInput className='w-60' clearable label="Icon image" placeholder="" accept="image/png,image/jpeg" onChange={setIconImage} error={form.getInputProps('iconImage').error} />
+
+                </div>
+              </div>
+              <div className="col-span-full">
+
+                <div className="w-40">
+                  <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">
+                  </label>
+                  <FileInput className='w-60' clearable label="Background Image" placeholder="" accept="image/png,image/jpeg" onChange={setBackgroundImage} error={form.getInputProps('backgroundImage').error} />
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+
+
+        </div>
+        <div className='mt-6 flex justify-between'>
+          <div className='justify-start'>
+            {projectResponse.success ?
+              <p className="text-sm font-semibold leading-6 text-green-500 justify-start">{projectResponse.message}</p> :
+              <p className="text-sm font-semibold leading-6 text-red-500 justify-start">{projectResponse.message}</p>}
+          </div>
+          <div className="items-center justify-end gap-x-6">
+
+            <Button type="button" className="text-sm font-semibold leading-6 text-gray-900" onClick={e => close()}>
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              tabIndex={1}
+              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+              loading={loading}
+            >
+              Save
+            </Button>
+          </div>
+        </div>
+      </form> 
+    </Modal>
+    </Box>
+
 
   )
 }

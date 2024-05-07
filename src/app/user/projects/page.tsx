@@ -33,7 +33,6 @@ import { ProjectAddMethod, getProjectAddMethod, getAllProjectAddMethods } from '
 import { LoadProjects } from '@/frontend/interfaces/project';
 import isValidProjectName from '@/frontend/helpers/user';
 import { IconSettings } from '@tabler/icons-react';
-import Details from '@/frontendcomponents/store/content/Details';
 import AddorEditProject from '@/frontend/components/ui/AddorEditProject';
 
 

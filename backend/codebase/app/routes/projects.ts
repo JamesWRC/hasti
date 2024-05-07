@@ -141,8 +141,12 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
             
             // Check for user ID and adjust the where clause accordingly
             if (user) {
-                
                 where.userID = user.id;
+            }
+
+            // Find by ID.
+            if(queryParams.projectID){
+                where.id = queryParams.projectID
             }
 
             // Validate and add project type if specified
