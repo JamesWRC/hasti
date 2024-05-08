@@ -1,6 +1,7 @@
 'use client'
 import {
   FolderPlusIcon,
+  PhotoIcon,
 
 } from '@heroicons/react/24/outline'
 
@@ -40,7 +41,6 @@ import useProjects from '@/frontend/components/project';
 
 
 
-
 export default function AddorEditProject({ opened, open, close, projectID }: { opened: boolean, open: any, close: any, projectID?: string }) {
   const [selectRepo, setSelectedRepo] = useState<Repo | null>(null)
   const [projectType, setProjectType] = useState<ProjectType>();
@@ -60,40 +60,70 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
   let fetchProjects: GetProjectsQueryParams = {};
 
 
-  
+
 
   const { projects, reqStatus, setSearchProps } = useProjects(fetchProjects);
 
 
+  const [iconPreview, setIconPreview] = useState<string | ArrayBuffer | null>('');
+  const [bgImagePreview, setBgImagePreview] = useState<string | ArrayBuffer | null>('');
+
+  function classNames(...classes: String[]) {
+    return classes.filter(Boolean).join(' ')
+  }
+
+
+  const handleIconChange = (file: File | null) => {
+    if (file) {
+      setIconImage(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setIconPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleBgImageChange = (file: File | null) => {
+    if (file) {
+      setBackgroundImage(file);
+      const reader = new FileReader();
+      reader.onload = () => {
+        setBgImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   useEffect(() => {
     // Reset state back to idle when the modal is closed
     if (!opened) {
-      setProjectLoadedState({ projects, reqStatus:'idle', setSearchProps })
+      setProjectLoadedState({ projects, reqStatus: 'idle', setSearchProps })
     }
-    if(opened){
+    if (opened) {
       fetchProjects = {
         limit: 1,
         projectID: projectID,
       }
-      console.log('projectID 1111:', projectID)  
-  
+      console.log('projectID 1111:', projectID)
+
       setSearchProps(fetchProjects)
     }
 
-    
+
 
   }, [opened])
 
   useEffect(() => {
-    
-    setProjectLoadedState({ projects, reqStatus, setSearchProps})
-    
+
+    setProjectLoadedState({ projects, reqStatus, setSearchProps })
+
 
   }, [projects])
 
 
   useEffect(() => {
-    
+
     console.log('projectLoadedState:', projectLoadedState)
 
   }, [projectLoadedState])
@@ -179,7 +209,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
       projectType: (value: ProjectType | undefined) => (projectType === undefined ? 'Please select a project type.' : null),
       haInstallTypes: (value: HAInstallType[] | undefined) => (validateHasInstallTypes()),
       description: (value: string) => (value.length < 30 ? `Description too short. Must have at least 30 characters. You have ${value.length}` : null),
-      tags: (value: string[]) => (tags.length < 3 ? 'Please select at least 3 tags.' : null),
+      tags: (value: string[]) => (tags.length < 3 ? 'Please select at least 3 tags, but less than 50.' : tags.length > 50 ? 'Must have less than 50 tags' : null),
       iconImage: (value: File | null) => (iconImage !== null && iconImage.size > MAX_FILE_SIZE ? 'File too big. Max size is 10MB' : null),
       backgroundImage: (value: File | null) => (backgroundImage !== null && backgroundImage.size > MAX_FILE_SIZE ? 'File too big. Max size is 10MB' : null),
     },
@@ -344,139 +374,234 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
   return (
     <Box pos="relative">
-        {/* ...other content */}
-      {/* </Box> */}
-    <Modal
-      size={'xl'}
-      opened={opened}
-      onClose={close}
-      title="Create new Project"
-      overlayProps={{
-        backgroundOpacity: 0.55,
-        blur: 3,
-      }}>
-        <LoadingOverlay visible={!projectID || (projectLoadedState 
-          && projectLoadedState.reqStatus === "success" 
-          && projectLoadedState?.projects 
-          && projectLoadedState?.projects.length > 0) ? false : true} zIndex={1000} overlayProps={{ radius: "xl", blur: 2 }}
-        />
-      <form onSubmit={createProject}>
-        <div className="space-y-12">
-          <div className="border-b border-gray-900/10 pb-12">
-            {/* <h2 className="text-base font-semibold leading-7 text-gray-900">New Project</h2> */}
+      <Modal
+        size={'75vw'}
+        opened={opened}
+        onClose={close}
+        title="Create new Project"
+        overlayProps={{
+          backgroundOpacity: 0.55,
+          blur: 3,
+        }}>
 
-            <div className="mt-10 grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
-              <div className="sm:col-span-4">
+        <form onSubmit={createProject}>
 
-                <div className="mt-2">
-                  <SelectRepo selectRepo={selectRepo} setSelectRepo={setSelectedRepo} />
-                  <div className="relative py-3">
-                    <div className="absolute inset-0 flex items-center" aria-hidden="true">
-                      <div className="w-full border-t border-gray-300" />
+          <div className="space-y-12">
+            <LoadingOverlay visible={!projectID || (projectLoadedState
+              && projectLoadedState.reqStatus === "success"
+              && projectLoadedState?.projects
+              && projectLoadedState?.projects.length > 0) ? false : true} zIndex={1000} overlayProps={{ radius: "xl", blur: 2, center: true }}
+              className='fixed'
+            />
+            <div className="border-b border-gray-900/10 pb-12">
+              {/* <h2 className="text-base font-semibold leading-7 text-gray-900">New Project</h2> */}
+
+              <div className="">
+                <div className="">
+                  <div className='grid grid-cols-1 md:grid-cols-2'>
+
+                    <div className="mt-2">
+                      <SelectRepo selectRepo={selectRepo} setSelectRepo={setSelectedRepo} />
+                      <div className="relative py-3">
+                        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                          <div className="w-full border-t border-gray-300" />
+                        </div>
+                        <div className="relative flex justify-center">
+                          <span className="bg-white px-2 text-sm text-gray-500">or import 3rd party repository</span>
+                        </div>
+                      </div>
+                      <TextInput className="w-full" placeholder="full repository URL" {...form.getInputProps('importRepoURL')} onFocus={(e) => setSelectedRepo(null)} />
+
                     </div>
-                    <div className="relative flex justify-center">
-                      <span className="bg-white px-2 text-sm text-gray-500">or import 3rd party repository</span>
+                    <div className='grid grid-cols-1 md:grid-cols-2 space-x-3 divide-x-2 divide-dashed py-2'>
+
+                      {/* Add content to right */}
+
+                    </div>
+                    <div className='grid grid-cols-1 md:grid-cols-2 md:space-x-3 md:divide-x-2 divide-dashed py-2'>
+
+                      <div className="">
+                        <TextInput className="w-full" label="Project Name" placeholder={selectRepo?.name} defaultValue={selectRepo?.name} {...form.getInputProps('projectName')} />
+
+                      </div>
+
+                      <div className="pt-3 md:pt-0 md:pl-3">
+                        <ProjectTypeSelectDropdownBox projectType={projectType} setProjectType={setProjectType} inputProps={getInputProps} />
+
+                      </div>
+
                     </div>
                   </div>
-                  <TextInput className="w-full" placeholder="full repository URL" {...form.getInputProps('importRepoURL')} onFocus={(e) => setSelectedRepo(null)} />
-
                 </div>
-              </div>
-              <div className="sm:col-span-4">
 
-                <div className="">
-                  <TextInput className="w-full" label="Project Name" placeholder={selectRepo?.name} defaultValue={selectRepo?.name} {...form.getInputProps('projectName')} />
-
+                <div className="relative py-5">
+                  <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div className="w-full border-t border-gray-300" />
+                  </div>
+                  <div className="relative flex justify-center">
+                    <span className="bg-white px-2 text-sm text-gray-500">Help people find your cool {projectType ?
+                      projectType === ProjectType.OTHER ? '...thing? 🤔'
+                        : projectType.toString()
+                      : 'project'}</span>
+                  </div>
                 </div>
-              </div>
-              <div className="sm:col-span-4">
+                <div className='grid grid-cols-1 md:grid-cols-7 md:space-x-3 md:divide-x-2 md:divide-dashed'>
+                  <div className='col-span-3'>
 
-                <div className="mt-2">
-                  <ProjectTypeSelectDropdownBox projectType={projectType} setProjectType={setProjectType} inputProps={getInputProps} />
 
+
+                    <div className="col-span-full">
+
+                      <div className="mt-2">
+                        <Textarea
+                          placeholder="Short description of the project."
+                          autosize
+                          minRows={4}
+                          maxRows={4}
+                          label="Description"
+                          {...form.getInputProps('description')}
+                        />
+                      </div>
+                      <p className="mt-3 text-sm leading-6 text-gray-600">Write a short description. Recommended ~30 words.</p>
+                    </div>
+                  </div>
+                  <div className="md:pl-5 col-span-2">
+
+                    <div className="mt-2">
+                      <HAInstallTypeSelectDropdownBox haInstallTypes={haInstallTypes} setHaInstallTypes={setHaInstallTypes} inputProps={getInputProps} />
+                    </div>
+                    <div className="pt-1.5">
+                      <SearchTagComboBox label="Select tags"
+                        placeholder="Select or add a tag..."
+                        searchable={true}
+                        nothingFoundMessage='Nothing found... Add to create a new tag, space delimited'
+                        existingTags={existingTags}
+                        tags={tags} setTags={setTags}
+                        searchParams={searchParams}
+                        maxSelectedValues={10}
+                        inputProps={getInputProps}
+                      />
+                    </div>
+                  </div>
+
+                  <div className='md:pl-5 col-span-2'>
+
+                    <div className='grid grid-cols-2 space-x-1.5 h-full'>
+
+                      {/* <div className="w-full pt-1.5">
+                      <FileInput clearable label="Icon image" placeholder="" accept="image/png,image/jpeg" onChange={setIconImage} error={form.getInputProps('iconImage').error} />
+                    </div> */}
+                      <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 relative"
+                        style={{ backgroundImage: `url(${iconPreview?.toString()})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+
+                        <div className="text-center z-10 backdrop-blur-sm bg-white/30 rounded-lg h-full w-full flex justify-center items-center">
+                          <div className="text-center">
+                            <PhotoIcon className="mx-auto h-12 w-12 text-gray-300" aria-hidden="true" />
+                            <div className="mt-4 flex text-sm leading-6 text-gray-600 justify-center">
+                              <label
+                                htmlFor="icon-upload"
+                                className={classNames('relative cursor-pointer rounded-mdfont-semibold focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 ', iconImage ? 'text-indigo-400 focus-within:ring-indigo-500 hover:text-indigo-500' : 'text-indigo-600 focus-within:ring-indigo-600 hover:text-indigo-500')}
+                              >
+                                <span>Upload a Icon</span>
+                                <FileInput
+                                  id="icon-upload"
+                                  styles={{
+                                    input: {
+                                      position: 'absolute',
+                                      top: 0,
+                                      left: 0,
+                                      width: '100%',
+                                      height: '100%',
+                                      opacity: 0,
+                                      cursor: 'pointer',
+                                    },
+                                  }}
+                                  onChange={handleIconChange} 
+                                  accept="image/png,image/jpeg"  
+                                  error={form.getInputProps('iconImage').error} 
+                                  />
+                              </label>
+                            </div>
+                            <p className={classNames('text-xs leading-5', iconImage ? 'text-white' : 'text-gray-600')}>PNG, JPG up to 10MB</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 relative"
+                        style={{ backgroundImage: `url(${bgImagePreview?.toString()})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+
+                        <div className="text-center z-10 backdrop-blur-sm bg-white/30 rounded-lg h-full w-full flex justify-center items-center">
+                          <div className="text-center">
+                            <PhotoIcon className="mx-auto h-12 w-12 text-gray-300" aria-hidden="true" />
+                            <div className="mt-4 flex text-sm leading-6 text-gray-600 justify-center">
+                              <label
+                                htmlFor="background-upload"
+                                className={classNames('relative cursor-pointer rounded-mdfont-semibold focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 ', backgroundImage ? 'text-indigo-400 focus-within:ring-indigo-500 hover:text-indigo-500' : 'text-indigo-600 focus-within:ring-indigo-600 hover:text-indigo-500')}
+                              >
+                                <span>Upload a Background</span>
+                                <FileInput
+                                  id="background-upload"
+                                  styles={{
+                                    input: {
+                                      position: 'absolute',
+                                      top: 0,
+                                      left: 0,
+                                      width: '100%',
+                                      height: '100%',
+                                      opacity: 0,
+                                      cursor: 'pointer',
+                                    },
+                                  }}
+                                  onChange={handleBgImageChange}
+                                  accept="image/png,image/jpeg"  
+                                  error={form.getInputProps('iconImage').error} 
+                                />
+                              </label>
+                            </div>
+                            <p className={classNames('text-xs leading-5', backgroundImage ? 'text-white' : 'text-gray-600')}>PNG, JPG up to 10MB</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {/* <div className="w-full pt-2">
+                      <FileInput clearable label="Background Image" placeholder="" accept="image/png,image/jpeg" onChange={setBackgroundImage} error={form.getInputProps('backgroundImage').error} />
+                    </div> */}
+                  </div>
                 </div>
-                <div className="mt-2">
-                  <HAInstallTypeSelectDropdownBox haInstallTypes={haInstallTypes} setHaInstallTypes={setHaInstallTypes} inputProps={getInputProps} />
 
-                </div>
-              </div>
 
-              <div className="col-span-full">
 
-                <div className="mt-2">
-                  <Textarea
-                    placeholder="Short description of the project."
-                    autosize
-                    minRows={4}
-                    maxRows={4}
-                    label="Description"
-                    {...form.getInputProps('description')}
-                  />
-                </div>
-                <p className="mt-3 text-sm leading-6 text-gray-600">Write a short description. Recommended ~30 words.</p>
-              </div>
-              <div className='sm:col-span-4'>
 
-                <SearchTagComboBox label="Select tags"
-                  placeholder="Select or add a tag..."
-                  searchable={true}
-                  nothingFoundMessage='Nothing found... Add to create a new tag, space delimited'
-                  existingTags={existingTags}
-                  tags={tags} setTags={setTags}
-                  searchParams={searchParams}
-                  maxSelectedValues={10}
-                  inputProps={getInputProps}
-                />
-              </div>
-              <div className="col-span-full">
 
-                <div className="w-40">
-                  <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">
-                    Upload Images
-
-                  </label>
-                  <FileInput className='w-60' clearable label="Icon image" placeholder="" accept="image/png,image/jpeg" onChange={setIconImage} error={form.getInputProps('iconImage').error} />
-
-                </div>
-              </div>
-              <div className="col-span-full">
-
-                <div className="w-40">
-                  <label htmlFor="cover-photo" className="block text-sm font-medium leading-6 text-gray-900">
-                  </label>
-                  <FileInput className='w-60' clearable label="Background Image" placeholder="" accept="image/png,image/jpeg" onChange={setBackgroundImage} error={form.getInputProps('backgroundImage').error} />
-                </div>
 
               </div>
             </div>
+
+
+
           </div>
+          <div className='mt-6 flex justify-between'>
+            <div className='justify-start'>
+              {projectResponse.success ?
+                <p className="text-sm font-semibold leading-6 text-green-500 justify-start">{projectResponse.message}</p> :
+                <p className="text-sm font-semibold leading-6 text-red-500 justify-start">{projectResponse.message}</p>}
+            </div>
+            <div className="items-center justify-end gap-x-6">
 
-
-
-        </div>
-        <div className='mt-6 flex justify-between'>
-          <div className='justify-start'>
-            {projectResponse.success ?
-              <p className="text-sm font-semibold leading-6 text-green-500 justify-start">{projectResponse.message}</p> :
-              <p className="text-sm font-semibold leading-6 text-red-500 justify-start">{projectResponse.message}</p>}
+              <Button type="button" className="text-sm font-semibold leading-6 text-gray-900" onClick={e => close()}>
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                tabIndex={1}
+                className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                loading={loading}
+              >
+                Save
+              </Button>
+            </div>
           </div>
-          <div className="items-center justify-end gap-x-6">
-
-            <Button type="button" className="text-sm font-semibold leading-6 text-gray-900" onClick={e => close()}>
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              tabIndex={1}
-              className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-              loading={loading}
-            >
-              Save
-            </Button>
-          </div>
-        </div>
-      </form> 
-    </Modal>
+        </form>
+      </Modal>
     </Box>
 
 
