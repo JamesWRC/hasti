@@ -20,7 +20,7 @@ import { useSession } from 'next-auth/react'
 import { TagSearchResponse } from '@/backend/interfaces/tag/request'
 import SearchTagComboBox from '@/frontend/components/ui/SearchComboBox'
 import { SearchParams } from '@/backend/interfaces/tag';
-import { ProjectType, HAInstallType, getAllHaInstallTypes, ProjectAllInfo } from '@/backend/interfaces/project'
+import { ProjectType, HAInstallType, getAllHaInstallTypes, ProjectAllInfo, Project, getProjectType } from '@/backend/interfaces/project'
 import { ProjectTypeSelectDropdownBox } from '@/frontend/components/ui/ProjectTypeSelectDropdownBox'
 
 import { FileInput } from '@mantine/core';
@@ -36,6 +36,8 @@ import isValidProjectName from '@/frontend/helpers/user';
 import { IconSettings } from '@tabler/icons-react';
 import Details from '@/frontend/components/store/content/Details';
 import useProjects from '@/frontend/components/project';
+import { User } from '@/backend/interfaces/user';
+import { getHaInstallType } from '@/backend/interfaces/project/index';
 
 
 
@@ -104,6 +106,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
       fetchProjects = {
         limit: 1,
         projectID: projectID,
+        allContent: true,
       }
       console.log('projectID 1111:', projectID)
 
@@ -118,6 +121,43 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
     setProjectLoadedState({ projects, reqStatus, setSearchProps })
 
+    // Set the project info if the project is loaded
+    if(projectID && projects && projects.length > 0){
+      const loadedProject = projects[0] as ProjectAllInfo;
+      if(loadedProject){
+        console.log("loadedProject test: ", loadedProject)
+        setSelectedRepo(loadedProject.repo);
+        form.values.projectName = loadedProject.title;
+        setProjectType(getProjectType(loadedProject.projectType));
+        form.values.description = loadedProject.description;
+
+        const instalTypes: HAInstallType[] = [];
+
+        if(loadedProject.worksWithContainer){
+          instalTypes.push(HAInstallType.CONTAINER);
+        }
+        if(loadedProject.worksWithCore){
+          instalTypes.push(HAInstallType.CORE);
+        }
+        if(loadedProject.worksWithOS){
+          instalTypes.push(HAInstallType.OS);
+        }
+        if(loadedProject.worksWithSupervised){
+          instalTypes.push(HAInstallType.SUPERVISED);
+        }
+        setHaInstallTypes(instalTypes);
+        setTags(loadedProject.tags.map((tag) => tag.name))
+
+        const imageHostPrefix = process.env.USER_CONTENT_URL;
+        if(loadedProject.iconImage){
+          setIconPreview(`${imageHostPrefix}/${loadedProject.iconImage}`)
+        }
+        if(loadedProject.backgroundImage){
+          setBgImagePreview(`${imageHostPrefix}/${loadedProject.backgroundImage}`)
+        }
+      }
+
+    }
 
   }, [projects])
 
@@ -339,8 +379,10 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
     iconImage ? formData.append('iconImage', iconImage) : null
     backgroundImage ? formData.append('backgroundImage', backgroundImage) : null
 
-    const response = await fetch(`${process.env.API_URL}/api/v1/projects/add`, {
-      method: 'POST',
+    // If the projectID exists (meaning we want to update an existing project), then we are updating the project
+    const METHOD = projectID ? 'PUT' : 'POST'
+    const response = await fetch(`${process.env.API_URL}/api/v1/projects`, {
+      method: METHOD,
       body: formData,
       headers: {
         'Authorization': `Bearer ${session?.user.jwt}`
@@ -396,12 +438,13 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
             <div className="border-b border-gray-900/10 pb-12">
               {/* <h2 className="text-base font-semibold leading-7 text-gray-900">New Project</h2> */}
 
-              <div className="">
+              <div className="text-black">
                 <div className="">
                   <div className='grid grid-cols-1 md:grid-cols-2'>
 
                     <div className="mt-2">
-                      <SelectRepo selectRepo={selectRepo} setSelectRepo={setSelectedRepo} />
+                      <SelectRepo selectRepo={selectRepo} setSelectRepo={setSelectedRepo} disabled={projectID ? true : false} />
+                      
                       <div className="relative py-3">
                         <div className="absolute inset-0 flex items-center" aria-hidden="true">
                           <div className="w-full border-t border-gray-300" />
@@ -410,7 +453,8 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                           <span className="bg-white px-2 text-sm text-gray-500">or import 3rd party repository</span>
                         </div>
                       </div>
-                      <TextInput className="w-full" placeholder="full repository URL" {...form.getInputProps('importRepoURL')} onFocus={(e) => setSelectedRepo(null)} />
+
+                      <TextInput className="w-full" placeholder="full repository URL" {...form.getInputProps('importRepoURL')} onFocus={(e) => setSelectedRepo(null)} disabled={projectID ? true : false}/>
 
                     </div>
                     <div className='grid grid-cols-1 md:grid-cols-2 space-x-3 divide-x-2 divide-dashed py-2'>
@@ -421,12 +465,12 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                     <div className='grid grid-cols-1 md:grid-cols-2 md:space-x-3 md:divide-x-2 divide-dashed py-2'>
 
                       <div className="">
-                        <TextInput className="w-full" label="Project Name" placeholder={selectRepo?.name} defaultValue={selectRepo?.name} {...form.getInputProps('projectName')} />
+                        <TextInput id={projects ? projects[0]?.id : selectRepo?.id} className="w-full" label="Project Name" placeholder={selectRepo?.name} defaultValue={selectRepo?.name} {...form.getInputProps('projectName')} disabled={projectID ? true : false}/>
 
                       </div>
 
                       <div className="pt-3 md:pt-0 md:pl-3">
-                        <ProjectTypeSelectDropdownBox projectType={projectType} setProjectType={setProjectType} inputProps={getInputProps} />
+                        <ProjectTypeSelectDropdownBox projectType={projectType} setProjectType={setProjectType} inputProps={getInputProps} disabled={projectID ? true : false}/>
 
                       </div>
 
@@ -462,12 +506,12 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                           {...form.getInputProps('description')}
                         />
                       </div>
-                      <p className="mt-3 text-sm leading-6 text-gray-600">Write a short description. Recommended ~30 words.</p>
+                      <p className="mt-3 text-sm leading-6 text-gray-600">Write a short description. Recommended ~20 words. Min 30 characters.</p>
                     </div>
                   </div>
                   <div className="md:pl-5 col-span-2">
 
-                    <div className="mt-2">
+                    <div className="mt-2 text-black">
                       <HAInstallTypeSelectDropdownBox haInstallTypes={haInstallTypes} setHaInstallTypes={setHaInstallTypes} inputProps={getInputProps} />
                     </div>
                     <div className="pt-1.5">

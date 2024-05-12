@@ -46,11 +46,12 @@ model Project {
   
   projectType       String        @default("integration") @db.VarChar(255)
 
-  profileImage      String?       @default("") @db.VarChar(255)
+  iconImage      String?       @default("") @db.VarChar(255)
   backgroundImage   String?       @default("") @db.VarChar(255)
 
   contentImages     String[]      @default([]) @db.VarChar(255) // Array of image URLs
 
+  claimed           Boolean       @default(false)
   createdAt         DateTime      @default(now()) @db.Timestamp(6)
   updatedAt         DateTime      @updatedAt
 }
@@ -92,7 +93,7 @@ model Repo {
   ownerGithubID     Int           @default(0)
   ownerType         String        @default("user") @db.VarChar(255) // Lowercase "user" or "organization"
   addedByGithubID   Int           @default(0)
- 
+
   userID            String
   user              User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
   

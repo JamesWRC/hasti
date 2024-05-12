@@ -150,7 +150,7 @@ function generatePlaceHolderProjects(count:number):GetProjectsResponse {
       worksWithOS: true,
       worksWithSupervised: true,
       projectType: "project",
-      profileImage: "SKELETON",
+      iconImage: "SKELETON",
       backgroundImage: "SKELETON",
       contentImages: ["SKELETON"],
       createdAt: new Date(),

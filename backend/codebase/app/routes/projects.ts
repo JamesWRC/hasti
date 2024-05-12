@@ -16,7 +16,7 @@ import { NotificationAbout, NotificationType } from '@/backend/interfaces/notifi
 import { Project, getAllProjectTypes, ProjectWithUser, HAInstallType } from '@/backend/interfaces/project';
 import AWS from 'aws-sdk';
 import fs from 'fs';
-import isValidProjectName, { updateContent, deleteProject, getGitHubRepoData } from '@/backend/helpers/project';
+import isValidProjectName, { updateContent, deleteProject, getGitHubRepoData, handleInvalidFiles, handleProjectImages } from '@/backend/helpers/project';
 import tsClient from '@/backend/clients/typesense';
 import type { SearchResponse } from '@/backend/interfaces/search';
 import path from 'path'
@@ -85,7 +85,7 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
             // parse query params
             const queryParams: GetProjectsQueryParams = req.query
             let query: Prisma.ProjectFindManyArgs = {}
-
+            console.log("----------queryParams: ", queryParams)
             // Set the request amount to a default fo 10, and a max of 50
             let requestAmt = 10
             if (Number(queryParams.limit)) {
@@ -181,6 +181,9 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
 
             // Handle ownedOrImported condition
             if (queryParams.ownedOrImported && user) {
+                // Ignore any user where.
+                where = {};
+
                 where.repo = {
                     OR: [
                         { addedByGithubID: user.githubID },
@@ -309,7 +312,7 @@ projectsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestRe
     });
 
 projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestResponse>(
-    '/add',
+    '/',
     isAuthenticated,
     async (req, res) => {
         const options: Options = {
@@ -337,26 +340,8 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
 
                             // File size too large code
                             if (err.code === 1009) {
-                                // console.log(err)
-                                // Gte file Size too large error
-                                const okFiles = Object.keys(files).map((fieldName) => {
-                                    const file = files[fieldName];
-                                    if (file) {
-                                        console.log(file)
-                                        return fieldName
-                                    }
-                                })
-                                const response: AddProjectResponse = {
-                                    success: false,
-                                    message: 'File size too large. Max File Size: 10MB.',
-                                }
-                                console.log("okFiles", okFiles)
-                                if (okFiles.length > 0) {
-                                    response.extraInfo = 'File fields OK: ' + okFiles.join(', ')
-                                }
-
-                                return resolve({ code: 413, json: response });
-
+                                // Get file Size too large error
+                                return resolve(handleInvalidFiles(files));
                             }
 
                             // code: 1009,
@@ -368,13 +353,16 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                             return resolve({ code: 500, json: response });
                         }
 
-                        if (!fields || !files) {
+                        if (!fields) {
                             const response: AddProjectResponse = {
                                 success: false,
-                                message: 'Missing form fields or files or.',
+                                message: 'Missing form fields or files.',
                             }
                             return resolve({ code: 400, json: response });
                         }
+
+                        console.log("files", files)
+                        console.log("fields", fields)
 
                         // Handle invalid form field types & missing fields
                         const addMethod:string|null = fields.addMethod ? fields.addMethod[0] : null;
@@ -389,15 +377,6 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                             && fields.name instanceof Array
                             && fields.description instanceof Array
                             && fields.tags instanceof Array)) {
-                            
-                                console.log(fields.addMethod instanceof Array)
-                                console.log(fields.repoURL instanceof Array)
-                                console.log(fields.projectType instanceof Array)
-                                console.log(fields.haInstallType instanceof Array)
-                                console.log(fields.name instanceof Array)
-                                console.log(fields.description instanceof Array)
-                                console.log(fields.tags instanceof Array)
-                                
                             
                             return resolve({ code: 402, json: badFormResponse });
                         }else if(addMethod === ProjectAddMethod.REPO_SELECT.toString() && !(fields.repositoryID instanceof Array)){
@@ -636,6 +615,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                 return resolve({ code: 400, json: response });
                             }
 
+                            const claimed:boolean = user.githubID === repoData?.data.owner.id
                             // Create the project
                             createdProject = await prisma.project.create({
                                 data: {
@@ -662,7 +642,424 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
 
                                     // Github data
 
+                                    claimed: claimed,
+                                    projectType: projectType,
+                                },
+                                include: {
+                                    tags: {
+                                        select: {
+                                            name: true,
+                                        },
+                                    },
 
+                                }
+                            });
+
+
+                            const handledImages = await handleProjectImages(files, createdProject, user)
+                            if(handledImages.code !== 200){
+                                // Clean up any created project or repo
+                                createdProject ? await deleteProject(createdProject.id):null
+                                createdRepo ? await deleteRepo(createdRepo.id):null
+                                return resolve({ code: handledImages.code, json: handledImages.json });
+                            }
+
+                            if(createdProject){
+                                await prisma.notification.create({
+                                    data: {
+                                        type: NotificationType.SUCCESS,
+                                        title: createdProject.title,
+                                        message: `Project added`,
+                                        about: NotificationAbout.PROJECT,
+                                        read: false,
+    
+                                        userID: user.id,
+    
+                                    }
+                                });
+                                // Notify the owner of the repo that a project has been added to HASTI
+                                if(projectOwnerUser && projectOwnerUser.id !== user.id){
+                                    await prisma.notification.create({
+                                        data: {
+                                            type: NotificationType.SUCCESS,
+                                            title: createdProject.title,
+                                            message: `Project add. Added by user: '${user.username}'.`,
+                                            about: NotificationAbout.USER,
+                                            read: false,
+            
+                                            userID: projectOwnerUser.id,
+                                        }
+                                    });
+                                }
+                            }
+
+                            // Update content and images
+                            const updateResponse = await updateContent(repositoryID, createdProject.id, user.id)
+
+                            if (!updateResponse.success) {
+                                const response: AddProjectResponse = {
+                                    success: false,
+                                    message: `Failed to add project content. ${updateResponse.message}`,
+                                }
+                                // Clean up any created project or repo
+                                createdProject ? await deleteProject(createdProject.id):null
+                                createdRepo ? await deleteRepo(createdRepo.id):null
+                                return resolve({ code: 500, json: response });
+                            } else {
+                                const response: AddProjectResponse = {
+                                    success: true,
+                                    message: 'Project added successfully',
+                                    project: createdProject,
+                                }
+
+                                return resolve({ code: 200, json: response });
+
+                            }
+                        } else {
+                            const missingFields = [];
+                            if (!repositoryID) missingFields.push('repositoryID');
+                            if (!projectType) missingFields.push('projectType');
+                            if (!haInstallType) missingFields.push('haInstallType');
+                            if (!title) missingFields.push('name');
+                            if (!description) missingFields.push('description');
+                            if (!tags) missingFields.push('tags');
+
+                            const response: AddProjectResponse = {
+                                success: false,
+                                message: 'Missing required form fields: ' + missingFields.join(', '),
+                            }
+                            // Clean up any created project or repo
+                            createdProject ? await deleteProject(createdProject.id):null
+                            createdRepo ? await deleteRepo(createdRepo.id):null
+                            return resolve({ code: 400, json: response });
+                        }
+                    });
+                }catch(e){
+                    console.log(e)
+                    const response: AddProjectResponse = {
+                        success: false,
+                        message: 'Something went wrong during the file upload.',
+                    }
+                    return resolve({ code: 500, json: response });
+                }
+            });
+            console.log("reponse")
+            console.log(code, json)
+            return res.status(code).json(json)
+        } catch (error) {
+            logger.warn(`Request threw an exception: ${error}`, {
+                label: 'GET: /projects/:userid/count: ',
+            });
+            return res.status(500).json({ success: false, message: 'Error getting token' });
+        }
+    });
+
+projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestResponse>(
+    '/',
+    isAuthenticated,
+    async (req, res) => {
+        const options: Options = {
+            maxFileSize: MAX_FILE_SIZE,
+            keepExtensions: true,
+        };
+
+        const user: User | undefined = req.user;
+        let projectOwnerUser: User | undefined = user
+        let createdRepo: Repo|null = null;
+        let createdProject: Project|null = null;
+        let repoData:OctokitResponse<any, number> | null = null
+
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
+        }
+
+        try {
+            const form = new IncomingForm(options);
+
+            const { code, json } = await new Promise<{ code: number, json: AddProjectResponse }>((resolve, reject) => {
+                try{
+                    form.parse(req, async function (err, fields: Fields, files: Files) {
+                        if (err) {
+
+                            // File size too large code
+                            if (err.code === 1009) {
+                                // Get file Size too large error
+                                return resolve(handleInvalidFiles(files));
+                            }
+
+                            // code: 1009,
+                            // httpCode: 413
+                            const response: AddProjectResponse = {
+                                success: false,
+                                message: 'Something went wrong during the file upload.',
+                            }
+                            return resolve({ code: 500, json: response });
+                        }
+
+                        if (!fields) {
+                            const response: AddProjectResponse = {
+                                success: false,
+                                message: 'Missing form fields or files.',
+                            }
+                            return resolve({ code: 400, json: response });
+                        }
+
+                        // // Handle invalid form field types & missing fields
+                        
+                        if (fields.repositoryID instanceof Array
+                            && fields.projectID instanceof Array
+                            && fields.description instanceof Array
+                            && fields.haInstallType instanceof Array
+                            && fields.tags instanceof Array) {
+                                const repositoryID:string = fields.repositoryID[0];
+                                const projectID:string = fields.projectID[0];
+                                const description:string = fields.description[0];
+                                const haInstallType:string = fields.haInstallType[0];
+                                const tags:string = fields.tags[0];
+
+                                const repo: Repo|null = await prisma.repo.findFirst({
+                                    where: {
+                                        id: repositoryID
+                                    }
+                                })
+
+                                const project: Project|null = await prisma.project.findFirst({
+                                    where: {
+                                        id: projectID
+                                    }
+                                })
+
+                                if(repo && project){
+                                    // Check if user has permission to update project
+                                    
+                                    let userHasPermissionToUpdate:boolean = false
+                                    // If user is the owner of the project
+                                    if(project.claimed && project.userID === user.id){
+                                        userHasPermissionToUpdate = true
+                                        
+                                    }else if(!project.claimed && repo.addedByGithubID === user.githubID){
+                                        userHasPermissionToUpdate = true
+                                    }
+
+                                    if(!userHasPermissionToUpdate){
+                                        const response: AddProjectResponse = {
+                                            success: false,
+                                            message: 'User does not have permission to update project.',
+                                        }
+                                        return resolve({ code: 403, json: response });
+                                    
+                                    }else{
+
+                                        // Split the tags into an array and remove any empty tags
+                                        const tagArray = tags.split(',').filter((tag) => tag.trim() !== '');
+                                        const haInstallTypesArray = haInstallType.split(',').filter((install) => install.trim() !== '');
+
+                                        // Determine 'works with' types
+                                        let worksWithOS:boolean = false
+                                        let worksWithContainer:boolean = false
+                                        let worksWithCore:boolean = false
+                                        let worksWithSupervised:boolean = false
+                                        let worksWithAny:boolean = haInstallTypesArray.includes(HAInstallType.ANY.toString().toLowerCase())
+                                        
+                                        if(haInstallTypesArray.includes(HAInstallType.OS.toString().toLowerCase()) || worksWithAny){
+                                            worksWithOS = true
+                                        }
+
+                                        if(haInstallTypesArray.includes(HAInstallType.CONTAINER.toString().toLowerCase()) || worksWithAny){
+                                            worksWithContainer = true
+                                        }
+
+                                        if(haInstallTypesArray.includes(HAInstallType.CORE.toString().toLowerCase()) || worksWithAny){
+                                            worksWithCore = true
+                                        }
+
+                                        if(haInstallTypesArray.includes(HAInstallType.SUPERVISED.toString().toLowerCase()) || worksWithAny){
+                                            worksWithSupervised = true
+                                        }
+
+                                        let update: Prisma.ProjectUpdateInput = {
+                                            description: description,
+                                            // Set the tags
+                                            tags: {
+                                                // Use connectOrCreate to create and connect tags if they don't exist
+                                                connectOrCreate: tagArray.map((tag) => {
+                                                    return {
+                                                        where: { name: tag },
+                                                        create: { name: tag, type: projectType },
+                                                    };
+                                                }),
+                                            },
+                                            // Set the 'Works With' types
+                                            worksWithOS: worksWithOS,
+                                            worksWithContainer: worksWithContainer,
+                                            worksWithCore: worksWithCore,
+                                            worksWithSupervised: worksWithSupervised,   
+                                        }
+
+                                        // Update the project images
+                                        await handleProjectImages(files, createdProject, user)
+                                        let repoData:OctokitResponse<any, number> | null = await getGitHubRepoData(user, repoOwner, repoName)
+                                
+                                        // Update Repo with new data
+                                        if(repoData){
+       
+                                            update.gitHubNodeID = repoData.data.node_id;
+                                            update.gitHubStars: repoData.data.stargazers_count;
+                                            update.gitHubWatchers: repoData.data.watchers_count;
+
+                                        }
+                                        await prisma.repo.update({
+                                            where: {
+                                                id: repositoryID
+                                            },
+                                            data: update
+                                        })
+                                    }
+
+                                }
+
+
+
+                            }
+
+
+                        // Get the repo data if it doesn't exist
+                        if(!repoData){
+                            const savedRepoData = await prisma.repo.findFirst({
+                                select: {
+                                    fullName: true,
+                                },
+                                where: {
+                                    id: repositoryID
+                                }
+                            })
+                            const repoFullName:string[] | undefined = savedRepoData?.fullName.split('/')
+                            if(repoFullName){
+                                const repoOwner:string = repoFullName[0]
+                                const repoName:string = repoFullName[1]
+
+                                repoData = await getGitHubRepoData(user, repoOwner, repoName)
+                                
+                                // Update Repo with new data
+                                if(repoData){
+                                    await prisma.repo.update({
+                                        where: {
+                                            id: repositoryID
+                                        },
+                                        data: {
+                                            gitHubNodeID: repoData.data.node_id,
+                                            gitHubStars: repoData.data.stargazers_count,
+                                            gitHubWatchers: repoData.data.watchers_count,
+                                        }
+                                    })
+                                }
+
+                            }else{
+                                const response: AddProjectResponse = {
+                                    success: false,
+                                    message: 'Repo used for project not found.',
+                                }
+                                createdProject ? await deleteProject(createdProject.id):null
+                                createdRepo ? await deleteRepo(createdRepo.id):null
+                                return resolve({ code: 404, json: response });
+                            }
+                        }
+
+                        // Get form fields
+                        const projectType: string = fields.projectType[0]
+                        const haInstallType: string = fields.haInstallType[0]
+                        const title: string = fields.name[0]; // The name becomes the title
+                        const description: string = fields.description[0];
+                        const tags: string = fields.tags[0];
+
+
+                        if (repositoryID && projectOwnerUser && projectType && haInstallType && title && description && tags) {
+
+                            // Validate the project name
+                            if (!isValidProjectName(title)) {
+                                const response: AddProjectResponse = {
+                                    success: false,
+                                    message: 'Invalid project name. Project names must be alphanumeric, and may contain spaces, dashes, and underscores.',
+                                }
+                                createdProject ? await deleteProject(createdProject.id):null
+                                createdRepo ? await deleteRepo(createdRepo.id):null
+                                return resolve({ code: 400, json: response });
+                            }
+
+                            // Split the tags into an array and remove any empty tags
+                            const tagArray = tags.split(',').filter((tag) => tag.trim() !== '');
+                            const haInstallTypesArray = haInstallType.split(',').filter((install) => install.trim() !== '');
+
+                            // Determine 'works with' types
+                            let worksWithOS:boolean = false
+                            let worksWithContainer:boolean = false
+                            let worksWithCore:boolean = false
+                            let worksWithSupervised:boolean = false
+                            let worksWithAny:boolean = haInstallTypesArray.includes(HAInstallType.ANY.toString().toLowerCase())
+                            
+                            if(haInstallTypesArray.includes(HAInstallType.OS.toString().toLowerCase()) || worksWithAny){
+                                worksWithOS = true
+                            }
+
+                            if(haInstallTypesArray.includes(HAInstallType.CONTAINER.toString().toLowerCase()) || worksWithAny){
+                                worksWithContainer = true
+                            }
+
+                            if(haInstallTypesArray.includes(HAInstallType.CORE.toString().toLowerCase()) || worksWithAny){
+                                worksWithCore = true
+                            }
+
+                            if(haInstallTypesArray.includes(HAInstallType.SUPERVISED.toString().toLowerCase()) || worksWithAny){
+                                worksWithSupervised = true
+                            }
+
+                            
+
+                            // Check if the project name already exists
+                            const existingProject = await prisma.project.findFirst({
+                                where: {
+                                    title: title
+                                }
+                            });
+
+                            if (existingProject) {
+                                const response: AddProjectResponse = {
+                                    success: false,
+                                    message: 'Project name already exists. Please choose a different name.',
+                                }
+                                createdProject ? await deleteProject(createdProject.id):null
+                                createdRepo ? await deleteRepo(createdRepo.id):null
+                                return resolve({ code: 400, json: response });
+                            }
+
+                            const claimed:boolean = user.githubID === repoData?.data.owner.id
+                            // Create the project
+                            createdProject = await prisma.project.create({
+                                data: {
+                                    title: title,
+                                    content: '',    // Hard code empty content, as the repo needs to be cloned and processed.
+                                    description: description,
+                                    tags: {
+                                        // Use connectOrCreate to create and connect tags if they don't exist
+                                        connectOrCreate: tagArray.map((tag) => {
+                                            return {
+                                                where: { name: tag },
+                                                create: { name: tag, type: projectType },
+                                            };
+                                        }),
+                                    },
+                                    published: false, // Hard code false, as the repo needs to be cloned and processed.
+                                    userID: projectOwnerUser.id,
+                                    repoID: repositoryID,
+                                    // Set the 'Works With' types
+                                    worksWithOS: worksWithOS,
+                                    worksWithContainer: worksWithContainer,
+                                    worksWithCore: worksWithCore,
+                                    worksWithSupervised: worksWithSupervised,
+
+                                    // Github data
+
+                                    claimed: claimed,
                                     projectType: projectType,
                                 },
                                 include: {
@@ -709,11 +1106,11 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                     });
 
                                     // Save the file path to the project for image content
-                                    if (fieldName === 'profileImage') {
+                                    if (fieldName === 'iconImage') {
                                         await prisma.project.update({
                                             where: { id: createdProject.id },
                                             data: {
-                                                profileImage: fileUploadPath
+                                                iconImage: fileUploadPath
                                             }
                                         });
                                     } else if (fieldName === 'backgroundImage') {

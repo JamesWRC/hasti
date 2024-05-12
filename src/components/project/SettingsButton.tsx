@@ -11,7 +11,7 @@ import { IconSettings } from "@tabler/icons-react";
 import { auth } from "@/frontend/app/auth";
 import { useSession } from "next-auth/react";
 import { useDisclosure } from "@mantine/hooks";
-import AddorEditProject from "@/frontend/components/ui/AddorEditProject";
+import AddorEditProject from "@/frontend/components/project/AddorEditProject";
 
 const loaded = false
 

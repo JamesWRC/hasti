@@ -1,5 +1,5 @@
 import { Avatar } from "@mantine/core";
-import { DynamicSkeletonText } from '@/frontendcomponents/ui/skeleton';
+import { DynamicSkeletonText } from '@/frontend/components/ui/skeleton';
 
 
 export default function AuthorDescription({ name, link, imageUrl, loaded }: { name: string|undefined, link: string, imageUrl: string, loaded:boolean }) {

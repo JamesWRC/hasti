@@ -113,6 +113,7 @@ export function HAInstallTypeSelectDropdownBox({ haInstallTypes, setHaInstallTyp
             value={tempInstallTypes?.map((v) => upperFirst(v.toLowerCase()))}
             clearable
             error={inputProps('haInstallTypes').error}
+            className='text-black'
 
         />
     );

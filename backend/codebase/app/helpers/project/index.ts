@@ -9,19 +9,21 @@ import { getGitHubUserAuth } from "@/backend/helpers/auth/github";
 import logger from "@/backend/logger";
 import { OctokitResponse } from "@octokit/types";
 import { User } from '@prisma/client';
+import { AddProjectResponse } from '@/backend/interfaces/project/request';
+import { Files } from 'formidable';
+import { Project } from '@/backend/interfaces/project';
+import fs from 'fs';
+import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
+// Init s3
+const s3 = new AWS.S3({
+    region: 'auto',
+    endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    accessKeyId: process.env.CLOUDFLARE_BUCKET_ACCESS_KEY,
+    secretAccessKey: process.env.CLOUDFLARE_BUCKET_SECRET_KEY,
+});
 
 export async function updateContent(repoID: string, projectID: string, userID: string) {
 
-
-    // Init s3
-    const s3 = new AWS.S3({
-        region: 'auto',
-        endpoint: `https://${process.env.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-        accessKeyId: process.env.CLOUDFLARE_BUCKET_ACCESS_KEY,
-        secretAccessKey: process.env.CLOUDFLARE_BUCKET_SECRET_KEY,
-      });
-
-    
     if (isNotString(repoID)) {
         return { success: false, message: "Invalid repo ID." }
     }
@@ -270,8 +272,107 @@ export async function deleteProject(projectID: string){
     })
 }
 
-
 export default function isValidProjectName(name: string): boolean {
     const regex = /^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*(_[a-zA-Z0-9]+)*$/;
     return regex.test(name);
+}
+
+export function handleInvalidFiles(files: Files): {code: number, json: AddProjectResponse} {
+    // Get file Size too large error
+    const okFiles = Object.keys(files).map((fieldName:string) => {
+        const file = files[fieldName as string];
+        if (file) {
+            console.log(file)
+            return fieldName
+        }
+    })
+    const response: AddProjectResponse = {
+        success: false,
+        message: 'File size too large. Max File Size: 10MB.',
+    }
+    console.log("okFiles", okFiles)
+    if (okFiles.length > 0) {
+        response.extraInfo = 'File fields OK: ' + okFiles.join(', ')
+    }
+
+    return {code: 413, json: response}
+}
+
+
+export async function handleProjectImages(files: Files, project: Project|null, user: User): Promise<{ code: number, json: AddProjectResponse }>{
+    Object.keys(files).map(async (fieldName) => {
+        const file = files[fieldName];
+
+        if (file && project) {
+
+            const filePath = file[0].filepath
+            const fileName = file[0].originalFilename
+            const readStream = fs.createReadStream(filePath);
+
+            const fileUploadPath = `user/${user.id}/${project.id}/${fileName}`
+
+            const s3Params = {
+                Bucket: process.env.CLOUDFLARE_BUCKET_NAME as string,
+                Key: fileUploadPath,
+                ContentType: file[0].mimetype ?? 'image/jpeg',
+                Body: readStream,
+            };
+
+            // upload the file to the S3 (R2) bucket
+            s3.upload(s3Params, (s3Err: any, data: any) => {
+                if (s3Err) {
+                    console.error('Error uploading to S3: ', s3Err);
+
+                    const response: AddProjectResponse = {
+                        success: false,
+                        message: 'Something went wrong during the file upload.',
+                    }
+                    return { code: 500, json: response };
+                }
+            });
+
+            // Save the file path to the project for image content
+            if (fieldName === 'iconImage') {
+                // Delete the previous icon image
+                if (project.iconImage) {
+                    s3.deleteObject({
+                        Bucket: process.env.CLOUDFLARE_BUCKET_NAME as string,
+                        Key: project.iconImage
+                    }, (err, data) => {
+                        if (err) {
+                            console.error('Error deleting previous icon image: ', err);
+                        }
+                    });
+                }
+
+                await prisma.project.update({
+                    where: { id: project.id },
+                    data: {
+                        iconImage: encodeURIComponent(fileUploadPath)
+                    }
+                });
+            } else if (fieldName === 'backgroundImage') {
+                // Delete the previous background image
+                if (project.backgroundImage) {
+                    s3.deleteObject({
+                        Bucket: process.env.CLOUDFLARE_BUCKET_NAME as string,
+                        Key: project.backgroundImage
+                    }, (err, data) => {
+                        if (err) {
+                            console.error('Error deleting previous background image: ', err);
+                        }
+                    });
+                }
+
+                await prisma.project.update({
+                    where: { id: project.id },
+                    data: {
+                        backgroundImage: encodeURIComponent(fileUploadPath)
+                    }
+                });
+            }
+        }
+    })
+    return { code: 200, json: { success: true, message: 'Project images handled successfully' } };
+
 }

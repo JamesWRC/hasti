@@ -7,7 +7,7 @@ import { GetInputProps } from '@mantine/form/lib/types';
 
 
 const projectTypes = getAllProjectTypes()
-export function ProjectTypeSelectDropdownBox({projectType, setProjectType, inputProps}:{projectType:ProjectType|undefined, setProjectType: (projectType: ProjectType) => void, inputProps: GetInputProps<any>}) {
+export function ProjectTypeSelectDropdownBox({projectType, setProjectType, inputProps, disabled}:{projectType:ProjectType|undefined, setProjectType: (projectType: ProjectType) => void, inputProps: GetInputProps<any>, disabled:boolean}) {
 
     const combobox = useCombobox({
         onDropdownClose: () => combobox.resetSelectedOption(),
@@ -34,7 +34,7 @@ export function ProjectTypeSelectDropdownBox({projectType, setProjectType, input
                 setProjectType(getProjectType(val)) ;
                 combobox.closeDropdown();
             }}
-            
+            disabled={disabled}
             {...inputProps('projectType')}
         >
                             <Combobox.Target>
@@ -43,7 +43,7 @@ export function ProjectTypeSelectDropdownBox({projectType, setProjectType, input
                     component="button"
                     type="button"
                     pointer
-                    rightSection={<Combobox.Chevron />}
+                    rightSection={disabled ? null :  <Combobox.Chevron /> }
                     onClick={() => combobox.toggleDropdown()}
                     rightSectionPointerEvents="none"
                 >

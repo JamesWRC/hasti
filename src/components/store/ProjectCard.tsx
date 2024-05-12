@@ -73,6 +73,14 @@ export default function ProjectCard({userProject, style, loaded}: {userProject: 
       isUserOwner = session?.user?.id === userProject.user.id;
     }
 
+    let canEdit:boolean = false;
+    // if button should show
+    if(userProject && isUserProjects){
+        // If user has permission to edit
+        canEdit = isUserOwner || !userProject?.claimed
+    }
+    
+
     let className = "col-span-1 relative isolate flex flex-col justify-end overflow-hidden rounded-2xl px-8 pb-8 pt-80 sm:pt-48 lg:pt-80 mb-4 min-w-[10.5rem] sm:max-h-none"
     
     if(style === 'featured') {
@@ -88,7 +96,7 @@ export default function ProjectCard({userProject, style, loaded}: {userProject: 
     
     >
      
-        {userProject && isUserProjects && isUserOwner ? <div className="absolute top-5 right-5 z-20">
+        {userProject && canEdit ? <div className="absolute top-5 right-5 z-20">
             <SettingsButton projectID={userProject?.id}/>
         </div> : null}
         <img src={userProject?.backgroundImage && userProject?.backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL  + '/' + userProject?.backgroundImage : rngAvatarBackground(userProject?.id)} alt="" className={classNames("absolute inset-0 -z-10 h-full w-full object-cover", !loaded || !userProject?.backgroundImage ? `blur-[100px]` : "" )} />
