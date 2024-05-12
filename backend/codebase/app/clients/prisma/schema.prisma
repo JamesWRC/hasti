@@ -46,7 +46,7 @@ model Project {
   
   projectType       String        @default("integration") @db.VarChar(255)
 
-  iconImage      String?       @default("") @db.VarChar(255)
+  iconImage         String?       @default("") @db.VarChar(255)
   backgroundImage   String?       @default("") @db.VarChar(255)
 
   contentImages     String[]      @default([]) @db.VarChar(255) // Array of image URLs
@@ -67,6 +67,8 @@ model Collaborator {
   userID            String
   user              User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
+  githubID          Int
+
   // Permissions for the collaborator to a projects AND/OR repo.
   type              String        @default("user") @db.VarChar(255) // Lowercase "user" or "admin"
   admin             Boolean       @default(false)
@@ -77,6 +79,9 @@ model Collaborator {
 
   createdAt         DateTime      @default(now()) @db.Timestamp(6)
   updatedAt         DateTime      @updatedAt
+
+  @@index([githubID], name: "collaborator_githubID_index")
+  @@index([repoID], name: "repoID_index")
 
 }
  
@@ -90,9 +95,9 @@ model Repo {
   fullName          String        @db.VarChar(255)
   private           Boolean       @default(false)
   
-  ownerGithubID     Int           @default(0)
+  ownerGithubID     Int           
   ownerType         String        @default("user") @db.VarChar(255) // Lowercase "user" or "organization"
-  addedByGithubID   Int           @default(0)
+  addedByGithubID   Int           
 
   userID            String
   user              User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -117,6 +122,7 @@ model Repo {
 model User {
   id                String        @id @default(uuid())
   githubID          Int           @unique
+  githubNodeID      String        @unique
   username          String        @db.VarChar(255)
   image             String        @db.VarChar(255)
   type              String        @db.VarChar(255) @default("user")

@@ -372,9 +372,12 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
     formData.append('projectType', projectType ? projectType : ProjectType.OTHER)
     formData.append('haInstallType', haInstallTypes.join(','))
 
-
     formData.append('description', form.values.description)
     formData.append('tags', tags.join(','))
+
+    if(projectID){
+      formData.append('projectID', projectID)
+    }
 
     iconImage ? formData.append('iconImage', iconImage) : null
     backgroundImage ? formData.append('backgroundImage', backgroundImage) : null

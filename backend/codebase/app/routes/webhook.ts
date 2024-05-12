@@ -11,7 +11,7 @@ import { getAllNotificationAbout, getAllNotificationTypes } from '@/backend/inte
 import logger from '../logger';
 import type { SearchResponse } from '@/backend/interfaces/search';
 import tsClient from '@/backend/clients/typesense';
-import { GHAppInstallation, GHAppSenderWHSender, GitHubRepoRequest, RepositoryData } from '@/backend/interfaces/repo';
+import { GHAppInstallation, GHAppSenderWHSender, GitHubRepoRequest, RepositoryData, Repo } from '@/backend/interfaces/repo';
 import verifySignature from '@/backend/helpers/webhook';
 import addOrUpdateRepo, { removeRepo, setGitAppHasAccess } from '@/backend/helpers/repo';
 import { getGitHubUserToken } from '../helpers/user';
@@ -95,7 +95,7 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
                     console.log('event', event)
                     console.log('action', action)
                     // Add repos
-                    const dbPromises: Promise<boolean>[] = []
+                    const dbPromises: Promise<Repo | boolean | null>[] = []
 
                     
                       // Remove repos 
@@ -130,7 +130,7 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
                             }
                             console.log('add repo', addedRepo)     
                             
-                           const dbActions = addOrUpdateRepo(addedRepo, user, sender, installation)
+                           const dbActions = addOrUpdateRepo(addedRepo, user, sender.id, installation.account.id, installation.account.type)
                            dbPromises.push(dbActions)
                         }
                     }

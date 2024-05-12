@@ -6,6 +6,8 @@ import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypt
 import { jwtVerify } from "jose";
 import { NextApiResponse } from "next/types";
 import { decrypt, encrypt } from "../auth";
+import { OctokitResponse } from "@octokit/types";
+import { NotificationAbout, NotificationType } from "@/backend/interfaces/notification";
 
 
 
@@ -50,6 +52,7 @@ export default async function addOrUpdateUser(user: JWTBodyRequest): Promise<Use
     const newUser = await prisma.user.create({
       data: {
         githubID: user.user.id,
+        githubNodeID: "user.user.node_id",
         username: user.user.username,
         image: user.user.image
       }
@@ -80,4 +83,46 @@ export async function updateGitHubUserToken(token:string, user: User){
 export async function getGitHubUserToken(encryptedToken: string){
   const token = decrypt(encryptedToken)
   return token
+}
+
+
+/**
+ * - Add a temporary user to the database. This is used when a user adds a project to HASTI, but is not a registered user.
+ * Will be upgraded to a USER type when they login.
+ * - Also notifies the owner/collaborator of their repo that a temp user has been created.
+ * @param newUserGitHubID - The GitHub ID of the new user.
+ * @param newUserGithubNodeID - The GitHub Node ID of the new user.
+ * @param newUserUsername - The GitHub username of the new user.
+ * @param newUserImage - The GitHub image of the new user.
+ * @param addedByUser - The user who added the project to HASTI. And thus 'created' the temp user.
+ * @param repoName - The name of the repo.
+ * @returns The temp user that was created.
+ */
+export async function createTempUser(newUserGitHubID:number, newUserGithubNodeID:string, newUserUsername:string, newUserImage:string, addedByUser: User, repoName: string): Promise<User>{
+    const projectOwnerUser:User = await prisma.user.create({
+      data: {
+          githubID: newUserGitHubID,    
+          githubNodeID: newUserGithubNodeID,
+          username: newUserUsername,     
+          image: newUserImage,
+          type: UserType.TEMP,
+          ghuToken: addedByUser.ghuToken // Use the authenticated Users token for the temp user.
+
+      }
+  })
+
+  // Notify the owner of the repo that a temp user has been created. And someone added a project to HASTI
+  await prisma.notification.create({
+      data: {
+          type: NotificationType.SUCCESS,
+          title: projectOwnerUser.username,
+          message: `Temporary user created, as the user: '${addedByUser.username}' added a project to HASTI using a repo you own / are a collaborator of, called: '${repoName}'.`,
+          about: NotificationAbout.USER,
+          read: false,
+          userID: projectOwnerUser.id,
+
+      }
+  });
+
+  return projectOwnerUser
 }

@@ -96,7 +96,7 @@ export default function ProjectCard({userProject, style, loaded}: {userProject: 
     
     >
      
-        {userProject && canEdit ? <div className="absolute top-5 right-5 z-20">
+        {userProject && canEdit && loaded ? <div className="absolute top-5 right-5 z-20">
             <SettingsButton projectID={userProject?.id}/>
         </div> : null}
         <img src={userProject?.backgroundImage && userProject?.backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL  + '/' + userProject?.backgroundImage : rngAvatarBackground(userProject?.id)} alt="" className={classNames("absolute inset-0 -z-10 h-full w-full object-cover", !loaded || !userProject?.backgroundImage ? `blur-[100px]` : "" )} />

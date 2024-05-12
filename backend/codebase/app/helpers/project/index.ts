@@ -56,9 +56,6 @@ export async function updateContent(repoID: string, projectID: string, userID: s
     const user = await prisma.user.findUnique({
         where: {
             id: userID
-        },
-        select: {
-            ghuToken: true
         }
     })
     console.log("user", user)
@@ -75,42 +72,35 @@ export async function updateContent(repoID: string, projectID: string, userID: s
         return { success: false, message: "User does not have a GitHub token." }
     }
 
-    // Decrypt the user's token
-    const decryptedToken = await getGitHubUserToken(user.ghuToken)
 
     let retVal = {
         success: false,
         message: ""
     }
-    console.log(`https://api.github.com/repos/${repo.fullName}/contents/README.md`)
-    // Branch of readme
-    const branch = ''
-    let path = `https://api.github.com/repos/${repo.fullName}/contents/README.md`
-    if(branch){
-        path += `?ref=${branch}`
-    }
-    // Fetch repos README.md file
-    const response = await fetch(path, {
-        headers: {
-            Authorization: `Bearer ${decryptedToken}`,
-        },
-    });
-    console.log("response", response)
 
-    if (!response.ok) {
-        return retVal = { success: false, message: "Failed to fetch README.md file. May not exist at path or no access to repo." }
-    }else if(response.status === 404){
-        return retVal = { success: false, message: "README.md file not found." }
+    const owner: string = repo.fullName.split('/')[0]
+    const repoName: string = repo.fullName.split('/')[1]
+
+    // Fetch repos readme file (can be any README.xx file)
+    const gitHubUserAuth = await getGitHubUserAuth(user);
+    const response = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/readme', {
+        owner: owner,
+        repo: repoName
+    });
+    
+
+
+    console.log("response", response)
+    response.status
+    if (response.status !== 200) {
+        return retVal = { success: false, message: "Failed to fetch a README.md file. May not exist at path or no access to repo." }
     }else{
 
-        const data = await response.json();
-        console.log("response data", data)
 
-        const content = data.content;
-        let decodedContent = Buffer.from(content, 'base64').toString('utf-8');
+        let decodedContent = Buffer.from(response.data.content, 'base64').toString('utf-8');
 
         const extractedContentImages: string[] = extractImageUrls(decodedContent);
-
+        console.log("extractedContentImages", extractedContentImages)
         // Get previous images from the project
         const project = await prisma.project.findUnique({
             where: {
@@ -180,7 +170,7 @@ export async function updateContent(repoID: string, projectID: string, userID: s
             const contentType:string = imageResponse.headers.get('content-type') ?? 'image/jpeg'
 
             if (!imageResponse.ok) {
-                return { success: false, message: `Failed to download image: ${imageURL} status: ${response.statusText}`}
+                return { success: false, message: `Failed to download image: ${imageURL} status: ${response.status}`}
 
             }
 
@@ -225,6 +215,7 @@ function getNewImageURL(imageURL: string, userID: string, projectID: string): {n
 
 // Function to extract image URLs from Markdown content
 function extractImageUrls(markdownContent: string): string[] {
+    console.log("markdownContent", markdownContent)
     const md = markdownit();
     const tokens = md.parse(markdownContent, {});
 
@@ -337,7 +328,7 @@ export async function handleProjectImages(files: Files, project: Project|null, u
                 if (project.iconImage) {
                     s3.deleteObject({
                         Bucket: process.env.CLOUDFLARE_BUCKET_NAME as string,
-                        Key: project.iconImage
+                        Key: decodeURIComponent(project.iconImage)
                     }, (err, data) => {
                         if (err) {
                             console.error('Error deleting previous icon image: ', err);
@@ -356,7 +347,7 @@ export async function handleProjectImages(files: Files, project: Project|null, u
                 if (project.backgroundImage) {
                     s3.deleteObject({
                         Bucket: process.env.CLOUDFLARE_BUCKET_NAME as string,
-                        Key: project.backgroundImage
+                        Key: decodeURIComponent(project.backgroundImage)
                     }, (err, data) => {
                         if (err) {
                             console.error('Error deleting previous background image: ', err);
@@ -372,7 +363,7 @@ export async function handleProjectImages(files: Files, project: Project|null, u
                 });
             }
         }
-    })
+        })
     return { code: 200, json: { success: true, message: 'Project images handled successfully' } };
 
 }
