@@ -323,6 +323,9 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
         let createdProject: Project | null = null;
         let repoData: OctokitResponse<any, number> | null = null
 
+        // simulate slow network
+        // await new Promise(resolve => setTimeout(resolve, 500000))
+
         if (!user) {
             return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
         }

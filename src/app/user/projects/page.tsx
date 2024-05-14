@@ -37,6 +37,7 @@ export default function Page() {
   const { data: session, status } = useSession()
 
 
+
   return (
     <div className="bg-white py-24 sm:py-28 w-full">
       <div className="mx-auto max-w-[150%] px-6 lg:px-2">
@@ -64,7 +65,6 @@ export default function Page() {
 
             <AddorEditProject opened={opened} open={open} close={close}/>
           </div>
-
         </div>
         {unclaimedProjectsLoadedState
           && unclaimedProjectsLoadedState.reqStatus === 'success'
