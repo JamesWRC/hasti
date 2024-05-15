@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react'
 import { GetNotificationsQueryParams, GetNotificationsResponse } from '@/backend/interfaces/notification/request';
 import { LoadNotifications } from '@/frontend/interfaces/notification';
 import type { Notification } from '@/backend/interfaces/notification';
+import axios from 'axios';
 
 export default function useNotifications({...props}: GetNotificationsQueryParams):LoadNotifications {
   const [searchProps, setSearchProps] = useState<GetNotificationsQueryParams>(props);
@@ -26,16 +27,21 @@ export default function useNotifications({...props}: GetNotificationsQueryParams
 
         // sleep for 2 seconds to simulate a slow network
         await new Promise((resolve) => setTimeout(resolve, 4000));
-        const response = await fetch(`${process.env.API_URL}/api/v1/notifications/exampleUserID` + queryStr, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${session?.user.jwt}`
-            }
+
+        const response = await axios({
+          url: `${process.env.API_URL}/api/v1/notifications/exampleUserID` + queryStr,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.user.jwt}`
+          },
+          timeout: 60000,
+          timeoutErrorMessage: 'Request timed out. Please try again.',
         })
+
         let jsonData:GetNotificationsResponse | null = null;
         if(response.status === 200){
-          jsonData = await response.json();
+          jsonData = response.data;
         }else{
           jsonData = {
             success: true,
@@ -67,17 +73,21 @@ export default function useNotifications({...props}: GetNotificationsQueryParams
         if(jsonData.notifications){
           notificationIDs = jsonData.notifications.filter((n:Notification)=> !n.read).map((n:Notification) => n.id);
         }
-        await fetch(`${process.env.API_URL}/api/v1/notifications`, {
+
+        await axios({
+          url: `${process.env.API_URL}/api/v1/notifications`,
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session?.user.jwt}`
           },
-          body: JSON.stringify({
+          data: {
             notificationIDs: notificationIDs,
             read: true
-          })
-        });
+          },
+          timeout: 10000,
+          timeoutErrorMessage: 'Request timed out. Please try again.',
+        })
       }
   };
 

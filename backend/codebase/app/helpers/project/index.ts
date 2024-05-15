@@ -14,6 +14,7 @@ import { Files } from 'formidable';
 import { Project } from '@/backend/interfaces/project';
 import fs from 'fs';
 import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
+import axios from 'axios';
 // Init s3
 const s3 = new AWS.S3({
     region: 'auto',
@@ -158,39 +159,57 @@ export async function updateContent(repoID: string, projectID: string, userID: s
         // Wait for all the images to be deleted
         await Promise.all(deletePromises);
 
-
+        console.log("extractedContentImages", extractedContentImages)
         // Upload new images to the Cloudflare R2 bucket
         for (const imageURL of extractedContentImages) {
             
-            const {newImageURL, imagePath} = getNewImageURL(imageURL, userID, projectID);
+            try {
+                const {newImageURL, imagePath} = getNewImageURL(imageURL, userID, projectID);
 
-            // download image
-            const imageResponse = await fetch(imageURL);
-            // Get the content type of the content
-            const contentType:string = imageResponse.headers.get('content-type') ?? 'image/jpeg'
-
-            if (!imageResponse.ok) {
-                return { success: false, message: `Failed to download image: ${imageURL} status: ${response.status}`}
-
-            }
-
-            const imageBuffer = await imageResponse.arrayBuffer();
-
-            // Set the parameters for the S3 upload
-            const s3Params = {
-                Bucket: process.env.CLOUDFLARE_BUCKET_NAME as string,
-                Key: imagePath,
-                Body: Buffer.from(imageBuffer),
-                ContentType: contentType,
-            };
-
-            // Upload the image to the Cloudflare R2 bucket
-            s3.upload(s3Params, (s3Err:any, data:any) => {
-                if (s3Err) {
-                    console.error('Error uploading to S3: ', s3Err);
-                    return { success: false, message: "Error uploading to S3." }
+                // download image
+                const imageResponse = await axios({
+                    url: imageURL,
+                    method: 'GET',
+                    responseType: 'stream',
+                    timeout: 10000,
+                    timeoutErrorMessage: 'Request timed out. Please try again.',
+                  });
+                
+                  console.log("imageResponse", imageResponse)
+                // Get the content type of the content
+                const contentType = imageResponse.headers['content-type'] || 'image/jpeg';
+            
+                if (imageResponse.status !== 200) {
+                    return { success: false, message: `Failed to download image: ${imageURL} status: ${imageResponse.status}` };
                 }
-            });
+            
+               // Create a buffer to hold the image data
+                const imageBuffer:Buffer = await new Promise((resolve, reject) => {
+                    const chunks:any = [];
+                    imageResponse.data.on('data', (chunk:any) => chunks.push(chunk));
+                    imageResponse.data.on('end', () => resolve(Buffer.concat(chunks)));
+                    imageResponse.data.on('error', (error:any) => reject(error));
+                });
+                // Set the parameters for the S3 upload
+                const s3Params: AWS.S3.PutObjectRequest = {
+                    Bucket: process.env.CLOUDFLARE_BUCKET_NAME as string,
+                    Key: imagePath,
+                    Body: imageBuffer,
+                    ContentType: contentType,
+                };
+
+                // Upload the image to the Cloudflare R2 bucket
+                s3.upload(s3Params, (s3Err , data) => {
+                    if (s3Err) {
+                        console.error('Error uploading to S3: ', s3Err);
+                        return { success: false, message: "Error uploading to S3." }
+                    }
+                });
+            
+            } catch (error) {
+                console.error('Error during Axios request: ', error);
+                return { success: false, message: "Error during Axios request." };
+            }
         }
 
         return retVal = { success: true, message: "Successfully updated project content." }
@@ -228,12 +247,17 @@ function extractImageUrls(markdownContent: string): string[] {
             
             // Extract image github media URLs. Don't want to abuse the GitHub content delivery network / use up their bandwidth.
             // Other sites can be added to the regex if needed. ATM it is assumed you have full rights to the content.
-            const matches = line.match(/\bhttps?:\/\/user-images.githubusercontent.com\S+\.(jpg|jpeg|png|gif|svg|mp4|webm|mov)\b/gi);
-            if (matches) {
-                mediaUrls.push(...matches);
+            const gitHubUserImagesMatches = line.match(/\bhttps?:\/\/user-images.githubusercontent.com\S+\.(jpg|jpeg|png|gif|svg|mp4|webm|mov)\b/gi);
+            const githubAssetMatches = line.match(/https:\/\/github\.com\/[^\/]+\/[^\/]+\/(assets\/\d+\/[^\/]+)/gi);
+            if (gitHubUserImagesMatches) {
+                mediaUrls.push(...gitHubUserImagesMatches);
             }
-            
 
+            if (githubAssetMatches) {
+                for (const githubAssetMatch of githubAssetMatches) {
+                    mediaUrls.push(githubAssetMatch.replace(')', ''));
+                }
+            }
         }
     }
 

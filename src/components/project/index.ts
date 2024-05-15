@@ -4,6 +4,7 @@ import { useSession } from 'next-auth/react'
 import { LoadProjects } from '@/frontend/interfaces/project';
 import { GetProjectsResponse, GetProjectsQueryParams } from '@/backend/interfaces/project/request';
 import { ProjectAllInfo, ProjectWithUser } from '@/backend/interfaces/project'
+import axios from 'axios';
 
 
 export default function useProjects({...props}: GetProjectsQueryParams):LoadProjects {
@@ -77,19 +78,26 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
           
           // sleep for 2 seconds to simulate a slow network
           await new Promise((resolve) => setTimeout(resolve, 4000));
-          const response = await fetch(`${process.env.API_URL}/api/v1/projects` + queryStr, {
-              method: 'GET',
-              headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${session?.user.jwt}`
-              }
+
+          const response = await axios({
+            url: `${process.env.API_URL}/api/v1/projects` + queryStr,
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session?.user.jwt}`
+            },
+
+            timeout: 10000,
+            timeoutErrorMessage: 'Request timed out. Please try again.',
           })
-          if (!response.ok) {
+
+
+          if (response.status !== 200) {
             throw new Error('Failed to fetch data');
           }
           // return the projects found.
           if(response.status === 200){
-            const jsonData:GetProjectsResponse = await response.json();
+            const jsonData:GetProjectsResponse = response.data;
             console.log("jsonData: ", jsonData)
             setProjects(jsonData);
             setReqStatus('success');
@@ -149,6 +157,7 @@ function generatePlaceHolderProjects(count:number):GetProjectsResponse {
       worksWithCore: false,
       worksWithOS: true,
       worksWithSupervised: true,
+      claimed: true,
       projectType: "project",
       iconImage: "SKELETON",
       backgroundImage: "SKELETON",
@@ -163,6 +172,7 @@ function generatePlaceHolderProjects(count:number):GetProjectsResponse {
         createdAt: new Date(),
         updatedAt: new Date(),
         type: "user",
+        githubNodeID: "Node ID",
       },
       tags: Array.from({ length:  Math.floor(Math.random() * 10) + 1 }).map((i) => {
         return {

@@ -123,70 +123,75 @@ export default async function addOrUpdateRepo(repoData: RepositoryData, user: Us
   const collaborators = await gitHubUserRequest.request("GET /repos/{owner}/{repo}/collaborators", {
     owner: owner,
     repo: repoName
-  })
-  
-  console.log('collaborators', collaborators)
-  console.log('permissions', collaborators.data.map((c:any) => c.permissions))
+  }).catch((e:any) => {
+    logger.warn(`Error getting collaborators: ${e}`)
+  });
 
-  // Add collaborators to the database
-  for(const collaborator of collaborators.data){
-    console.log("collaborator", collaborator)
-    const collaboratorExists = await prisma.collaborator.findFirst({
-      where: {
-        githubID: collaborator.id, // Add the 'id' property to the 'where' clause
-        repo: {
-          id: repo.id
-        }
-      }
-    })
-    console.log("collaborator exists", collaboratorExists)
+  if(collaborators){
 
-    if(!collaboratorExists){
-      console.log('adding collaborator', collaborator)
-      try{
-        
+    console.log('collaborators', collaborators)
+    console.log('permissions', collaborators.data.map((c:any) => c.permissions))
 
-        // If the collaborator is not a user, create a temp user
-        const newUserGitHubID:number = collaborator.id
-        const newUserGithubNodeID:string = "collaborator.id"
-        const newUserUsername:string = collaborator.login
-        const newUserImage:string = collaborator.avatar_url
-
-        let tempUser:User|null = null
-        if(user.githubID !== collaborator.id){
-          tempUser = await createTempUser(newUserGitHubID, newUserGithubNodeID, newUserUsername, newUserImage, user, repoName)
-        }else{
-          tempUser = user
-        }
-        
-        // Get the collaborators type
-        const type = getCollaboratorType(collaborator.type)
-
-        // Get the collaborator's permissions
-        const admin = collaborator.permissions?.admin ? true : false
-        const maintain = collaborator.permissions?.maintain ? true : false
-        const push = collaborator.permissions?.push ? true : false
-        const triage = collaborator.permissions?.triage ? true : false
-        const pull = collaborator.permissions?.pull ? true : false
-
-        await prisma.collaborator.create({
-          data: {
-            repoID: repo.id,
-            userID: tempUser.id,
-            githubID: collaborator.id,
-            type: type,
-            // Set the permissions of the collaborator
-            admin: admin,
-            maintain: maintain,
-            push: push,
-            triage: triage,
-            pull: pull,
-
+    // Add collaborators to the database
+    for(const collaborator of collaborators.data){
+      console.log("collaborator", collaborator)
+      const collaboratorExists = await prisma.collaborator.findFirst({
+        where: {
+          githubID: collaborator.id, // Add the 'id' property to the 'where' clause
+          repo: {
+            id: repo.id
           }
-        })
-      }catch(e){
-        logger.error(`Error adding collaborator: ${e}`)
-        return null
+        }
+      })
+      console.log("collaborator exists", collaboratorExists)
+
+      if(!collaboratorExists){
+        console.log('adding collaborator', collaborator)
+        try{
+          
+
+          // If the collaborator is not a user, create a temp user
+          const newUserGitHubID:number = collaborator.id
+          const newUserGithubNodeID:string = "collaborator.id"
+          const newUserUsername:string = collaborator.login
+          const newUserImage:string = collaborator.avatar_url
+
+          let tempUser:User|null = null
+          if(user.githubID !== collaborator.id){
+            tempUser = await createTempUser(newUserGitHubID, newUserGithubNodeID, newUserUsername, newUserImage, user, repoName)
+          }else{
+            tempUser = user
+          }
+          
+          // Get the collaborators type
+          const type = getCollaboratorType(collaborator.type)
+
+          // Get the collaborator's permissions
+          const admin = collaborator.permissions?.admin ? true : false
+          const maintain = collaborator.permissions?.maintain ? true : false
+          const push = collaborator.permissions?.push ? true : false
+          const triage = collaborator.permissions?.triage ? true : false
+          const pull = collaborator.permissions?.pull ? true : false
+
+          await prisma.collaborator.create({
+            data: {
+              repoID: repo.id,
+              userID: tempUser.id,
+              githubID: collaborator.id,
+              type: type,
+              // Set the permissions of the collaborator
+              admin: admin,
+              maintain: maintain,
+              push: push,
+              triage: triage,
+              pull: pull,
+
+            }
+          })
+        }catch(e){
+          logger.error(`Error adding collaborator: ${e}`)
+          return null
+        }
       }
     }
   }

@@ -276,33 +276,41 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
         per_page: '10'
       })
 
-      const res = await fetch(`${process.env.API_URL}/api/v1/tags/search?` + searchParams, {
+      const res = await axios({
+        url: `${process.env.API_URL}/api/v1/tags/search?` + searchParams,
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${session?.user.jwt}`
-        }
+        },
+        timeout: 30000,
+        timeoutErrorMessage: 'Request timed out. Please try again.',
       })
-      const tagSearchResponse: TagSearchResponse = await res.json()
 
 
-      if (res.ok && tagSearchResponse.hits && tagSearchResponse.hits.length > 0) {
+      const tagSearchResponse: TagSearchResponse = res.data
+
+
+      if (res.status === 200 && tagSearchResponse.hits && tagSearchResponse.hits.length > 0) {
         const popularTags = tagSearchResponse.hits.map((hit) => hit.document.name)
         setExistingTags(popularTags)
       }
     }
-    fetchPopularTags()
 
-  }, []);
+    if (opened){
+      fetchPopularTags()
+    }
+
+  }, [opened]);
 
 
   const searchParams: SearchParams = {
     q: 'placeholder',
     query_by: 'name',
     filter_by: 'type:integration',
-    include_fields: 'name,projectsUsing,type',
+    include_fields: 'name,type',
     highlight_fields: 'name', // Hacky way to get API to not send highlight fields in response to save response size
-    sort_by: 'projectsUsing:desc',
+    // sort_by: 'projectsUsing:desc',
     typo_tokens_threshold: 3,
   }
 
@@ -702,8 +710,9 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
 
                 </div>
+                
               </div>
-
+                      
 
 
             </div>

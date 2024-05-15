@@ -10,6 +10,7 @@ import { GetInputProps } from '@mantine/form/lib/types'
 import Svg from "react-inlinesvg";
 
 import { identicon } from '@dicebear/collection';
+import axios from 'axios';
 
 function classNames(...classes: string[]) {
     return classes.filter(Boolean).join(' ')
@@ -22,14 +23,19 @@ export default function SelectRepo({ selectRepo, setSelectRepo, disabled }: { se
     useEffect(() => {
         const fetchRepos = async () => {
             if(session?.user){
-                const res = await fetch(`${process.env.API_URL}/api/v1/repos/${session?.user.id}`, {
+
+                const res = await axios({
+                    url: `${process.env.API_URL}/api/v1/repos/${session?.user.id}`,
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${session?.user.jwt}`
-                    }
-                })
-                const data:UserReposResponse = await res.json()
+                    },
+                    timeout: 10000,
+                    timeoutErrorMessage: 'Request timed out. Please try again.',
+                  })
+
+                const data:UserReposResponse = res.data;
                 if (data.success) {
                     // orde repos alphabetically
                     data.repos.sort((a, b) => a.fullName.localeCompare(b.fullName))

@@ -2,6 +2,7 @@ import NextAuth, { User } from "next-auth"
 import GitHub from "next-auth/providers/github"
 import { Session } from 'next-auth';
 import { JWTBodyRequest, JWTBodyResponse } from '@/backend/interfaces/user/request';
+import axios from 'axios';
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY as string
 
@@ -17,16 +18,18 @@ const getTokenFromAPIServer = async (provider: string, user: any) => {
     }
     console.log("JWTBodyRequest req", JWTBodyRequest)
 
-    // Make request to your API
-    const response = await fetch(`${process.env.API_URL}/api/v1/auth/jwt`, {
+    const imageResponse = await axios({
+        url: `${process.env.API_URL}/api/v1/auth/jwt`,
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(JWTBodyRequest),
-    });
+        data: JWTBodyRequest,
+        timeout: 10000,
+        timeoutErrorMessage: 'Request timed out. Please try again.',
+      })
 
-    const data:JWTBodyResponse = await response.json();
+    const data:JWTBodyResponse = imageResponse.data;
     console.log("JWTBodyRequest resp", data)
     return data;
 
