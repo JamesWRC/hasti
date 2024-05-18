@@ -11,6 +11,9 @@ import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 import addOrUpdateUser, { getGitHubUserToken, updateGitHubUserToken } from '@/backend/helpers/user';
 import axios from 'axios';
 import { isAuthenticated } from '@/backend/helpers/auth';
+import { AuthCheckType, CheckAuthResponse } from '@/backend/interfaces/auth/index';
+import { constructUserOctoKitAuth } from '@/backend/helpers/auth/github';
+import { headers } from 'next/dist/client/components/headers';
 
 const authRouter = Router();
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY as string
@@ -56,6 +59,25 @@ authRouter.post<Record<string, string>, JWTBodyResponse | BadRequestResponse>(
         }
         
         console.log('body', body)
+
+        const ghu_token:string = body.user.ghu_token
+
+        // Check if the ghu_token is valid
+        if(!ghu_token || ghu_token.length <= 0 || !ghu_token.startsWith('ghu_')) {
+            return res.status(400).json({success: false, message: 'No ghu_token provided. Or is not valid' });
+        }
+
+        // If the token is valid
+        const gitHubUserRequest = await constructUserOctoKitAuth(ghu_token)
+
+        // Check if the token is valid.
+        gitHubUserRequest.request("GET /users/{username}", {
+          username: body.user.username
+        }).catch((e:any) => {
+            logger.warn(`Error testing user auth: ${e}`)
+            return res.status(400).json({success: false, message: 'Error testing user auth' });
+        });
+      
 
         const user:User|null = await addOrUpdateUser(body)
 
@@ -109,7 +131,7 @@ authRouter.post<Record<string, string>, JWTBodyResponse | BadRequestResponse>(
     // ###############                                                                              ###############
     // ############################################################################################################
 
-authRouter.get<Record<string, string>, OkResponse | BadRequestResponse>(
+authRouter.get<Record<string, string>, CheckAuthResponse | BadRequestResponse>(
     '/gitUserToken',
     isAuthenticated,
     async (req, res) => {
@@ -117,7 +139,7 @@ authRouter.get<Record<string, string>, OkResponse | BadRequestResponse>(
             // get headers from request
             const user: User | undefined = req.user;
             if (!user) {
-                return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
+                return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.', check: AuthCheckType.USER_OK});
             }
 
             const encToken = await prisma.user.findUnique({
@@ -130,7 +152,7 @@ authRouter.get<Record<string, string>, OkResponse | BadRequestResponse>(
             })
 
             if(!encToken?.ghuToken){
-                return res.status(401).json({success: false, message: 'Failed to get token from database' });
+                return res.status(401).json({success: false, message: 'Failed to get token from database', check: AuthCheckType.TOKEN_EXIST });
             }
 
             const decryptedToken = await getGitHubUserToken(encToken.ghuToken)
@@ -142,10 +164,10 @@ authRouter.get<Record<string, string>, OkResponse | BadRequestResponse>(
             } );
 
             if (tokenResponse.status !== 200) {
-                return res.status(401).json({success: false, message: 'Bad token. Possibly failed to decrypt' });
+                return res.status(401).json({success: false, message: 'Bad token. Possibly failed to decrypt', check: AuthCheckType.DECRYPT });
             }
 
-            return res.status(200).json({ success: true, message: 'User token ok' });
+            return res.status(200).json({ success: true, message: 'User token ok, all checks passed.', check: AuthCheckType.ALL_OK});
             
 
         } catch (error) {

@@ -9,9 +9,11 @@ export interface JWTBodyRequest {
     provider: string,
     user: {
         id: number;
+        node_id: string;
         name: string;
         username: string;
         image: string;
+        ghu_token: string;
     };
 }
 

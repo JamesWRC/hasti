@@ -6,8 +6,11 @@ import { BadRequestResponse } from '@/backend/interfaces/request';
 import prisma from '@/backend/clients/prisma/client';
 
 import logger from '../logger';
-import { Repo } from '@/backend/interfaces/repo';
+import { Repo, RepositoryData } from '@/backend/interfaces/repo';
 import { isAuthenticated } from '@/backend/helpers/auth';
+import addOrUpdateRepo, { updateRepoData } from '@/backend/helpers/repo';
+import { RefreshRepoDataRequest } from '@/backend/interfaces/repo/request';
+import { updateContent } from '@/backend/helpers/project';
 
 const reposRouter = Router();
 
@@ -74,6 +77,50 @@ reposRouter.get<Record<string, string>, UserReposResponse | BadRequestResponse>(
                 label: 'GET: /projects/:userid/count: ',
                 });
         return res.status(500).json({ success: false, message: 'Error getting token' });
+        }
+    });
+
+// Will be used by authenticated users to manually update the repo for the project. And AUTHENTICATED users whe they view their project if the repo hasnt been updated in a while.
+reposRouter.put<Record<string, string>, RefreshRepoDataRequest | BadRequestResponse>(
+    '/:repoID',
+    isAuthenticated,
+    async (req, res) => {
+        try {
+            const repoID:string = req.params.repoID
+            const user: User | undefined = req.user;
+            if (!user) {
+                return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
+            }
+    
+            const repo = await prisma.repo.findFirst({
+                where: {
+                    id: repoID
+                }
+            })
+
+            if(repo){
+
+                // Get the repo owner
+                const ownerUser = await prisma.user.findFirst({
+                    where: {
+                        id: repo.userID
+                    }
+                })
+
+                if(ownerUser){
+                    // Update the repo data
+                    await updateRepoData(repo, ownerUser)
+                    return res.status(200).json({ success: true, message: 'Repo data updated' });
+                }
+            }
+
+            return res.status(404).json({ success: false, message: 'Unknown repoID' });
+
+        } catch (error) {
+            logger.warn(`Request threw an exception: ${error}`, {
+                label: 'PUT: /:repoID ',
+                });
+        return res.status(500).json({ success: false, message: 'Error updating repo data' });
         }
     });
 

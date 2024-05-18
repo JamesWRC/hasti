@@ -38,11 +38,6 @@ export async function updateContent(repoID: string, projectID: string, userID: s
     }
     
 
-    console.log("repoID", repoID)
-    console.log(typeof repoID)
-    console.log(repoID === null)
-    console.log(repoID === undefined)
-
     // get repo owner and name
     const repo = await prisma.repo.findUnique({
         where: {
@@ -130,8 +125,7 @@ export async function updateContent(repoID: string, projectID: string, userID: s
             decodedContent = decodedContent.replace(imageURL, newImageURL);
 
         }
-        console.log("newContentImages", newContentImages)
-        console.log("project.contentImages", project.contentImages)
+
         const imagesToDelete: string[] = project.contentImages.filter(image => !newContentImages.includes(image));
         const imagesToUpload: string[] = newContentImages.filter(image => !project.contentImages.includes(image));
 
@@ -268,6 +262,10 @@ export async function getGitHubRepoData(user: User, owner: string, repo: string)
 
     try {
         const gitHubUserAuth = await getGitHubUserAuth(user);
+        console.log("gitHubUserAuth", gitHubUserAuth)
+        console.log("gitHubUserAuth user", user)
+        console.log("gitHubUserAuth owner", owner)
+        console.log("gitHubUserAuth repo", repo)
         const resp = await gitHubUserAuth.request('GET /repos/{owner}/{repo}', {
             owner: owner,
             repo: repo

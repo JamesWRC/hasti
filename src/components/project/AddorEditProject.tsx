@@ -1,7 +1,11 @@
 'use client'
 import {
+  ArrowLeftOnRectangleIcon,
+  ArrowPathIcon,
   FolderPlusIcon,
   PhotoIcon,
+  TrashIcon,
+  UserPlusIcon,
 
 } from '@heroicons/react/24/outline'
 
@@ -40,8 +44,11 @@ import { User } from '@/backend/interfaces/user';
 import { getHaInstallType } from '@/backend/interfaces/project/index';
 import DialogPanel from '@/frontend/components/ui/DialogPanel';
 import axios from 'axios';
+import { RefreshRepoDataRequest } from '@/backend/interfaces/repo/request';
+import { CheckAuthResponse, AuthCheckType } from '@/backend/interfaces/auth';
 
 
+const GIT_APP_NAME = process.env.NODE_ENV === 'production' ? 'hasti-bot' : 'hasti-bot-dev';
 
 
 
@@ -72,8 +79,15 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
   const [iconPreview, setIconPreview] = useState<string | ArrayBuffer | null>('');
   const [bgImagePreview, setBgImagePreview] = useState<string | ArrayBuffer | null>('');
 
-  const [dialogOpen, setDialogOpen] = useState(false)
+  const [createProjectDialogOpen, setCreateProjectDialogOpen] = useState(false)
+  const [deleteProjectDialogOpen, setDeleteProjectDialogOpen] = useState(false)
+  const [claimProjectDialogOpen, setClaimProjectDialogOpen] = useState(false)
+  // Used to check if the user has setup the HASTI GitHub app to access their repositories, and the token is valid after being decrypted.
+  const [ghuTokenOkDialogOpen, setGhuTokenOkDialogOpen] = useState(false)
+  const [ghuTokenOkResponse, setGhuTokenOkResponse] = useState<CheckAuthResponse>({ success: false, message: '', check: AuthCheckType.USER_OK });
 
+  const [refreshRepoDialogOpen, setRefreshRepoDialogOpen] = useState(false)
+  const [refreshRepoResponse, setRefreshRepoResponse] = useState<RefreshRepoDataRequest>({ success: false, message: 'Refreshing Repository Data...' });
 
   function classNames(...classes: String[]) {
     return classes.filter(Boolean).join(' ')
@@ -103,6 +117,40 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
   };
 
   useEffect(() => {
+
+    // Check if user has setup the HASTI GitHub app to access their repositories
+    // Ie will check if the user has a github token, needed to access the GitHub API. (GHU_token)
+    axios({
+      url: `${process.env.API_URL}/api/v1/auth/gitUserToken`,
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.user.jwt}`
+      },
+      timeout: 60000,
+      timeoutErrorMessage: 'Request timed out. Please try again.',
+    }).catch(error => {
+      const data: CheckAuthResponse = error.response.data;
+      console.error('data', data)
+      let message: string = ''
+      if (data.check === AuthCheckType.USER_OK) {
+        message = 'Error checking GitHub token. Please try again, try refreshing the page, or logging out and back in.'
+      } else if (data.check === AuthCheckType.TOKEN_EXIST) {
+        message = "You have not setup the HASTI GitHub app to access your repositories. Please setup the GitHub app to continue."
+      } else if (data.check === AuthCheckType.DECRYPT) {
+        message = 'Your GitHub token has expired. Please setup the HASTI GitHub app to access your repositories.'
+      }
+      setGhuTokenOkResponse({ success: false, message: message, check: data.check})
+      setGhuTokenOkDialogOpen(true)
+      console.error('Error with GET /api/v1/auth/gitUserToken:', error)
+
+    });
+
+
+
+
+
+
     // Reset state back to idle when the modal is closed
     if (!opened) {
       setProjectLoadedState({ projects, reqStatus: 'idle', setSearchProps })
@@ -166,12 +214,6 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
   }, [projects])
 
-
-  useEffect(() => {
-
-    console.log('projectLoadedState:', projectLoadedState)
-
-  }, [projectLoadedState])
 
   // This regex is used to validate the importRepoURL field has a valid GitHub repository URL format.
   const importRepoURLRegex = /^(https?:\/\/)?(www\.)?github\.com\/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+?$/
@@ -297,7 +339,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
       }
     }
 
-    if (opened){
+    if (opened) {
       fetchPopularTags()
     }
 
@@ -456,7 +498,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
             setProjectResponse({ success: false, message: responseBody.message })
           }
         }).finally(() => {
-          setDialogOpen(true)
+          setCreateProjectDialogOpen(true)
           setLoading(false)
         })
     } catch (e) {
@@ -473,8 +515,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
   }, [selectRepo])
 
-  function onDialogConfirm() {
-    console.log('=confirm')
+  function onProjectCreateConfirm() {
     if (projectResponse.success) {
       close()
       // Reload page
@@ -482,26 +523,171 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
     }
   }
 
-  function onDialogCancel() {
-    console.log('=cancel')
+  function onDeleteDialogConfirm() {
+    axios({
+      url: `${process.env.API_URL}/api/v1/projects/${projectID}`,
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.user.jwt}`
+      },
+      timeout: 60000,
+      timeoutErrorMessage: 'Request timed out. Please try again.',
+    }).then(response => {
+      close()
+      // Reload page
+      window.location.reload()
+    }).catch(error => {
+      console.error('Error with DELETE /api/v1/projects/:projectID:', error)
+    });
+
   }
 
-  function onDialogCustom() {
+  function handleDeletedDialogOpen(e: any) {
+    e.preventDefault()
+    setDeleteProjectDialogOpen(true)
     console.log('=custom')
+  }
+
+
+  function onClaimDialogConfirm() {
+    axios({
+      url: `${process.env.API_URL}/api/v1/projects/claim/${projectID}`,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.user.jwt}`
+      },
+      timeout: 60000,
+      timeoutErrorMessage: 'Request timed out. Please try again.',
+    }).then(response => {
+      close()
+      // Reload page
+      window.location.reload()
+    }).catch(error => {
+      console.error('Error with DELETE /api/v1/projects/:projectID:', error)
+    });
+
+  }
+
+  function handleClaimDialogOpen(e: any) {
+    e.preventDefault()
+    setClaimProjectDialogOpen(true)
+  }
+
+  function handleRepoRefreshDialogOpen(e: any) {
+    e.preventDefault()
+    const project = projects && projects[0] as ProjectAllInfo
+    const repoID = project?.repoID 
+    axios({
+      url: `${process.env.API_URL}/api/v1/repos/${repoID}`,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.user.jwt}`
+      },
+      timeout: 60000,
+      timeoutErrorMessage: 'Request timed out. Please try again.',
+    }).then(response => {
+      const refreshResponse: RefreshRepoDataRequest = response.data
+
+      setRefreshRepoResponse(refreshResponse)
+    }).catch(error => {
+      const refreshResponse: RefreshRepoDataRequest = error.data
+      setRefreshRepoResponse(refreshResponse)
+      console.error('Error with PUT /api/v1/repos/refresh/:repoID', error)
+    });
+
+    setRefreshRepoDialogOpen(true)
+  }
+
+  function isOwnerAndNotClaimed() {
+    const project = projects && projects[0] as ProjectAllInfo
+    const isOwner = project?.repo.ownerGithubID === session?.user.githubID
+    console.log('isOwner:', isOwner)
+    console.log('project?.claimed:', project?.claimed)
+    return isOwner && project?.claimed === false
+  }
+
+  function isOwner() {
+    const project = projects && projects[0] as ProjectAllInfo
+    const isOwner = project?.repo.ownerGithubID === session?.user.githubID
+    return isOwner
+  }
+
+  function renderClaimButton() {
+    const project = projects && projects[0] as ProjectAllInfo
+    return (
+
+      !isOwner() ? null : <div>
+        {/* Claim Project Dialog */}
+        <DialogPanel
+          title="Claim project"
+          message={"Claiming a project will give you ownership of the project. You will be able to edit, configure and delete the project. The current owner will lose access, are you sure you want to claim this project?"}
+          open={claimProjectDialogOpen}
+          setOpen={setClaimProjectDialogOpen}
+          confirmBtnText='Claim Project'
+          cancelBtnText='Cancel'
+          onCancel={null}
+          onConfirm={onClaimDialogConfirm}
+          customAction={null}
+          customBtnText=''
+          stateType={'confirm'}
+        />
+        <p className='text-lg font-extrabold py-2'>Would you like to claim this project?</p>
+        Claiming this project means:
+        <ul className='list-disc pl-5 py-5'>
+          <li> You will be the owner of this project</li>
+          <li> You will be able to edit the project</li>
+          <li> You will be able to delete this project</li>
+        </ul>
+        <button
+          // flex items-center bg-dark text-white font-bold py-2 pl-3 -ml-1 rounded-2xl focus:outline-none focus:shadow-outline-gray hover:bg-gray-700 w-full
+          className={'my-3 bg-dark text-white group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold w-full justify-center items-center hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600'}
+          onClick={(e) => handleClaimDialogOpen(e)}
+        >
+          <UserPlusIcon
+            className={'text-white group:hover:text-black h-6 w-6 shrink-0'}
+            aria-hidden="true"
+          />
+          Claim Project
+        </button>
+      </div>
+
+    )
+  }
+
+  function handleGitHubAppSetup() {
+    window.open(`https://github.com/apps/${GIT_APP_NAME}/installations/new?state=${session?.user?.id}`)
   }
 
   return (
     <>
+      {/* GitHub App issue dialog */}
+      <DialogPanel 
+        title="GitHub Token Check"
+        message={ghuTokenOkResponse.message}
+        open={ghuTokenOkDialogOpen}
+        setOpen={setGhuTokenOkDialogOpen}
+        confirmBtnText='ok'
+        cancelBtnText=''
+        onCancel={() => {} }
+        onConfirm={() => {} }
+        customAction={handleGitHubAppSetup}
+        customBtnText={"Set Up GitHub App"}
+        stateType={'error'}
+      />
+      {/* Adding project dialog */}
       <DialogPanel
         title="New Project"
         message={projectResponse.message}
-        open={dialogOpen}
-        setOpen={setDialogOpen}
+        open={createProjectDialogOpen}
+        setOpen={setCreateProjectDialogOpen}
         confirmBtnText='ok'
         cancelBtnText=''
-        onCancel={null}
-        onConfirm={onDialogConfirm}
-        customAction={null}
+        onCancel={() => {} }
+        onConfirm={onProjectCreateConfirm}
+        customAction={() => {}}
         customBtnText=''
         stateType={projectResponse.success ? 'success' : 'error'}
       />
@@ -511,7 +697,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
           size={'75vw'}
           opened={opened}
           onClose={close}
-          title="Create new Project"
+          title={projectID ? "Project Settings" : "Create new Project"}
           overlayProps={{
             backgroundOpacity: 0.55,
             blur: 3,
@@ -527,7 +713,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                 && projectLoadedState?.projects.length > 0) ? false : true} zIndex={1000} overlayProps={{ radius: "xl", blur: 2, center: true }}
                 className='fixed'
               />
-              <div className="border-b border-gray-900/10 pb-12">
+              {isOwnerAndNotClaimed() ? renderClaimButton() : <div className="border-b border-gray-900/10 pb-12">
                 {/* <h2 className="text-base font-semibold leading-7 text-gray-900">New Project</h2> */}
 
                 <div className="text-black">
@@ -549,9 +735,93 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                         <TextInput className="w-full" placeholder="full repository URL" {...form.getInputProps('importRepoURL')} onFocus={(e) => setSelectedRepo(null)} disabled={projectID ? true : false} />
 
                       </div>
-                      <div className='grid grid-cols-1 md:grid-cols-2 space-x-3 divide-x-2 divide-dashed py-2'>
+                      <div className='grid grid-cols-1 md:grid-cols-2 '>
 
                         {/* Add content to right */}
+                        <div className='md:pl-5 col-span-2'>
+
+                          <div className='grid grid-cols-2 space-x-1.5 h-full my-auto'>
+
+
+
+
+
+                            <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 relative"
+                              style={{ backgroundImage: `url(${iconPreview?.toString()})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+
+                              <div className="text-center z-10 backdrop-blur-sm bg-white/30 rounded-lg h-full w-full flex justify-center items-center">
+                                <div className="text-center">
+                                  <PhotoIcon className="mx-auto h-12 w-12 text-gray-300" aria-hidden="true" />
+                                  <div className="mt-4 flex text-sm leading-6 text-gray-600 justify-center">
+                                    <label
+                                      htmlFor="icon-upload"
+                                      className={classNames('relative cursor-pointer rounded-mdfont-semibold focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 ', iconImage ? 'text-indigo-400 focus-within:ring-indigo-500 hover:text-indigo-500' : 'text-indigo-600 focus-within:ring-indigo-600 hover:text-indigo-500')}
+                                    >
+                                      <span>Upload an Icon</span>
+                                      <FileInput
+                                        id="icon-upload"
+                                        styles={{
+                                          input: {
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%',
+                                            opacity: 0,
+                                            cursor: 'pointer',
+                                          },
+                                        }}
+                                        onChange={handleIconChange}
+                                        accept="image/png,image/jpeg"
+                                        error={form.getInputProps('iconImage').error}
+                                      />
+                                    </label>
+                                  </div>
+                                  <p className={classNames('text-xs leading-5', iconImage ? 'text-white' : 'text-gray-600')}>PNG, JPG up to 10MB</p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 relative"
+                              style={{ backgroundImage: `url(${bgImagePreview?.toString()})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
+
+                              <div className="text-center z-10 backdrop-blur-sm bg-white/30 rounded-lg h-full w-full flex justify-center items-center">
+                                <div className="text-center">
+                                  <PhotoIcon className="mx-auto h-12 w-12 text-gray-300" aria-hidden="true" />
+                                  <div className="mt-4 flex text-sm leading-6 text-gray-600 justify-center">
+                                    <label
+                                      htmlFor="background-upload"
+                                      className={classNames('relative cursor-pointer rounded-mdfont-semibold focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 ', backgroundImage ? 'text-indigo-400 focus-within:ring-indigo-500 hover:text-indigo-500' : 'text-indigo-600 focus-within:ring-indigo-600 hover:text-indigo-500')}
+                                    >
+                                      <span>Upload a Background</span>
+                                      <FileInput
+                                        id="background-upload"
+                                        styles={{
+                                          input: {
+                                            position: 'absolute',
+                                            top: 0,
+                                            left: 0,
+                                            width: '100%',
+                                            height: '100%',
+                                            opacity: 0,
+                                            cursor: 'pointer',
+                                          },
+                                        }}
+                                        onChange={handleBgImageChange}
+                                        accept="image/png,image/jpeg"
+                                        error={form.getInputProps('iconImage').error}
+                                      />
+                                    </label>
+                                  </div>
+                                  <p className={classNames('text-xs leading-5', backgroundImage ? 'text-white' : 'text-gray-600')}>PNG, JPG up to 10MB</p>
+                                </div>
+                              </div>
+                            </div>
+
+
+
+
+                          </div>
+                        </div>
 
                       </div>
                       <div className='grid grid-cols-1 md:grid-cols-2 md:space-x-3 md:divide-x-2 divide-dashed py-2'>
@@ -620,88 +890,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                       </div>
                     </div>
 
-                    <div className='md:pl-5 col-span-2'>
 
-                      <div className='grid grid-cols-2 space-x-1.5 h-full'>
-
-                        {/* <div className="w-full pt-1.5">
-                      <FileInput clearable label="Icon image" placeholder="" accept="image/png,image/jpeg" onChange={setIconImage} error={form.getInputProps('iconImage').error} />
-                    </div> */}
-                        <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 relative"
-                          style={{ backgroundImage: `url(${iconPreview?.toString()})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-
-                          <div className="text-center z-10 backdrop-blur-sm bg-white/30 rounded-lg h-full w-full flex justify-center items-center">
-                            <div className="text-center">
-                              <PhotoIcon className="mx-auto h-12 w-12 text-gray-300" aria-hidden="true" />
-                              <div className="mt-4 flex text-sm leading-6 text-gray-600 justify-center">
-                                <label
-                                  htmlFor="icon-upload"
-                                  className={classNames('relative cursor-pointer rounded-mdfont-semibold focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 ', iconImage ? 'text-indigo-400 focus-within:ring-indigo-500 hover:text-indigo-500' : 'text-indigo-600 focus-within:ring-indigo-600 hover:text-indigo-500')}
-                                >
-                                  <span>Upload a Icon</span>
-                                  <FileInput
-                                    id="icon-upload"
-                                    styles={{
-                                      input: {
-                                        position: 'absolute',
-                                        top: 0,
-                                        left: 0,
-                                        width: '100%',
-                                        height: '100%',
-                                        opacity: 0,
-                                        cursor: 'pointer',
-                                      },
-                                    }}
-                                    onChange={handleIconChange}
-                                    accept="image/png,image/jpeg"
-                                    error={form.getInputProps('iconImage').error}
-                                  />
-                                </label>
-                              </div>
-                              <p className={classNames('text-xs leading-5', iconImage ? 'text-white' : 'text-gray-600')}>PNG, JPG up to 10MB</p>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 relative"
-                          style={{ backgroundImage: `url(${bgImagePreview?.toString()})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
-
-                          <div className="text-center z-10 backdrop-blur-sm bg-white/30 rounded-lg h-full w-full flex justify-center items-center">
-                            <div className="text-center">
-                              <PhotoIcon className="mx-auto h-12 w-12 text-gray-300" aria-hidden="true" />
-                              <div className="mt-4 flex text-sm leading-6 text-gray-600 justify-center">
-                                <label
-                                  htmlFor="background-upload"
-                                  className={classNames('relative cursor-pointer rounded-mdfont-semibold focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 ', backgroundImage ? 'text-indigo-400 focus-within:ring-indigo-500 hover:text-indigo-500' : 'text-indigo-600 focus-within:ring-indigo-600 hover:text-indigo-500')}
-                                >
-                                  <span>Upload a Background</span>
-                                  <FileInput
-                                    id="background-upload"
-                                    styles={{
-                                      input: {
-                                        position: 'absolute',
-                                        top: 0,
-                                        left: 0,
-                                        width: '100%',
-                                        height: '100%',
-                                        opacity: 0,
-                                        cursor: 'pointer',
-                                      },
-                                    }}
-                                    onChange={handleBgImageChange}
-                                    accept="image/png,image/jpeg"
-                                    error={form.getInputProps('iconImage').error}
-                                  />
-                                </label>
-                              </div>
-                              <p className={classNames('text-xs leading-5', backgroundImage ? 'text-white' : 'text-gray-600')}>PNG, JPG up to 10MB</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      {/* <div className="w-full pt-2">
-                      <FileInput clearable label="Background Image" placeholder="" accept="image/png,image/jpeg" onChange={setBackgroundImage} error={form.getInputProps('backgroundImage').error} />
-                    </div> */}
-                    </div>
                   </div>
 
 
@@ -710,18 +899,107 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
 
                 </div>
-                
+                {/* Refresh Repo Dialog */}
+                <DialogPanel
+                  title="Repository Refresh"
+                  message={refreshRepoResponse?.message }
+                  open={refreshRepoDialogOpen}
+                  setOpen={setRefreshRepoDialogOpen}
+                  confirmBtnText='Ok'
+                  cancelBtnText=''
+                  onCancel={null}
+                  onConfirm={null}
+                  customAction={null}
+                  customBtnText=''
+                  stateType={refreshRepoResponse?.success ? 'success' : 'error'}
+                />
+                {/* Delete Dialog */}
+                <DialogPanel
+                  title="Delete project"
+                  message={"Are you sure you want to delete this project?"}
+                  open={deleteProjectDialogOpen}
+                  setOpen={setDeleteProjectDialogOpen}
+                  confirmBtnText='Delete Project'
+                  cancelBtnText='Cancel'
+                  onCancel={null}
+                  onConfirm={onDeleteDialogConfirm}
+                  customAction={null}
+                  customBtnText=''
+                  confirmActionText={`delete ${form.values.projectName}`}
+                  stateType={'confirm'}
+                />
+                {
+                  !projectID || !(projectLoadedState
+                    && projectLoadedState.reqStatus === "success"
+                    && projectLoadedState?.projects
+                    && projectLoadedState?.projects.length > 0) ? null :
+                    <div>
+
+                      <div className="relative py-5">
+                        <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                          <div className="w-full border-t border-gray-300" />
+                        </div>
+                        <div className="relative flex justify-center">
+                          <span className="bg-white px-2 text-sm text-gray-500"></span>
+                        </div>
+                      </div>
+                      <div className='grid grid-cols-4 space-x-1.5 h-full '>
+                        <div className='col-span-4 md:col-span-1 order-last md:order-1'>
+                          <div className="relative py-5">
+                            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                              <div className="w-full border-t border-gray-300" />
+                            </div>
+                            <div className="relative flex justify-center">
+                              <span className="bg-white px-2 text-sm text-gray-500">Actions</span>
+                            </div>
+                          </div>
+                          {/* {renderClaimButton()} */}
+                          <button
+                            // flex items-center bg-dark text-white font-bold py-2 pl-3 -ml-1 rounded-2xl focus:outline-none focus:shadow-outline-gray hover:bg-gray-700 w-full
+                            className={'my-3 bg-dark text-white group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold w-full justify-center items-center hover:bg-gray-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2'}
+                            onClick={(e) => handleRepoRefreshDialogOpen(e)}
+                          >
+                            <ArrowPathIcon
+                              className={'text-white group:hover:text-black h-6 w-6 shrink-0'}
+                              aria-hidden="true"
+                            />
+                            Refresh Repo Data
+                          </button>
+                          <button
+                            className={'my-3 bg-red-400 text-white group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold w-full justify-center items-center hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600'}
+                            onClick={(e) => handleDeletedDialogOpen(e)}
+                          >
+                            <TrashIcon
+                              className={'text-white group:hover:text-black h-6 w-6 shrink-0'}
+                              aria-hidden="true"
+                            />
+                            Delete Project
+                          </button>
+                        </div>
+                        <div className='col-span-4 md:col-span-3 order-1'>
+                          <div className="relative py-5">
+                            <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                              <div className="w-full border-t border-gray-300" />
+                            </div>
+                            <div className="relative flex justify-center">
+                              <span className="bg-white px-2 text-sm text-gray-500">More settings</span>
+                            </div>
+                          </div>
+                          <div className='justify-center items-center text-center text-gray-500 py-auto'>
+                            More settings coming soon...
+                            <p className='text-gray-400 text-sm'>When they are added, they will show here</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                }
               </div>
-                      
+              }
+
 
 
             </div>
-            <div className='mt-6 flex justify-end'>
-              {/* <div className='justify-start'>
-              {projectResponse.success ?
-                <p className="text-sm font-semibold leading-6 text-green-500 justify-start">{projectResponse.message}</p> :
-                <p className="text-sm font-semibold leading-6 text-red-500 justify-start">{projectResponse.message}</p>}
-            </div> */}
+            <div className={isOwnerAndNotClaimed() ? 'hidden' : 'mt-6 flex justify-end'}>
               <div className="items-center justify-end gap-x-6">
 
                 <Button type="button" className="text-sm font-semibold leading-6 text-gray-900" onClick={e => close()}>

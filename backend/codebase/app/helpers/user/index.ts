@@ -19,16 +19,16 @@ export default async function addOrUpdateUser(user: JWTBodyRequest): Promise<Use
   }
 
   // Add user to database
-  const userExists = await prisma.user.findUnique({
+  let currUser:User|null = await prisma.user.findUnique({
     where: {
       githubID: user.user.id
     }
   })
-
+  
   // Already exists.
-  if(userExists){
+  if(currUser){
       // Update user type if needed. Temp users are now users.
-      let userType: UserType = getUserType(userExists.type)
+      let userType: UserType = getUserType(currUser.type)
       if(userType === UserType.TEMP){
         userType = UserType.USER
       }
@@ -43,25 +43,30 @@ export default async function addOrUpdateUser(user: JWTBodyRequest): Promise<Use
         }
       })
     
+  }else{
+    // Else if user does not exist, create a new user
+    try{
+      currUser = await prisma.user.create({
+        data: {
+          githubID: user.user.id,
+          githubNodeID: user.user.node_id,
+          username: user.user.username,
+          image: user.user.image
+        }
+      })
 
-    return userExists
+    }catch(e){
+      return null
+    }
   }
 
-  // Else if user does not exist, create a new user
-  try{
-    const newUser = await prisma.user.create({
-      data: {
-        githubID: user.user.id,
-        githubNodeID: "user.user.node_id",
-        username: user.user.username,
-        image: user.user.image
-      }
-    })
-    return newUser
-  
-  }catch(e){
-    return null
+  // Update the GitHub user token if it has changed.
+  if(getGitHubUserToken(currUser.ghuToken) !== user.user.ghu_token){
+    await updateGitHubUserToken(user.user.ghu_token, currUser)
   }
+
+  return currUser
+
 }
 
 
@@ -80,8 +85,14 @@ export async function updateGitHubUserToken(token:string, user: User){
 }
 
 
-export async function getGitHubUserToken(encryptedToken: string){
-  const token = decrypt(encryptedToken)
+export function getGitHubUserToken(encryptedToken: string){
+  let token = ''
+
+  // Decrypt the token. decrypt() will error if the token is empty.
+  if(encryptedToken.length > 0){
+    token = decrypt(encryptedToken)
+  }
+
   return token
 }
 

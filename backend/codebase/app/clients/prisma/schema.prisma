@@ -104,8 +104,21 @@ model Repo {
   
   projects          Project[]
 
+  // Repo metadata
   gitHubStars       Int           @default(0)
   gitHubWatchers    Int           @default(0)
+  openIssues        Int           @default(0)
+  repoCreatedAt     DateTime      @default(now()) // Date the repo was created on GitHub
+  repoPushedAt      DateTime      @default(now()) // Date the repo was last pushed to on GitHub
+
+  forked            Boolean       @default(false) // If the repo is a fork
+  forks             Int           @default(0)
+  forkedGitHubRepoID    Int       @default(0) // If the repo is a fork, this is the original repo ID
+  forkedGitHubNodeID    String    @default("") // If the repo is a fork, this is the original repo nodeID
+  forkedRepoFullName    String    @default("") // If the repo is a fork, this is the original repo fullName
+  forkedGitHubOwnerID   Int       @default(0) // If the repo is a fork, this is the original repo owner ID
+
+  archived          Boolean       @default(false) // If the repo is archived
 
   gitAppHasAccess   Boolean       @default(false) // If the app has access to the repo
 

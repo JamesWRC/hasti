@@ -105,7 +105,7 @@ export default function DialogPanel({setOpen, open, stateType, title, message, c
                                         </div>
                                     </div>
                                 </div>
-                                {stateType === 'confirm' ?
+                                {stateType === 'confirm' && confirmActionText ?
                                     <TextInput
                                     description={`You must type '${confirmActionText}' exactly to confirm`}
                                     placeholder="Type here to confirm"
@@ -115,9 +115,9 @@ export default function DialogPanel({setOpen, open, stateType, title, message, c
                                     <button
                                         type="button"
                                         className={classNames("inline-flex w-full justify-center rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm  focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2  sm:col-start-2", 
-                                        confirmDisabled ? "bg-indigo-400" : "bg-indigo-600 hover:bg-indigo-500 focus-visible:outline-indigo-600")}
+                                        (confirmDisabled && confirmActionText ? true : false) ? "bg-indigo-400" : "bg-indigo-600 hover:bg-indigo-500 focus-visible:outline-indigo-600")}
                                         onClick={() =>  handleConfirm()}
-                                        disabled={confirmDisabled}
+                                        disabled={confirmDisabled && confirmActionText ? true : false}
 
                                     >
                                         {confirmBtnText}
@@ -136,7 +136,7 @@ export default function DialogPanel({setOpen, open, stateType, title, message, c
                                 {!customBtnText || customBtnText.length <= 0 ? null :
                                 <button
                                     type="button"
-                                    className="pt-4 inline-flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
+                                    className="mt-4 inline-flex w-full justify-center rounded-md bg-dark px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-start-2"
                                     onClick={() => handleCustomAction()}
                                 > 
                                     {customBtnText}

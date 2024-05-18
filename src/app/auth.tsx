@@ -14,7 +14,7 @@ const getTokenFromAPIServer = async (provider: string, user: any) => {
 
     const JWTBodyRequest: JWTBodyRequest = {
         provider,
-        user
+        user,
     }
     console.log("JWTBodyRequest req", JWTBodyRequest)
 
@@ -54,18 +54,20 @@ export const authOptions = {
       },
       callbacks: {
         async signIn({ user, account, profile, email, credentials }: {user: User, account: any, profile?: any, email?: any, credentials: any}) {
-            console.log("SBBBB user: ", user)
-            console.log("SBBBB account: ", account)
-            console.log("SBBBB profile: ", profile)
-            console.log("SBBBB email: ", email)
-            console.log("SBBBB credentials: ", credentials)
+            // console.log("SBBBB user: ", user)
+            // console.log("SBBBB account: ", account)
+            // console.log("SBBBB profile: ", profile)
+            // console.log("SBBBB email: ", email)
+            // console.log("SBBBB credentials: ", credentials)
 
             if (account.provider === 'github') {    
                 const githubUser = {
                     id: profile.id,
+                    node_id: profile.node_id,
                     username: profile.login,
                     name: profile.name,
                     image: profile.avatar_url,
+                    ghu_token: account.access_token
                 }
                 user.name = githubUser.username
                 user.githubID = githubUser.id

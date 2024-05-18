@@ -92,9 +92,6 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
           })
 
 
-          if (response.status !== 200) {
-            throw new Error('Failed to fetch data');
-          }
           // return the projects found.
           if(response.status === 200){
             const jsonData:GetProjectsResponse = response.data;
@@ -199,7 +196,16 @@ function generatePlaceHolderProjects(count:number):GetProjectsResponse {
         private: false,
         ownerType: "user",
         userID: i.toString(),
-
+        openIssues: 0,
+        repoCreatedAt: new Date(),
+        repoPushedAt: new Date(),
+        forked: false,
+        forks: 0,
+        forkedGitHubRepoID: 0,
+        forkedGitHubNodeID: '',
+        forkedRepoFullName: '',
+        forkedGitHubOwnerID: 0,
+        archived: false
       },
     }
     userProjects.push(userProject);

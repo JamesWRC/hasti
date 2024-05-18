@@ -6,6 +6,7 @@ import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import type { GitHubUserTokenRequest } from '@/backend/interfaces/user/request'
 import axios from 'axios';
+import { CheckAuthResponse } from '@/backend/interfaces/auth/index';
 
 
 export default function UpdateRepoAccess() {

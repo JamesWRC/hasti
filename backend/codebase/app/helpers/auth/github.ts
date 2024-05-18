@@ -61,15 +61,19 @@ export async function getGitHubAppAuth(): Promise<Octokit> {
         });
 }
 
-export async function getGitHubUserAuth(user:User):Promise<Octokit> {
-    const ghuToken:string = await getGitHubUserToken(user.ghuToken)
-    const auth = createTokenAuth(ghuToken)
+
+export async function constructUserOctoKitAuth(token:string):Promise<Octokit>{
+    const auth = createTokenAuth(token)
     const authData = await auth()
     
     // Create Octokit instance with authentication
     return new Octokit({
         auth: authData.token,
     });
-
 }
   
+export async function getGitHubUserAuth(user:User):Promise<Octokit> {
+    const ghuToken:string = await getGitHubUserToken(user.ghuToken)
+    return constructUserOctoKitAuth(ghuToken)
+
+}

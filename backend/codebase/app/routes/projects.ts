@@ -7,7 +7,7 @@ import prisma, { ProjectAllInfo } from '@/backend/clients/prisma/client';
 import { Prisma, Repo } from '@prisma/client';
 import logger from '@/backend/logger';
 import { IncomingForm, Fields, Files, Options } from 'formidable';
-import { AddProjectResponse, GetProjectsQueryParams, GetProjectsResponse, MAX_FILE_SIZE, ProjectAddMethod, getProjectAddMethod } from '@/backend/interfaces/project/request';
+import { AddProjectResponse, ChangeProjectOwnershipResponse, DeleteProjectResponse, GetProjectsQueryParams, GetProjectsResponse, MAX_FILE_SIZE, ProjectAddMethod, getProjectAddMethod } from '@/backend/interfaces/project/request';
 import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
 import { Project, getAllProjectTypes, ProjectWithUser, HAInstallType } from '@/backend/interfaces/project';
 import AWS from 'aws-sdk';
@@ -68,6 +68,8 @@ projectsRouter.get<Record<string, string>, UserProjectCountResponse | BadRequest
         }
     });
 
+
+    
 projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestResponse>(
     '/',
     async (req, res) => {
@@ -395,7 +397,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
 
                             repoData = await getGitHubRepoData(user, repoOwner, repoName)
 
-
+                            console.log('repoData', repoData)
                             if (repoData) {
                                 const repoID: number = repoData.data.id
                                 const userOwnsRepo: boolean = repoData.data.owner.login === user.username // add to db
@@ -407,6 +409,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                 const newUserGitHubNodeID: string = repoData.data.owner.node_id
                                 const newUserUsername: string = repoData.data.owner.login
                                 const newUserImage: string = repoData.data.owner.avatar_url
+                                console.log('createdRepo repoID', repoID)
 
                                 // Create a 'temp' user if the user doesnt exist.
                                 if (!userOwnsRepo) {
@@ -427,7 +430,8 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                     }
                                 })
 
-
+                                console.log('createdRepo1', createdRepo)
+                                console.log('projectOwnerUser', projectOwnerUser)
                                 // If the repo doesn't exist, AND the user owns it, create it
                                 if (!createdRepo && projectOwnerUser) {
                                     // Create new repo
@@ -458,7 +462,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                         full_name: repoData.data.full_name,
                                         private: repoData.data.private,
                                     }
-
+                                    console.log("addOrUpdateRepo", newRepoData, projectOwnerUser, addedByGitHubID, repoOwnerGitHubID, repoOwnerType)
                                     createdRepo = await addOrUpdateRepo(newRepoData, projectOwnerUser, addedByGitHubID, repoOwnerGitHubID, repoOwnerType);
 
                                 } else if (!userOwnsRepo) {
@@ -492,7 +496,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                         /**
                          * Contains logic for all project add methods
                          */
-
+                        console.log('createdRepo', createdRepo)
 
                         // Get the repository ID
                         let repositoryID: string = ''
@@ -504,6 +508,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
 
                         // Get the repo data if it doesn't exist
                         if (!repoData) {
+                            console.log('repositoryID', repositoryID)
                             const savedRepoData = await prisma.repo.findFirst({
                                 select: {
                                     fullName: true,
@@ -822,7 +827,8 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
 
                             let project: Project | null = await prisma.project.findFirst({
                                 where: {
-                                    id: projectID
+                                    id: projectID,
+                                    userID: user.id
                                 }
                             })
 
@@ -983,4 +989,138 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
         }
     });
 
+projectsRouter.delete<Record<string, string>, DeleteProjectResponse | BadRequestResponse>(
+    '/:projectID',
+    isAuthenticated,
+    async (req, res) => {
+        try {
+            console.log('req:', req.params.projectID)
+            const user: User | undefined = req.user;
+            if (!user) {
+                return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
+            }
+            const userProject = await prisma.project.findFirst({
+                where: {
+                    AND: [
+                        { userID: user.id },
+                        { id: req.params.projectID },
+                    ]
+                }
+            })
+
+            if (userProject) {
+                await prisma.project.delete({
+                    where: {
+                        id: userProject.id
+                    }
+                })
+
+                return res.status(200).json({ success: true, projectID: userProject.id});
+            }else{
+                return res.status(404).json({ success: false, message: 'Project not found.' });
+            }
+
+        } catch (error) {
+            logger.warn(`Request threw an exception: ${error}`, {
+                label: 'DELETE: /projects/:projectID: ',
+            });
+            return res.status(500).json({ success: false, message: 'Error getting token' });
+        }
+    });
+
+    
+
+projectsRouter.put<Record<string, string>, ChangeProjectOwnershipResponse | BadRequestResponse>(
+    '/claim/:projectID',
+    isAuthenticated,
+    async (req, res) => {
+        try {
+            console.log('req:', req.params.projectID)
+            const user: User | undefined = req.user;
+            if (!user) {
+                return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
+            }
+            const userProject = await prisma.project.findFirst({
+                where: {
+                    AND: [
+                        { repo: { ownerGithubID: { equals: user.githubID } } },
+                        { id: req.params.projectID }
+                    ]
+                },
+                include: {
+                    repo: true,
+                    user: true
+                }
+            })
+
+            if (userProject) {
+                // Check if user has permission to claim project
+                let userHasPermissionToClaim: boolean = false
+                // If user is the owner of the project
+                if (!userProject.claimed && userProject.repo.ownerGithubID === user.githubID) {
+                    userHasPermissionToClaim = true
+                }
+
+                if(userHasPermissionToClaim){
+                    // Claim the project
+                    await prisma.project.update({
+                        where: {
+                            id: userProject.id
+                        },
+                        data: {
+                            claimed: true,
+                            userID: user.id
+                        }
+                    })
+
+                    // Update the repo owner
+                    await prisma.repo.update({
+                        where: {
+                            id: userProject.repo.id
+                        },
+                        data: {
+                            userID: user.id
+                        }
+                    })
+
+                    // Notify the owner of the repo that a project has been claimed
+                    await prisma.notification.create({
+                        data: {
+                            type: NotificationType.SUCCESS,
+                            title: userProject.title,
+                            message: `The project you imported: '${userProject.title}' has been claimed by user: '${user.username}'. You no longer have ownership of this project.`,
+                            about: NotificationAbout.PROJECT,
+                            read: false,
+                            userID: userProject.repo.userID,
+                        }
+                    });
+
+                    // Notify the user that claimed the project
+                    await prisma.notification.create({
+                        data: {
+                            type: NotificationType.SUCCESS,
+                            title: userProject.title,
+                            message: `You have claimed the project: '${userProject.title}'. You are now the owner of this project.`,
+                            about: NotificationAbout.PROJECT,
+                            read: false,
+                            userID: user.id,
+                        }
+                    });
+
+                    return res.status(200).json({ success: true, newOwnerID: user.id, projectID: userProject.id});
+                }else{
+                    return res.status(403).json({ success: false, message: 'User does not have permission to claim project.' });
+                }
+
+            }else{
+                return res.status(404).json({ success: false, message: 'Project not found. Or you dont own repo that the project uses.' });
+            }
+
+        } catch (error) {
+            logger.warn(`Request threw an exception: ${error}`, {
+                label: 'DELETE: /projects/:projectID: ',
+            });
+            return res.status(500).json({ success: false, message: 'Error getting token' });
+        }
+    });
 export default projectsRouter;

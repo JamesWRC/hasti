@@ -63,6 +63,16 @@ export interface GetProjectsQueryParams{
 
 }
 
+export interface DeleteProjectResponse {
+    success: boolean;
+    projectID: string;
+}
+
+export interface ChangeProjectOwnershipResponse {
+    success: boolean;
+    projectID: string;
+    newOwnerID: string;
+}
 // export interface GetProjectContentResponse {
 //     success: boolean;
 //     projectAllInfo: ProjectAllInfo;

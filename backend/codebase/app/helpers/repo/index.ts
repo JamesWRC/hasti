@@ -1,6 +1,6 @@
 import { GHAppInstallation, GHAppSenderWHSender, RepoOwnerType, RepositoryData } from "@/backend/interfaces/repo"
 import prisma from "@/backend/clients/prisma/client"
-import type { User } from '@prisma/client'
+import type { Repo, User } from '@prisma/client'
 
 import { request } from "https"
 import logger from "@/backend/logger"
@@ -30,11 +30,6 @@ import { getCollaboratorType } from "@/backend/interfaces/collaborator"
  */
 export default async function addOrUpdateRepo(repoData: RepositoryData, user: User, addedByGitHubID:number, ownerGithubID: number, repoOwnerType: string, updateOwnerDetails:boolean = false) {
 
-  // Add repo to database
-  if(!repoData.id){
-    return null
-  }
-
   let repo = await prisma.repo.findUnique({
     where: {
       gitHubRepoID: repoData.id
@@ -42,15 +37,7 @@ export default async function addOrUpdateRepo(repoData: RepositoryData, user: Us
   })
   
 
-
-  // Get repo collaborators
-  const gitHubUserRequest = await getGitHubUserAuth(user)
-  const owner: string = repoData.full_name.split('/')[0]
-  const repoName: string = repoData.full_name.split('/')[1]
-
-  let updatedRepoData:OctokitResponse<any, number> | null = await getGitHubRepoData(user, owner, repoName)
-
-  // Already exists.
+  // Update or add repo
   if(repo){
     // Update owner details. IE if a user has claimed the repo. And the user is the owner.
     // Orgs are not supported to be claimed yet.
@@ -80,9 +67,12 @@ export default async function addOrUpdateRepo(repoData: RepositoryData, user: Us
         }
       })
     }
+    
+
   }else{
     try{
-
+      
+      const gitAppHasAccess = addedByGitHubID === ownerGithubID
 
       repo = await prisma.repo.create({
         data: {
@@ -92,7 +82,7 @@ export default async function addOrUpdateRepo(repoData: RepositoryData, user: Us
           fullName: repoData.full_name,
           private: repoData.private,
           userID: user.id,
-          gitAppHasAccess: true,
+          gitAppHasAccess: gitAppHasAccess,
           ownerGithubID: ownerGithubID,
           ownerType: repoOwnerType.toLowerCase(),
           addedByGithubID: addedByGitHubID,
@@ -106,18 +96,20 @@ export default async function addOrUpdateRepo(repoData: RepositoryData, user: Us
     }
   }
 
-  // Update repo metadata
-  if(updatedRepoData){
-    await prisma.repo.update({
-      where: {
-        gitHubRepoID: repoData.id
-      },
-      data: {
-        gitHubStars: updatedRepoData.data.stargazers_count,
-        gitHubWatchers: updatedRepoData.data.watchers_count,
-      }
-    })
-  }
+
+  await updateRepoData(repo, user)
+
+
+  return repo
+}
+
+
+export async function updateRepoData(repo: Repo, user: User){
+  const owner: string = repo.fullName.split('/')[0]
+  const repoName: string = repo.fullName.split('/')[1]
+
+  const gitHubUserRequest = await getGitHubUserAuth(user)
+
 
   // update collaborators
   const collaborators = await gitHubUserRequest.request("GET /repos/{owner}/{repo}/collaborators", {
@@ -152,13 +144,24 @@ export default async function addOrUpdateRepo(repoData: RepositoryData, user: Us
 
           // If the collaborator is not a user, create a temp user
           const newUserGitHubID:number = collaborator.id
-          const newUserGithubNodeID:string = "collaborator.id"
+          const newUserGithubNodeID:string = collaborator.node_id
           const newUserUsername:string = collaborator.login
           const newUserImage:string = collaborator.avatar_url
 
           let tempUser:User|null = null
           if(user.githubID !== collaborator.id){
-            tempUser = await createTempUser(newUserGitHubID, newUserGithubNodeID, newUserUsername, newUserImage, user, repoName)
+            // Check if the user already exists
+            const userExists = await prisma.user.findFirst({
+              where: {
+                githubID: newUserGitHubID
+              }
+            })
+
+            if(userExists){
+              tempUser = userExists
+            }else{
+              tempUser = await createTempUser(newUserGitHubID, newUserGithubNodeID, newUserUsername, newUserImage, user, repoName)
+            }
           }else{
             tempUser = user
           }
@@ -196,9 +199,34 @@ export default async function addOrUpdateRepo(repoData: RepositoryData, user: Us
     }
   }
 
-  return repo
-}
+  let updatedRepoData:OctokitResponse<any, number> | null = await getGitHubRepoData(user, owner, repoName)
+  // Update repo metadata
+  if(updatedRepoData){
 
+
+    await prisma.repo.update({
+      where: {
+        id: repo.id
+      },
+      data: {
+        gitHubStars: updatedRepoData.data.stargazers_count,
+        gitHubWatchers: updatedRepoData.data.watchers_count,
+        openIssues: updatedRepoData.data.open_issues_count,
+        repoCreatedAt: updatedRepoData.data.created_at,
+        repoPushedAt: updatedRepoData.data.updated_at,
+        
+        forked: updatedRepoData.data.fork,
+        forks: updatedRepoData.data.forks_count,
+        forkedGitHubRepoID: updatedRepoData.data.fork ? updatedRepoData.data.source.id : 0,
+        forkedGitHubNodeID: updatedRepoData.data.fork ? updatedRepoData.data.source.node_id : "",
+        forkedRepoFullName: updatedRepoData.data.fork ? updatedRepoData.data.source.full_name : "",
+        forkedGitHubOwnerID: updatedRepoData.data.fork ? updatedRepoData.data.source.owner.id : 0,
+
+        archived: updatedRepoData.data.archived,
+      }
+    })
+  }
+}
 
 export async function removeRepo(repo: RepositoryData) {
     // Add repo to database
