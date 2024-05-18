@@ -144,7 +144,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
       } else if (data.check === AuthCheckType.DECRYPT) {
         message = 'Your GitHub token has expired. Please setup the HASTI GitHub app to access your repositories.'
       }
-      setGhuTokenOkResponse({ success: false, message: message, check: data.check})
+      setGhuTokenOkResponse({ success: false, message: message, check: data.check })
       setGhuTokenOkDialogOpen(true)
       console.error('Error with GET /api/v1/auth/gitUserToken:', error)
 
@@ -582,7 +582,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
   function handleRepoRefreshDialogOpen(e: any) {
     e.preventDefault()
     const project = projects && projects[0] as ProjectAllInfo
-    const repoID = project?.repoID 
+    const repoID = project?.repoID
     axios({
       url: `${process.env.API_URL}/api/v1/repos/${repoID}`,
       method: 'PUT',
@@ -609,7 +609,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
   function handleREADMERefreshDialogOpen(e: any) {
     e.preventDefault()
     const project = projects && projects[0] as ProjectAllInfo
-    const projectID = project?.id 
+    const projectID = project?.id
     axios({
       url: `${process.env.API_URL}/api/v1/projects/${projectID}/readme`,
       method: 'PUT',
@@ -694,15 +694,15 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
   return (
     <>
       {/* GitHub App issue dialog */}
-      <DialogPanel 
+      <DialogPanel
         title="GitHub Token Check"
         message={ghuTokenOkResponse.message}
         open={ghuTokenOkDialogOpen}
         setOpen={setGhuTokenOkDialogOpen}
         confirmBtnText='ok'
         cancelBtnText=''
-        onCancel={() => {} }
-        onConfirm={() => {} }
+        onCancel={() => { }}
+        onConfirm={() => { }}
         customAction={handleGitHubAppSetup}
         customBtnText={"Set Up GitHub App"}
         stateType={'error'}
@@ -715,9 +715,9 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
         setOpen={setCreateProjectDialogOpen}
         confirmBtnText='ok'
         cancelBtnText=''
-        onCancel={() => {} }
+        onCancel={() => { }}
         onConfirm={onProjectCreateConfirm}
-        customAction={() => {}}
+        customAction={() => { }}
         customBtnText=''
         stateType={projectResponse.success ? 'success' : 'error'}
       />
@@ -932,7 +932,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                 {/* Refresh README Dialog */}
                 <DialogPanel
                   title="README Refresh"
-                  message={refreshREADMEResponse?.message }
+                  message={refreshREADMEResponse?.message}
                   open={refreshREADMEDialogOpen}
                   setOpen={setRefreshREADMEDialogOpen}
                   confirmBtnText='Ok'
@@ -946,7 +946,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                 {/* Refresh Repo Dialog */}
                 <DialogPanel
                   title="Repository Refresh"
-                  message={refreshRepoResponse?.message }
+                  message={refreshRepoResponse?.message}
                   open={refreshRepoDialogOpen}
                   setOpen={setRefreshRepoDialogOpen}
                   confirmBtnText='Ok'
@@ -1006,7 +1006,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                               className={'text-black group:hover:text-black h-6 w-6 shrink-0'}
                               aria-hidden="true"
                             />
-                            Refresh README 
+                            Refresh README
                           </button>
                           <button
                             // flex items-center bg-dark text-white font-bold py-2 pl-3 -ml-1 rounded-2xl focus:outline-none focus:shadow-outline-gray hover:bg-gray-700 w-full
