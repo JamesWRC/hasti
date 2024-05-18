@@ -73,7 +73,8 @@ export interface ChangeProjectOwnershipResponse {
     projectID: string;
     newOwnerID: string;
 }
-// export interface GetProjectContentResponse {
-//     success: boolean;
-//     projectAllInfo: ProjectAllInfo;
-// }
+
+export interface RefreshReadmeResponse {
+    success: boolean;
+    message: string;
+}

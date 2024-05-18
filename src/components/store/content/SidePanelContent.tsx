@@ -5,7 +5,7 @@ import classes from '@/frontend/app/page.module.css';
 import { Container, Grid, SimpleGrid, Skeleton, rem } from '@mantine/core';
 import { Button } from '@mantine/core';
 import { Tag } from '@/backend/interfaces/tag';
-import { DynamicSkeletonText } from '@/frontendcomponents/ui/skeleton';
+import { DynamicSkeletonText } from '@/frontend/components/ui/skeleton';
 
 const data = [
   {

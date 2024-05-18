@@ -29,7 +29,7 @@ import { ProjectTypeSelectDropdownBox } from '@/frontend/components/ui/ProjectTy
 
 import { FileInput } from '@mantine/core';
 import { HAInstallTypeSelectDropdownBox } from '@/frontend/components/ui/HAInstallTypeSelectDropdownBox'
-import { AddProjectResponse, GetProjectsQueryParams, MAX_FILE_SIZE } from '@/backend/interfaces/project/request'
+import { AddProjectResponse, GetProjectsQueryParams, MAX_FILE_SIZE, RefreshReadmeResponse } from '@/backend/interfaces/project/request'
 
 
 import ProjectGrid from '@/frontend/components/project/ProjectGrid';
@@ -88,6 +88,10 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
   const [refreshRepoDialogOpen, setRefreshRepoDialogOpen] = useState(false)
   const [refreshRepoResponse, setRefreshRepoResponse] = useState<RefreshRepoDataRequest>({ success: false, message: 'Refreshing Repository Data...' });
+
+  const [refreshREADMEDialogOpen, setRefreshREADMEDialogOpen] = useState(false)
+  const [refreshREADMEResponse, setRefreshREADMEResponse] = useState<RefreshReadmeResponse>({ success: false, message: 'Refreshing README Data...' });
+
 
   function classNames(...classes: String[]) {
     return classes.filter(Boolean).join(' ')
@@ -591,14 +595,40 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
     }).then(response => {
       const refreshResponse: RefreshRepoDataRequest = response.data
 
-      setRefreshRepoResponse(refreshResponse)
+      setRefreshREADMEResponse(refreshResponse)
     }).catch(error => {
       const refreshResponse: RefreshRepoDataRequest = error.data
-      setRefreshRepoResponse(refreshResponse)
+      setRefreshREADMEResponse(refreshResponse)
       console.error('Error with PUT /api/v1/repos/refresh/:repoID', error)
     });
 
     setRefreshRepoDialogOpen(true)
+  }
+
+
+  function handleREADMERefreshDialogOpen(e: any) {
+    e.preventDefault()
+    const project = projects && projects[0] as ProjectAllInfo
+    const projectID = project?.id 
+    axios({
+      url: `${process.env.API_URL}/api/v1/projects/${projectID}/readme`,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.user.jwt}`
+      },
+      timeout: 60000,
+      timeoutErrorMessage: 'Request timed out. Please try again.',
+    }).then(response => {
+      const refreshResponse: RefreshReadmeResponse = response.data
+      setRefreshREADMEResponse(refreshResponse)
+    }).catch(error => {
+      const refreshResponse: RefreshReadmeResponse = error.data
+      setRefreshREADMEResponse(refreshResponse)
+      console.error('Error with PUT /api/v1/projects/:projectID/readme', error)
+    });
+
+    setRefreshREADMEDialogOpen(true)
   }
 
   function isOwnerAndNotClaimed() {
@@ -899,6 +929,20 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
 
                 </div>
+                {/* Refresh README Dialog */}
+                <DialogPanel
+                  title="README Refresh"
+                  message={refreshREADMEResponse?.message }
+                  open={refreshREADMEDialogOpen}
+                  setOpen={setRefreshREADMEDialogOpen}
+                  confirmBtnText='Ok'
+                  cancelBtnText=''
+                  onCancel={null}
+                  onConfirm={null}
+                  customAction={null}
+                  customBtnText=''
+                  stateType={refreshREADMEResponse?.success ? 'success' : 'error'}
+                />
                 {/* Refresh Repo Dialog */}
                 <DialogPanel
                   title="Repository Refresh"
@@ -953,20 +997,30 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                               <span className="bg-white px-2 text-sm text-gray-500">Actions</span>
                             </div>
                           </div>
-                          {/* {renderClaimButton()} */}
                           <button
                             // flex items-center bg-dark text-white font-bold py-2 pl-3 -ml-1 rounded-2xl focus:outline-none focus:shadow-outline-gray hover:bg-gray-700 w-full
-                            className={'my-3 bg-dark text-white group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold w-full justify-center items-center hover:bg-gray-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2'}
+                            className={'flex justify-normal text-center my-3 bg-white text-black group gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold w-full items-center hover:bg-gray-300 border border-zinc-500'}
+                            onClick={(e) => handleREADMERefreshDialogOpen(e)}
+                          >
+                            <ArrowPathIcon
+                              className={'text-black group:hover:text-black h-6 w-6 shrink-0'}
+                              aria-hidden="true"
+                            />
+                            Refresh README 
+                          </button>
+                          <button
+                            // flex items-center bg-dark text-white font-bold py-2 pl-3 -ml-1 rounded-2xl focus:outline-none focus:shadow-outline-gray hover:bg-gray-700 w-full
+                            className={'flex justify-normal text-center my-3 bg-dark text-white group gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold w-full items-center hover:bg-gray-950 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2'}
                             onClick={(e) => handleRepoRefreshDialogOpen(e)}
                           >
                             <ArrowPathIcon
-                              className={'text-white group:hover:text-black h-6 w-6 shrink-0'}
+                              className={'text-white group:hover:text-black h-6 w-6 shrink-0 '}
                               aria-hidden="true"
                             />
                             Refresh Repo Data
                           </button>
                           <button
-                            className={'my-3 bg-red-400 text-white group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold w-full justify-center items-center hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600'}
+                            className={'flex justify-normal text-center my-3 bg-red-400 text-white group  gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold w-full items-center hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600'}
                             onClick={(e) => handleDeletedDialogOpen(e)}
                           >
                             <TrashIcon

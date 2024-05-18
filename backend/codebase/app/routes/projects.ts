@@ -7,7 +7,7 @@ import prisma, { ProjectAllInfo } from '@/backend/clients/prisma/client';
 import { Prisma, Repo } from '@prisma/client';
 import logger from '@/backend/logger';
 import { IncomingForm, Fields, Files, Options } from 'formidable';
-import { AddProjectResponse, ChangeProjectOwnershipResponse, DeleteProjectResponse, GetProjectsQueryParams, GetProjectsResponse, MAX_FILE_SIZE, ProjectAddMethod, getProjectAddMethod } from '@/backend/interfaces/project/request';
+import { AddProjectResponse, ChangeProjectOwnershipResponse, DeleteProjectResponse, GetProjectsQueryParams, GetProjectsResponse, MAX_FILE_SIZE, ProjectAddMethod, RefreshReadmeResponse, getProjectAddMethod } from '@/backend/interfaces/project/request';
 import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
 import { Project, getAllProjectTypes, ProjectWithUser, HAInstallType } from '@/backend/interfaces/project';
 import AWS from 'aws-sdk';
@@ -1115,6 +1115,46 @@ projectsRouter.put<Record<string, string>, ChangeProjectOwnershipResponse | BadR
             }else{
                 return res.status(404).json({ success: false, message: 'Project not found. Or you dont own repo that the project uses.' });
             }
+
+        } catch (error) {
+            logger.warn(`Request threw an exception: ${error}`, {
+                label: 'DELETE: /projects/:projectID: ',
+            });
+            return res.status(500).json({ success: false, message: 'Error getting token' });
+        }
+    });
+
+
+projectsRouter.put<Record<string, string>, RefreshReadmeResponse | BadRequestResponse>(
+    '/:projectID/readme',
+    isAuthenticated,
+    async (req, res) => {
+        try {
+            console.log('req:', req.params.projectID)
+            const projectID: string = req.params.projectID
+            const user: User | undefined = req.user;
+            if (!user) {
+                return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
+            }
+
+            const project = await prisma.project.findFirst({
+                where: {
+                    id: projectID
+                },
+                include: {
+                    user: true
+                }
+            })
+
+
+            if(project){
+                await updateContent(project.repoID, project.id, project.user.id)
+                return res.status(200).json({ success: true, message: 'Readme updated.'});
+
+            }
+
+            
+            return res.status(404).json({ success: false, message: 'Project not found.' });
 
         } catch (error) {
             logger.warn(`Request threw an exception: ${error}`, {

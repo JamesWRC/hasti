@@ -21,7 +21,7 @@ import isValidProjectName from '@/frontend/helpers/user';
 import { GetProjectsQueryParams } from '@/backend/interfaces/project/request';
 import useProjects from '@/frontend/components/project';
 import { LoadProjects } from '@/frontend/interfaces/project';
-import { DynamicSkeletonImage, DynamicSkeletonText, DynamicSkeletonTitle } from '@/frontendcomponents/ui/skeleton';
+import { DynamicSkeletonImage, DynamicSkeletonText, DynamicSkeletonTitle } from '@/frontend/components/ui/skeleton';
 import { IconArrowRight, IconCheck, IconSettings, IconX } from '@tabler/icons-react';
 
 export default function Page({ params }: { params: { developer:string, name: string } }) {
