@@ -24,6 +24,9 @@ import { LoadProjects } from '@/frontend/interfaces/project';
 import { DynamicSkeletonImage, DynamicSkeletonText, DynamicSkeletonTitle } from '@/frontend/components/ui/skeleton';
 import { IconArrowRight, IconCheck, IconSettings, IconX } from '@tabler/icons-react';
 
+// import projectCSS
+import '@/frontend/app/page.module.css';
+
 export default function Page({ params }: { params: { developer:string, name: string } }) {
   const { data: session, status } = useSession()
 
@@ -54,7 +57,7 @@ export default function Page({ params }: { params: { developer:string, name: str
 
   useEffect(() => {
 
-    setLoadedProject({ projects, reqStatus });
+    setLoadedProject({ projects, reqStatus, setSearchProps: () => {} });
 
     // Set project stats
     let newStats = [];

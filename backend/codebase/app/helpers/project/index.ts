@@ -15,6 +15,8 @@ import { Project } from '@/backend/interfaces/project';
 import fs from 'fs';
 import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
 import axios from 'axios';
+import { JSDOM } from 'jsdom';
+
 // Init s3
 const s3 = new AWS.S3({
     region: 'auto',
@@ -94,6 +96,8 @@ export async function updateContent(repoID: string, projectID: string, userID: s
 
 
         let decodedContent = Buffer.from(response.data.content, 'base64').toString('utf-8');
+        decodedContent = handleHTMLinMarkDown(decodedContent)
+        console.log("---- decodedContent2", decodedContent)
 
         const extractedContentImages: string[] = extractImageUrls(decodedContent);
         console.log("extractedContentImages", extractedContentImages)
@@ -256,6 +260,129 @@ function extractImageUrls(markdownContent: string): string[] {
     }
 
     return mediaUrls;
+}
+
+function replaceLastOccurrence(original: string, toReplace: string, replacement: string): string {
+    const lastIndex = original.lastIndexOf(toReplace);
+    if (lastIndex === -1) {
+        return original; // Return original if the substring is not found
+    }
+    if (original.includes(replacement)) {
+        return original; // Return original if the replacement is already present
+    }
+
+    // Split the string into two parts, before and after the substring
+    const before = original.substring(0, lastIndex);
+    const after = original.substring(lastIndex + toReplace.length);
+
+    // Return the combined new string
+    return before + replacement + after;
+}
+
+
+function handleHTMLinMarkDown(markdown: string) {
+    // Convert Markdown to HTML
+
+    // const html = md.render(markdown);
+    // console.log("html", html)
+    // Use JSDOM to parse the HTML
+
+
+    function findHtmlBlocks(text: string): { block: string, start: number, end: number }[] {
+        // Split text into lines to maintain line numbers
+        const lines = text.split('\n');
+
+        // Remove content within triple backtick code blocks
+        let inCodeBlock = false;
+        const filteredLines = lines.map((line, index) => {
+            if (line.trim().startsWith('```')) {
+                inCodeBlock = !inCodeBlock; // Toggle state on entering or leaving a code block
+                return ''; // Remove code block markers
+            }
+            return inCodeBlock ? '' : line;
+        });
+
+        const filteredText = filteredLines.join('\n');
+        const regex = /<([a-z1-6]+)([^>]*)>(?:((?:\n|.)*?)<\/\1>|\/?>)/gi;
+
+        let match;
+        const blocks = [];
+        while ((match = regex.exec(filteredText)) !== null) {
+            // Calculate start and end lines based on the match index
+            const startLine = filteredText.substring(0, match.index).split('\n').length;
+            const endLine = startLine + match[0].split('\n').length - 1;
+
+            blocks.push({
+                block: match[0],
+                start: startLine,
+                end: endLine
+            });
+        }
+
+        return blocks;
+    }
+    const dom = new JSDOM(markdown, { contentType: 'text/html', });
+    let document = dom.window.document;
+
+    const blocks = findHtmlBlocks(document.body.innerHTML)
+    
+    // convertHtmlToMarkdoc(document.body);
+    console.log("blocks", blocks)
+    console.log("document AFTER", document.body.innerHTML)
+    let docLines = document.body.innerHTML.split('\n')
+    console.log("docLines BEFORE", docLines.length)
+    for (const block of blocks) {
+        const blockContent = block.block;
+
+        const blockStart = block.start - 1;
+        let blockEnd = block.end - 1;
+
+        // get the starting tag of the block
+        const startTag = docLines[blockStart].match(/<([a-z1-6]+)([^>]*)>/i);
+        const startTagName = startTag ? startTag[1] : '';
+        console.log("startTagName", startTagName)
+
+        console.log("-------------------------------------")
+
+        console.log("docLines[blockStart]", docLines[blockStart])
+        console.log("docLines[blockEnd]", docLines[blockEnd])
+        if (blockStart === blockEnd) {
+            docLines[blockStart] = docLines[blockStart].replace(blockContent, ' {% safeHTML %} ' + blockContent + ' {% /safeHTML %} ')
+        }else{
+            docLines[blockStart] = docLines[blockStart].replace(blockContent[0], '{% safeHTML %} ' + blockContent[0])
+            console.log("blockContent[blockContent.length -1 ]", blockContent[blockContent.length -1 ])
+            docLines[blockEnd] = replaceLastOccurrence(docLines[blockEnd], '</' + startTagName + '>', '</' + startTagName + '>{% /safeHTML %}')
+            docLines[blockEnd] = replaceLastOccurrence(docLines[blockEnd], '</ ' + startTagName + '>', '</' + startTagName + '>{% /safeHTML %}')
+            docLines[blockEnd] = replaceLastOccurrence(docLines[blockEnd], '</ ' + startTagName + ' >', '</' + startTagName + '>{% /safeHTML %}')
+            docLines[blockEnd] = replaceLastOccurrence(docLines[blockEnd], '</' + startTagName + ' >', '</' + startTagName + '>{% /safeHTML %}')
+        }
+
+        console.log("blockContent", block)
+        console.log("docLines[blockStart]", docLines[blockStart])
+        console.log("docLines[blockEnd]", docLines[blockEnd])
+    }
+    // remove blanck lines between safeHTML tags
+    let remove = false
+    for (let i = 0; i < docLines.length; i++) {
+        if (docLines[i].includes('{% safeHTML %}')) {
+            remove = true
+        }
+
+        if (docLines[i].includes('{% /safeHTML %}')) {
+            remove = false
+        }
+        console.log("docLines[i].trim()", docLines[i].trim(), docLines[i].trim().length)
+        if (remove && docLines[i].trim().length === 0) {
+            console.log("removing", docLines[i])
+            docLines.splice(i, 1);
+            console.log("removed", docLines[i])
+
+        }
+    }
+
+    console.log("docLines after", docLines.length)
+
+    return docLines.join('\n');
 }
 
 export async function getGitHubRepoData(user: User, owner: string, repo: string): Promise<OctokitResponse<any, number> | null> {
