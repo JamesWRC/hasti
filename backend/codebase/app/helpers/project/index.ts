@@ -16,7 +16,7 @@ import fs from 'fs';
 import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
 import axios from 'axios';
 import { JSDOM } from 'jsdom';
-
+import cherrio from 'cheerio';
 // Init s3
 const s3 = new AWS.S3({
     region: 'auto',
@@ -281,11 +281,6 @@ function replaceLastOccurrence(original: string, toReplace: string, replacement:
 
 
 function handleHTMLinMarkDown(markdown: string) {
-    // Convert Markdown to HTML
-
-    // const html = md.render(markdown);
-    // console.log("html", html)
-    // Use JSDOM to parse the HTML
 
 
     function findHtmlBlocks(text: string): { block: string, start: number, end: number }[] {
@@ -303,7 +298,7 @@ function handleHTMLinMarkDown(markdown: string) {
         });
 
         const filteredText = filteredLines.join('\n');
-        const regex = /<([a-z1-6]+)([^>]*)>(?:((?:\n|.)*?)<\/\1>|\/?>)/gi;
+        const regex = /<(\w+)(?:\s+[^>]*)?>([\s\S]*?)<\/\1>/g;
 
         let match;
         const blocks = [];
@@ -321,47 +316,95 @@ function handleHTMLinMarkDown(markdown: string) {
 
         return blocks;
     }
+
     const dom = new JSDOM(markdown, { contentType: 'text/html', });
     let document = dom.window.document;
+    // if the markdown has safeHTML tags, return the markdown as is
+    
+    if(document.body.innerHTML.includes('{% safeHTML %}')){
+        return markdown
+    }
 
     const blocks = findHtmlBlocks(document.body.innerHTML)
     
     // convertHtmlToMarkdoc(document.body);
-    console.log("blocks", blocks)
-    console.log("document AFTER", document.body.innerHTML)
+    // console.log("blocks", blocks)
+    // console.log("document AFTER", document.body.innerHTML)
     let docLines = document.body.innerHTML.split('\n')
-    console.log("docLines BEFORE", docLines.length)
+    // console.log("docLines BEFORE", docLines.length)
+
+    // Define an array of self-closing tags
+    const selfClosingTags = ['br', 'img', 'input', 'hr', 'meta', 'link'];
+    const $ = cherrio.load(document.body.innerHTML);
+
+    // Extract all self-closing tags
+    const tags = selfClosingTags.map(tag => {
+    return $(tag).map((i, el) => ({
+        tag: tag,
+        html: $.html(el) // get outer HTML of each tag
+    })).get();
+    }).flat();
+
+    let tagsIndex = 0
     for (const block of blocks) {
         const blockContent = block.block;
 
-        const blockStart = block.start - 1;
+        const blockStart = block.start - 1; // Adjust for 0-based index
         let blockEnd = block.end - 1;
 
         // get the starting tag of the block
         const startTag = docLines[blockStart].match(/<([a-z1-6]+)([^>]*)>/i);
         const startTagName = startTag ? startTag[1] : '';
-        console.log("startTagName", startTagName)
+        // console.log("startTagName", startTagName)
 
-        console.log("-------------------------------------")
+        // console.log("-------------------------------------")
 
-        console.log("docLines[blockStart]", docLines[blockStart])
-        console.log("docLines[blockEnd]", docLines[blockEnd])
+        // console.log("docLines[blockStart]", docLines[blockStart])
+        // console.log("docLines[blockEnd]", docLines[blockEnd])
+
         if (blockStart === blockEnd) {
             docLines[blockStart] = docLines[blockStart].replace(blockContent, ' {% safeHTML %} ' + blockContent + ' {% /safeHTML %} ')
         }else{
             docLines[blockStart] = docLines[blockStart].replace(blockContent[0], '{% safeHTML %} ' + blockContent[0])
-            console.log("blockContent[blockContent.length -1 ]", blockContent[blockContent.length -1 ])
+            // console.log("blockContent[blockContent.length -1 ]", blockContent[blockContent.length -1 ])
             docLines[blockEnd] = replaceLastOccurrence(docLines[blockEnd], '</' + startTagName + '>', '</' + startTagName + '>{% /safeHTML %}')
             docLines[blockEnd] = replaceLastOccurrence(docLines[blockEnd], '</ ' + startTagName + '>', '</' + startTagName + '>{% /safeHTML %}')
             docLines[blockEnd] = replaceLastOccurrence(docLines[blockEnd], '</ ' + startTagName + ' >', '</' + startTagName + '>{% /safeHTML %}')
             docLines[blockEnd] = replaceLastOccurrence(docLines[blockEnd], '</' + startTagName + ' >', '</' + startTagName + '>{% /safeHTML %}')
         }
 
-        console.log("blockContent", block)
-        console.log("docLines[blockStart]", docLines[blockStart])
-        console.log("docLines[blockEnd]", docLines[blockEnd])
+
+        // console.log("blockContent", block)
+        // console.log("docLines[blockStart]", docLines[blockStart])
+        // console.log("docLines[blockEnd]", docLines[blockEnd])
     }
-    // remove blanck lines between safeHTML tags
+    // console.log("tags", tags)
+    for(const tag of tags){
+        // if(!isSubStringFoundBetween(tag.html, '{% safeHTML %}', '{% /safeHTML %}', document.body.innerHTML)){
+        //     console.log("tag.html", tag.html)
+            docLines.find((line, index) => {
+                if(line.includes(tag.html)){
+                    let tagInBlock = false;
+                    for (const block of blocks) {
+                        const blockContent = block.block;
+                
+                        const blockStart = block.start - 1; // Adjust for 0-based index
+                        let blockEnd = block.end - 1;
+                
+                        if(index >= blockStart && index <= blockEnd){
+                            tagInBlock = true
+                        }
+                    }
+                    if(!tagInBlock){
+                        docLines[index] = '{% safeHTML %}\n' + tag.html + '\n{% /safeHTML %}'
+                    }
+                }
+            })
+        // }
+    }
+
+    
+    // remove blank lines between safeHTML tags
     let remove = false
     for (let i = 0; i < docLines.length; i++) {
         if (docLines[i].includes('{% safeHTML %}')) {
@@ -371,18 +414,22 @@ function handleHTMLinMarkDown(markdown: string) {
         if (docLines[i].includes('{% /safeHTML %}')) {
             remove = false
         }
-        console.log("docLines[i].trim()", docLines[i].trim(), docLines[i].trim().length)
+        // console.log("docLines[i].trim()", docLines[i].trim(), docLines[i].trim().length)
         if (remove && docLines[i].trim().length === 0) {
-            console.log("removing", docLines[i])
+            // console.log("removing", docLines[i])
             docLines.splice(i, 1);
-            console.log("removed", docLines[i])
+            // console.log("removed", docLines[i])
 
         }
     }
 
-    console.log("docLines after", docLines.length)
+    const modifiedHTML = docLines.join('\n');
 
-    return docLines.join('\n');
+
+
+    // console.log("docLines after", tags)
+
+    return modifiedHTML
 }
 
 export async function getGitHubRepoData(user: User, owner: string, repo: string): Promise<OctokitResponse<any, number> | null> {

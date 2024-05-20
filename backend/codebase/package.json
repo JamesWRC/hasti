@@ -28,6 +28,7 @@
     "@types/markdown-it": "^14.0.1",
     "@types/response-time": "^2.3.8",
     "aws-sdk": "^2.1603.0",
+    "cheerio": "^1.0.0-rc.12",
     "convoy.js": "^1.1.0",
     "cors": "^2.8.5",
     "csurf": "^1.11.0",
