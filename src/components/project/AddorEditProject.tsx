@@ -10,7 +10,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 import { useDisclosure } from '@mantine/hooks';
-import { Modal, Button, Title, Group, Box, LoadingOverlay } from '@mantine/core';
+import { Modal, Button, Title, Group, Box, LoadingOverlay, Switch } from '@mantine/core';
 import SelectRepo from '@/frontend/components/repo/SelectRepo';
 import { useEffect, useState } from 'react'
 
@@ -37,7 +37,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { ProjectAddMethod, getProjectAddMethod, getAllProjectAddMethods } from '@/backend/interfaces/project/request';
 import { LoadProjects } from '@/frontend/interfaces/project';
 import isValidProjectName from '@/frontend/helpers/user';
-import { IconSettings } from '@tabler/icons-react';
+import { IconDownload, IconSettings } from '@tabler/icons-react';
 import Details from '@/frontend/components/store/content/Details';
 import useProjects from '@/frontend/components/project';
 import { User } from '@/backend/interfaces/user';
@@ -70,11 +70,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
   let fetchProjects: GetProjectsQueryParams = {};
 
-
-
-
   const { projects, reqStatus, setSearchProps } = useProjects(fetchProjects);
-
 
   const [iconPreview, setIconPreview] = useState<string | ArrayBuffer | null>('');
   const [bgImagePreview, setBgImagePreview] = useState<string | ArrayBuffer | null>('');
@@ -91,6 +87,10 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
   const [refreshREADMEDialogOpen, setRefreshREADMEDialogOpen] = useState(false)
   const [refreshREADMEResponse, setRefreshREADMEResponse] = useState<RefreshReadmeResponse>({ success: false, message: 'Refreshing README Data...' });
+
+  // To handle which README to use, the user's or the repo's
+  const [hastiMdAvailable, setHastiMdAvailable] = useState<boolean>(false);
+  const [usinghastiMd, setUsinghastiMd] = useState<boolean>(false);
 
 
   function classNames(...classes: String[]) {
@@ -124,34 +124,33 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
     // Check if user has setup the HASTI GitHub app to access their repositories
     // Ie will check if the user has a github token, needed to access the GitHub API. (GHU_token)
-    axios({
-      url: `${process.env.API_URL}/api/v1/auth/gitUserToken`,
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${session?.user.jwt}`
-      },
-      timeout: 60000,
-      timeoutErrorMessage: 'Request timed out. Please try again.',
-    }).catch(error => {
-      const data: CheckAuthResponse = error.response.data;
-      console.error('data', data)
-      let message: string = ''
-      if (data.check === AuthCheckType.USER_OK) {
-        message = 'Error checking GitHub token. Please try again, try refreshing the page, or logging out and back in.'
-      } else if (data.check === AuthCheckType.TOKEN_EXIST) {
-        message = "You have not setup the HASTI GitHub app to access your repositories. Please setup the GitHub app to continue."
-      } else if (data.check === AuthCheckType.DECRYPT) {
-        message = 'Your GitHub token has expired. Please setup the HASTI GitHub app to access your repositories.'
-      }
-      setGhuTokenOkResponse({ success: false, message: message, check: data.check })
-      setGhuTokenOkDialogOpen(true)
-      console.error('Error with GET /api/v1/auth/gitUserToken:', error)
+    if(opened){
+      axios({
+        url: `${process.env.API_URL}/api/v1/auth/gitUserToken`,
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.user.jwt}`
+        },
+        timeout: 60000,
+        timeoutErrorMessage: 'Request timed out. Please try again.',
+      }).catch(error => {
+        const data: CheckAuthResponse = error.response.data;
+        console.error('data', data)
+        let message: string = ''
+        if (data.check === AuthCheckType.USER_OK) {
+          message = 'Error checking GitHub token. Please try again, try refreshing the page, or logging out and back in.'
+        } else if (data.check === AuthCheckType.TOKEN_EXIST) {
+          message = "You have not setup the HASTI GitHub app to access your repositories. Please setup the GitHub app to continue."
+        } else if (data.check === AuthCheckType.DECRYPT) {
+          message = 'Your GitHub token has expired. Please setup the HASTI GitHub app to access your repositories.'
+        }
+        setGhuTokenOkResponse({ success: false, message: message, check: data.check })
+        setGhuTokenOkDialogOpen(true)
+        console.error('Error with GET /api/v1/auth/gitUserToken:', error)
 
-    });
-
-
-
+      });
+    }
 
 
 
@@ -181,6 +180,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
     // Set the project info if the project is loaded
     if (projectID && projects && projects.length > 0) {
       const loadedProject = projects[0] as ProjectAllInfo;
+
       if (loadedProject) {
         console.log("loadedProject test: ", loadedProject)
         setSelectedRepo(loadedProject.repo);
@@ -212,6 +212,37 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
         if (loadedProject.backgroundImage) {
           setBgImagePreview(`${imageHostPrefix}/${loadedProject.backgroundImage}`)
         }
+
+        setUsinghastiMd(loadedProject.usingHastiMD)
+
+        if(opened){
+            const repoID = loadedProject?.repoID
+
+          axios({
+            url: `${process.env.API_URL}/api/v1/repos/${repoID}/hasFile?path=HASTI.md`,
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${session?.user.jwt}`
+            },
+            timeout: 60000,
+            timeoutErrorMessage: 'Request timed out. Please try again.',
+          }).then(response => {
+            console.log('response:', response)
+            if(response.status === 200){
+              const hastiMdResponse: RefreshReadmeResponse = response.data
+              setHastiMdAvailable(hastiMdResponse.success)
+            }else if(response.status === 204){
+              setHastiMdAvailable(false)
+            }
+          }).catch(error => {
+            const hastiMdResponse: RefreshReadmeResponse = error.data
+            console.error('Error with GET /api/v1/repos/:repoID/hasFile?path=HASTI.md', error)
+            setHastiMdAvailable(hastiMdResponse.success)
+          })
+        }
+
+
       }
 
     }
@@ -569,7 +600,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
       // Reload page
       window.location.reload()
     }).catch(error => {
-      console.error('Error with DELETE /api/v1/projects/:projectID:', error)
+      console.error('Error with PUT /api/v1/projects/:projectID:', error)
     });
 
   }
@@ -920,6 +951,19 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                       </div>
                     </div>
 
+                    <div className="col-span-2 md:pl-5 grid place-items-center">
+                      <span>Markdown file to use:
+                        <div className='flex justify-center text-center p-3 cursor-pointer'>
+                          <Switch size="xl" onLabel={"HASTI.md"} offLabel={"README.md"} className='-mt-1 px-2' disabled={!hastiMdAvailable} 
+                          checked={usinghastiMd} onChange={(event) => setUsinghastiMd(event.currentTarget.checked)}/>
+                        </div>
+                        </span>
+
+                        <Button rightSection={<IconDownload size={14} className='text-black'/>} className='text-black border-1 border-gray-700 mt-5'>
+                          Export Hasti.md
+                        </Button>
+
+                      </div>
 
                   </div>
 
@@ -1006,7 +1050,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                               className={'text-black group:hover:text-black h-6 w-6 shrink-0'}
                               aria-hidden="true"
                             />
-                            Refresh README
+                            Refresh {hastiMdAvailable && usinghastiMd ? 'HASTI.md' : 'README.md'}
                           </button>
                           <button
                             // flex items-center bg-dark text-white font-bold py-2 pl-3 -ml-1 rounded-2xl focus:outline-none focus:shadow-outline-gray hover:bg-gray-700 w-full

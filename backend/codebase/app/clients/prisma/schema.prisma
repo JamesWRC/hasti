@@ -52,6 +52,9 @@ model Project {
   contentImages     String[]      @default([]) @db.VarChar(255) // Array of image URLs
 
   claimed           Boolean       @default(false)
+
+  usingHastiMD      Boolean       @default(false) // If the project is using HastiMD markdown for content
+
   createdAt         DateTime      @default(now()) @db.Timestamp(6)
   updatedAt         DateTime      @updatedAt
 }
