@@ -29,7 +29,7 @@ import { ProjectTypeSelectDropdownBox } from '@/frontend/components/ui/ProjectTy
 
 import { FileInput } from '@mantine/core';
 import { HAInstallTypeSelectDropdownBox } from '@/frontend/components/ui/HAInstallTypeSelectDropdownBox'
-import { AddProjectResponse, GetProjectsQueryParams, MAX_FILE_SIZE, RefreshReadmeResponse } from '@/backend/interfaces/project/request'
+import { AddProjectResponse, GetProjectsQueryParams, MAX_FILE_SIZE, RefreshContentResponse } from '@/backend/interfaces/project/request'
 
 
 import ProjectGrid from '@/frontend/components/project/ProjectGrid';
@@ -85,8 +85,8 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
   const [refreshRepoDialogOpen, setRefreshRepoDialogOpen] = useState(false)
   const [refreshRepoResponse, setRefreshRepoResponse] = useState<RefreshRepoDataRequest>({ success: false, message: 'Refreshing Repository Data...' });
 
-  const [refreshREADMEDialogOpen, setRefreshREADMEDialogOpen] = useState(false)
-  const [refreshREADMEResponse, setRefreshREADMEResponse] = useState<RefreshReadmeResponse>({ success: false, message: 'Refreshing README Data...' });
+  const [refreshContentDialogOpen, setRefreshContentDialogOpen] = useState(false)
+  const [refreshContentResponse, setRefreshContentResponse] = useState<RefreshContentResponse>({ success: false, message: 'Refreshing README Data...' });
 
   // To handle which README to use, the user's or the repo's
   const [hastiMdAvailable, setHastiMdAvailable] = useState<boolean>(false);
@@ -230,13 +230,13 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
           }).then(response => {
             console.log('response:', response)
             if(response.status === 200){
-              const hastiMdResponse: RefreshReadmeResponse = response.data
+              const hastiMdResponse: RefreshContentResponse = response.data
               setHastiMdAvailable(hastiMdResponse.success)
             }else if(response.status === 204){
               setHastiMdAvailable(false)
             }
           }).catch(error => {
-            const hastiMdResponse: RefreshReadmeResponse = error.data
+            const hastiMdResponse: RefreshContentResponse = error.data
             console.error('Error with GET /api/v1/repos/:repoID/hasFile?path=HASTI.md', error)
             setHastiMdAvailable(hastiMdResponse.success)
           })
@@ -626,10 +626,10 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
     }).then(response => {
       const refreshResponse: RefreshRepoDataRequest = response.data
 
-      setRefreshREADMEResponse(refreshResponse)
+      setRefreshContentResponse(refreshResponse)
     }).catch(error => {
       const refreshResponse: RefreshRepoDataRequest = error.data
-      setRefreshREADMEResponse(refreshResponse)
+      setRefreshContentResponse(refreshResponse)
       console.error('Error with PUT /api/v1/repos/refresh/:repoID', error)
     });
 
@@ -642,7 +642,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
     const project = projects && projects[0] as ProjectAllInfo
     const projectID = project?.id
     axios({
-      url: `${process.env.API_URL}/api/v1/projects/${projectID}/readme`,
+      url: `${process.env.API_URL}/api/v1/projects/${projectID}/content`,
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -651,15 +651,15 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
       timeout: 60000,
       timeoutErrorMessage: 'Request timed out. Please try again.',
     }).then(response => {
-      const refreshResponse: RefreshReadmeResponse = response.data
-      setRefreshREADMEResponse(refreshResponse)
+      const refreshResponse: RefreshContentResponse = response.data
+      setRefreshContentResponse(refreshResponse)
     }).catch(error => {
-      const refreshResponse: RefreshReadmeResponse = error.data
-      setRefreshREADMEResponse(refreshResponse)
-      console.error('Error with PUT /api/v1/projects/:projectID/readme', error)
+      const refreshResponse: RefreshContentResponse = error.data
+      setRefreshContentResponse(refreshResponse)
+      console.error('Error with PUT /api/v1/projects/:projectID/content', error)
     });
 
-    setRefreshREADMEDialogOpen(true)
+    setRefreshContentDialogOpen(true)
   }
 
   function isOwnerAndNotClaimed() {
@@ -976,16 +976,16 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                 {/* Refresh README Dialog */}
                 <DialogPanel
                   title="README Refresh"
-                  message={refreshREADMEResponse?.message}
-                  open={refreshREADMEDialogOpen}
-                  setOpen={setRefreshREADMEDialogOpen}
+                  message={refreshContentResponse?.message}
+                  open={refreshContentDialogOpen}
+                  setOpen={setRefreshContentDialogOpen}
                   confirmBtnText='Ok'
                   cancelBtnText=''
                   onCancel={null}
                   onConfirm={null}
                   customAction={null}
                   customBtnText=''
-                  stateType={refreshREADMEResponse?.success ? 'success' : 'error'}
+                  stateType={refreshContentResponse?.success ? 'success' : 'error'}
                 />
                 {/* Refresh Repo Dialog */}
                 <DialogPanel

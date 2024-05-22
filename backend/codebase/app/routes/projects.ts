@@ -7,12 +7,11 @@ import prisma, { ProjectAllInfo } from '@/backend/clients/prisma/client';
 import { Prisma, Repo } from '@prisma/client';
 import logger from '@/backend/logger';
 import { IncomingForm, Fields, Files, Options } from 'formidable';
-import { AddProjectResponse, ChangeProjectOwnershipResponse, DeleteProjectResponse, GetProjectsQueryParams, GetProjectsResponse, MAX_FILE_SIZE, ProjectAddMethod, RefreshReadmeResponse, getProjectAddMethod } from '@/backend/interfaces/project/request';
+import { AddProjectResponse, ChangeProjectOwnershipResponse, DeleteProjectResponse, GetContentResponse, GetProjectsQueryParams, GetProjectsResponse, MAX_FILE_SIZE, ProjectAddMethod, RefreshContentResponse, getProjectAddMethod } from '@/backend/interfaces/project/request';
 import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
 import { Project, getAllProjectTypes, ProjectWithUser, HAInstallType } from '@/backend/interfaces/project';
 import AWS from 'aws-sdk';
-import fs from 'fs';
-import isValidProjectName, { updateContent, deleteProject, getGitHubRepoData, handleInvalidFiles, handleProjectImages } from '@/backend/helpers/project';
+import isValidProjectName, { updateContent, deleteProject, getGitHubRepoData, handleInvalidFiles, handleProjectImages, readFileIfExists, stringToBase64 } from '@/backend/helpers/project';
 import tsClient from '@/backend/clients/typesense';
 import type { SearchResponse } from '@/backend/interfaces/search';
 import { isAuthenticated } from '@/backend/helpers/auth';
@@ -621,7 +620,6 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                             createdProject = await prisma.project.create({
                                 data: {
                                     title: title,
-                                    content: '',    // Hard code empty content, as the repo needs to be cloned and processed.
                                     description: description,
                                     tags: {
                                         // Use connectOrCreate to create and connect tags if they don't exist
@@ -1125,8 +1123,8 @@ projectsRouter.put<Record<string, string>, ChangeProjectOwnershipResponse | BadR
     });
 
 
-projectsRouter.put<Record<string, string>, RefreshReadmeResponse | BadRequestResponse>(
-    '/:projectID/readme',
+projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestResponse>(
+    '/:projectID/content',
     isAuthenticated,
     async (req, res) => {
         try {
@@ -1163,4 +1161,73 @@ projectsRouter.put<Record<string, string>, RefreshReadmeResponse | BadRequestRes
             return res.status(500).json({ success: false, message: 'Error getting token' });
         }
     });
+
+    /**
+     * Get project content
+     * @param projectID
+     * @param contentSHA - used for caching / versioning
+     * @returns {GetContentResponse | BadRequestResponse}
+     * @description Get project content / readme base64
+     */
+    projectsRouter.get<Record<string, string>, GetContentResponse | BadRequestResponse>(
+        '/:projectID/content/:contentSHA',
+        isAuthenticated,
+        async (req, res) => {
+            try {
+                console.log('req:', req.params.projectID)
+
+                const projectID: string = req.params.projectID
+                const user: User | undefined = req.user;
+                if (!user) {
+                    return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
+                }
+    
+                const project = await prisma.project.findFirst({
+                    where: {
+                        id: projectID
+                    },
+                    select: {
+                        contentSHA: true,
+                        id: true,
+                        repoID: true,
+                        userID: true
+                    }
+                })
+    
+    
+                if(project){
+                    const contentSHA:string = project.contentSHA
+                    const filePath:string = './temp/projects/' + projectID + '/' + contentSHA + '/content.md'
+                    console.log('filePath:', filePath)
+                    // Get the content from the file system
+                    const cachedContent:string|null = await readFileIfExists(filePath)
+                    if(cachedContent){
+                        return res.status(200).json({ success: true, sha: contentSHA, content: stringToBase64(cachedContent)});
+                    }else{
+                        // If the content doesn't exist, update it and return base64 encoded content
+                        console.log(project.repoID, project.id, project.userID)
+                        await updateContent(project.repoID, project.id, project.userID)
+                        const content = await readFileIfExists(filePath)
+                        console.log('content:', content)
+                        if(content){
+                            return res.status(200).json({ success: true, sha: contentSHA, content: stringToBase64(content)});
+                        }
+                    }
+
+                    return res.status(204).json({ success: false, sha: contentSHA, content: ''});
+    
+                }
+    
+                
+                return res.status(204).json({ success: false, message: 'Project not found.' });
+    
+            } catch (error) {
+                logger.warn(`Request threw an exception: ${error}`, {
+                    label: 'DELETE: /projects/:projectID: ',
+                });
+                return res.status(500).json({ success: false, message: 'Error getting token' });
+            }
+        });
+    
+
 export default projectsRouter;

@@ -27,7 +27,9 @@ model Tag {
 model Project {
   id                String        @id @default(uuid())
   title             String        @db.VarChar(255)
-  content           String        @db.Text
+
+  contentSHA        String        @db.VarChar(255) @default("") // SHA of the content for caching/version control purposes
+
   description       String        @default("") @db.Text 
 
   tags              Tag[]         // IMPLICIT many to many relationship to Tag

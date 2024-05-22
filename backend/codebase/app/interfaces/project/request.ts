@@ -74,7 +74,14 @@ export interface ChangeProjectOwnershipResponse {
     newOwnerID: string;
 }
 
-export interface RefreshReadmeResponse {
+export interface RefreshContentResponse {
     success: boolean;
     message: string;
 }
+
+export interface GetContentResponse {
+    success: boolean;
+    sha: string;
+    content: string;
+}
+

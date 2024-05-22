@@ -12,11 +12,13 @@ import { User } from '@prisma/client';
 import { AddProjectResponse } from '@/backend/interfaces/project/request';
 import { Files } from 'formidable';
 import { Project } from '@/backend/interfaces/project';
-import fs from 'fs';
 import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
 import axios from 'axios';
 import { JSDOM } from 'jsdom';
 import cherrio from 'cheerio';
+import fs from 'fs';
+import { promises as fs_promise } from 'fs';
+
 // Init s3
 const s3 = new AWS.S3({
     region: 'auto',
@@ -132,7 +134,12 @@ export async function updateContent(repoID: string, projectID: string, userID: s
 
         const imagesToDelete: string[] = project.contentImages.filter(image => !newContentImages.includes(image));
         const imagesToUpload: string[] = newContentImages.filter(image => !project.contentImages.includes(image));
+        const contentSHA:string = response.data.sha;
 
+        const contentDidSave:boolean = await writeFileAsync(`./temp/projects/${projectID}/${contentSHA}/content.md`, decodedContent)
+        if(!contentDidSave){
+            return retVal = { success: false, message: "Failed to fetch a README.md file. May not exist at path or no access to repo." }
+        }
         // Update the project's contentImages
         await prisma.project.update({
             where: {
@@ -140,10 +147,11 @@ export async function updateContent(repoID: string, projectID: string, userID: s
             },
             data: {
                 contentImages: newContentImages,
-                content: decodedContent
-
+                contentSHA: contentSHA,
             }
         })
+
+
         console.log("imagesToDelete", imagesToDelete)
         // Delete images that are no longer in the project's content
         const deletePromises: Promise<any>[] = [];
@@ -562,4 +570,45 @@ export async function handleProjectImages(files: Files, project: Project|null, u
         })
     return { code: 200, json: { success: true, message: 'Project images handled successfully' } };
 
+}
+
+
+export async function readFileIfExists(filePath: string): Promise<string | null> {
+    try {
+        // If the file exists, read and return its contents
+        const data = await fs_promise.readFile(filePath, "utf-8");
+        return data;
+    } catch (error) {
+        // Handle the error (file not found or other errors)
+        console.error("Error accessing or reading file:", error);
+        return null;
+    }
+}
+
+
+export async function writeFileAsync(filePath: string, data: string): Promise<boolean> {
+    try {
+
+        const dir = require('path').dirname(filePath);
+
+        await fs_promise.mkdir(dir, { recursive: true });
+
+        // Write data to file asynchronously
+        await fs_promise.writeFile(filePath, data, "utf-8");
+        return true
+    } catch (error) {
+        // Handle potential errors
+        console.error('Failed to write to file:', error);
+        return false
+    }
+}
+
+export function stringToBase64(inputString:string): string {
+    // Create a buffer from the string
+    const buffer = Buffer.from(inputString, 'utf8');
+
+    // Convert the buffer to Base64
+    const base64String = buffer.toString('base64');
+
+    return base64String;
 }
