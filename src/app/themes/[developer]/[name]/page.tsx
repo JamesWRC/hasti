@@ -18,14 +18,15 @@ import ColorBackground from '@/frontend/components/project/ColorBackground';
 import { ProjectAllInfo, getAllHaInstallTypes } from '@/backend/interfaces/project';
 import { useSession } from 'next-auth/react';
 import isValidProjectName from '@/frontend/helpers/user';
-import { GetProjectsQueryParams } from '@/backend/interfaces/project/request';
+import { GetContentResponse, GetProjectsQueryParams } from '@/backend/interfaces/project/request';
 import useProjects from '@/frontend/components/project';
 import { LoadProjects } from '@/frontend/interfaces/project';
 import { DynamicSkeletonImage, DynamicSkeletonText, DynamicSkeletonTitle } from '@/frontend/components/ui/skeleton';
 import { IconArrowRight, IconCheck, IconSettings, IconX } from '@tabler/icons-react';
-
+import { base64ToString } from '@/frontend/helpers/project';
 // import projectCSS
 import '@/frontend/app/page.module.css';
+import axios from 'axios';
 
 export default function Page({ params }: { params: { developer:string, name: string } }) {
   const { data: session, status } = useSession()
@@ -38,6 +39,7 @@ export default function Page({ params }: { params: { developer:string, name: str
   // Used to handle the switch for the published state. Project owner Only
   const [projectPublished, setProjectPublished] = useState(false);
   const [projectPublishedDebounce, setProjectPublishedDebounce] = useDebouncedState(false, 1000);
+  const [content, setContent] = useState<GetContentResponse>({ success: false, content: '',  sha: ''});
   const [projectStats, setProjectStats] = useState([
     { name: 'Type', value: 'Theme', change: '', changeType: 'positive' },
     { name: 'Compatibility', value: '', change: '', changeType: 'positive' },
@@ -65,6 +67,7 @@ export default function Page({ params }: { params: { developer:string, name: str
     if (projects && projects.length > 0) {
       const project = projects[0] as ProjectAllInfo;
       if(project){
+
         const worksWithOS:boolean = project.worksWithOS;
         const worksWithContainer:boolean = project.worksWithContainer;
         const worksWithCore:boolean = project.worksWithCore;
@@ -110,6 +113,32 @@ export default function Page({ params }: { params: { developer:string, name: str
 
 
         setProjectStats(newStats)
+
+
+        axios({
+          url: `${process.env.API_URL}/api/v1/projects/${project.id}/content/${project.contentSHA}`,
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          timeout: 60000,
+          timeoutErrorMessage: 'Request timed out. Please try again.',
+        }).then((response) => {
+          const data = base64ToString(response.data.content)
+          if(data){ 
+            setContent({success: true, content: data, sha: project.contentSHA})
+          }else{
+            setContent({success: false, content: 'Error getting content', sha: project.contentSHA})
+          }
+        }).catch((error) => {
+          const data = base64ToString(error.data.content)
+          if(data){ 
+            setContent({success: false, content: data, sha: project.contentSHA})
+          }else{
+            setContent({success: false, content: 'Error getting content', sha: project.contentSHA})
+          }
+          console.error('Error fetching project content', error)
+        })
       }
       
     }
@@ -286,7 +315,7 @@ export default function Page({ params }: { params: { developer:string, name: str
         <main className="flex-1">
 
           <Prose>
-            {reqStatus === 'success' && loadedProject && loadedProject.projects ? <UGCDocument source={loadedProject.projects[0]?.content}></UGCDocument> :
+            {reqStatus === 'success' && loadedProject && loadedProject.projects && content.success? <UGCDocument source={content.content}></UGCDocument> :
               <RenderDynamicPlaceholderContent />
             }
           </Prose>

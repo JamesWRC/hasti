@@ -32,7 +32,7 @@ function htmlDecode(input:string) {
 
 export function SafeHTML({children}: SafeHTMLProps) {
         const domPurifyConfig = {
-            ALLOWED_TAGS: ['p']  // Only allow <p> tags
+            ALLOWED_TAGS: ['p',]  // Only allow <p> tags
         };
     console.log('SafeHTML children', children)
     const html = renderToString(<>

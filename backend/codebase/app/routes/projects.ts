@@ -1171,17 +1171,12 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
      */
     projectsRouter.get<Record<string, string>, GetContentResponse | BadRequestResponse>(
         '/:projectID/content/:contentSHA',
-        isAuthenticated,
         async (req, res) => {
             try {
                 console.log('req:', req.params.projectID)
 
                 const projectID: string = req.params.projectID
-                const user: User | undefined = req.user;
-                if (!user) {
-                    return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
-                }
-    
+
                 const project = await prisma.project.findFirst({
                     where: {
                         id: projectID
