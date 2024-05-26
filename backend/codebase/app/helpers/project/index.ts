@@ -1,4 +1,4 @@
-import prisma from '@/backend/clients/prisma/client';
+import prisma, { ProjectAllInfo } from '@/backend/clients/prisma/client';
 import markdownit from 'markdown-it'
 import AWS from 'aws-sdk';
 
@@ -8,8 +8,8 @@ import { Octokit } from "octokit";
 import { getGitHubUserAuth } from "@/backend/helpers/auth/github";
 import logger from "@/backend/logger";
 import { OctokitResponse } from "@octokit/types";
-import { User } from '@prisma/client';
-import { AddProjectResponse } from '@/backend/interfaces/project/request';
+import { Repo, User } from '@prisma/client';
+import { AddProjectResponse, RefreshContentResponse } from '@/backend/interfaces/project/request';
 import { Files } from 'formidable';
 import { Project } from '@/backend/interfaces/project';
 import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
@@ -27,25 +27,12 @@ const s3 = new AWS.S3({
     secretAccessKey: process.env.CLOUDFLARE_BUCKET_SECRET_KEY,
 });
 
-export async function updateContent(repoID: string, projectID: string, userID: string) {
-
-    if (isNotString(repoID)) {
-        return { success: false, message: "Invalid repo ID." }
-    }
-
-    if (isNotString(projectID)) {
-        return { success: false, message: "Invalid project ID." }
-    }
-
-    if (isNotString(userID)) {
-        return { success: false, message: "Invalid user ID." }
-    }
-    
+export async function updateContent(repoID: string, projectID: string, userID: string, contentFile: string): Promise<RefreshContentResponse> {
 
     // get repo owner and name
     const repo = await prisma.repo.findUnique({
         where: {
-           id: repoID as string
+            id: repoID as string
         },
         select: {
             fullName: true
@@ -61,21 +48,23 @@ export async function updateContent(repoID: string, projectID: string, userID: s
     console.log("user", user)
 
     if (!user) {
-        return { success: false, message: "User not found." }
+        return { success: false, message: "User not found.", prevSHA: "", newSHA: "" }
     }
 
-    if(!repo){
-        return { success: false, message: "Repo not found." }
+    if (!repo) {
+        return { success: false, message: "Repo not found.", prevSHA: "", newSHA: "" }
     }
 
-    if(user.ghuToken.length <= 0){
-        return { success: false, message: "User does not have a GitHub token." }
+    if (user.ghuToken.length <= 0) {
+        return { success: false, message: "User does not have a GitHub token.", prevSHA: "", newSHA: "" }
     }
 
 
-    let retVal = {
+    let retVal: RefreshContentResponse = {
         success: false,
-        message: ""
+        message: "",
+        prevSHA: "",
+        newSHA: ""
     }
 
     const owner: string = repo.fullName.split('/')[0]
@@ -83,21 +72,34 @@ export async function updateContent(repoID: string, projectID: string, userID: s
 
     // Fetch repos readme file (can be any README.xx file)
     const gitHubUserAuth = await getGitHubUserAuth(user);
-    const response = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/readme', {
-        owner: owner,
-        repo: repoName
-    });
-    
+    let gitHubReadmeResponse: OctokitResponse<any, number> | null = null;
+    if (contentFile === 'README') {
+        gitHubReadmeResponse = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/readme', {
+            owner: owner,
+            repo: repoName
+        }).catch((e: any) => {
+            console.log("GET /repos/{owner}/{repo}/readme ERROR:", e)
+            return null
+        });;
+    } else if (contentFile === 'HASTI') {
+        gitHubReadmeResponse = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/contents/HASTI.md', {
+            owner: owner,
+            repo: repoName
+        }).catch((e: any) => {
+            console.log("GET /repos/{owner}/{repo}/contents/HASTI.md ERROR:", e)
+            return null
+        });
+    }
 
 
-    console.log("response", response)
-    response.status
-    if (response.status !== 200) {
-        return retVal = { success: false, message: "Failed to fetch a README.md file. May not exist at path or no access to repo." }
-    }else{
+    console.log("response", gitHubReadmeResponse)
+
+    if (!gitHubReadmeResponse || gitHubReadmeResponse.status !== 200) {
+        return retVal = { success: false, message: "Failed to fetch a README.md file. May not exist at path or no access to repo.", prevSHA: "", newSHA: "" }
+    } else {
 
 
-        let decodedContent = Buffer.from(response.data.content, 'base64').toString('utf-8');
+        let decodedContent = Buffer.from(gitHubReadmeResponse.data.content, 'base64').toString('utf-8');
         decodedContent = handleHTMLinMarkDown(decodedContent)
         console.log("---- decodedContent2", decodedContent)
 
@@ -109,12 +111,19 @@ export async function updateContent(repoID: string, projectID: string, userID: s
                 id: projectID
             },
             select: {
-                contentImages: true
+                contentImages: true,
+                contentSHA: true,
+                usingHastiMD: true
             }
         })
 
-        if (!project){
-            return { success: false, message: "Project not found." }
+        if (!project) {
+            return { success: false, message: "Project not found.", prevSHA: "", newSHA: "" }
+        }
+
+        if (project.contentSHA === gitHubReadmeResponse.data.sha) {
+            const message = `Content is up-to-date. No changes. SHA: ${project.contentSHA}`
+            return { success: true, message: message, prevSHA: project.contentSHA, newSHA: gitHubReadmeResponse.data.sha }
         }
 
         const newContentImages: string[] = []
@@ -123,7 +132,7 @@ export async function updateContent(repoID: string, projectID: string, userID: s
         for (const imageURL of extractedContentImages) {
 
             // Get the new image URL
-            const {newImageURL, imagePath} = getNewImageURL(imageURL, userID, projectID);
+            const { newImageURL, imagePath } = getNewImageURL(imageURL, userID, projectID);
             // Add the new image URL to the hastiImages array
             newContentImages.push(newImageURL)
 
@@ -134,12 +143,18 @@ export async function updateContent(repoID: string, projectID: string, userID: s
 
         const imagesToDelete: string[] = project.contentImages.filter(image => !newContentImages.includes(image));
         const imagesToUpload: string[] = newContentImages.filter(image => !project.contentImages.includes(image));
-        const contentSHA:string = response.data.sha;
+        const contentSHA: string = gitHubReadmeResponse.data.sha;
 
-        const contentDidSave:boolean = await writeFileAsync(`./temp/projects/${projectID}/${contentSHA}/content.md`, decodedContent)
-        if(!contentDidSave){
-            return retVal = { success: false, message: "Failed to fetch a README.md file. May not exist at path or no access to repo." }
+        const contentDidSave: boolean = await writeFileAsync(`./temp/projects/${projectID}/${contentSHA}/content.md`, decodedContent)
+        if (!contentDidSave) {
+            return retVal = { success: false, message: "Failed to fetch a README.md file. May not exist at path or no access to repo.", prevSHA: "", newSHA: "" }
         }
+
+        let usingHastiMD = false
+        if (contentFile === 'HASTI') {
+            usingHastiMD = true
+        }
+
         // Update the project's contentImages
         await prisma.project.update({
             where: {
@@ -148,6 +163,7 @@ export async function updateContent(repoID: string, projectID: string, userID: s
             data: {
                 contentImages: newContentImages,
                 contentSHA: contentSHA,
+                usingHastiMD: usingHastiMD,
             }
         })
 
@@ -168,9 +184,9 @@ export async function updateContent(repoID: string, projectID: string, userID: s
         console.log("extractedContentImages", extractedContentImages)
         // Upload new images to the Cloudflare R2 bucket
         for (const imageURL of extractedContentImages) {
-            
+
             try {
-                const {newImageURL, imagePath} = getNewImageURL(imageURL, userID, projectID);
+                const { newImageURL, imagePath } = getNewImageURL(imageURL, userID, projectID);
 
                 // download image
                 const imageResponse = await axios({
@@ -179,22 +195,22 @@ export async function updateContent(repoID: string, projectID: string, userID: s
                     responseType: 'stream',
                     timeout: 10000,
                     timeoutErrorMessage: 'Request timed out. Please try again.',
-                  });
-                
-                  console.log("imageResponse", imageResponse)
+                });
+
+                console.log("imageResponse", imageResponse)
                 // Get the content type of the content
                 const contentType = imageResponse.headers['content-type'] || 'image/jpeg';
-            
+
                 if (imageResponse.status !== 200) {
-                    return { success: false, message: `Failed to download image: ${imageURL} status: ${imageResponse.status}` };
+                    return { success: false, message: `Failed to download image: ${imageURL} status: ${imageResponse.status}`, prevSHA: "", newSHA: "" };
                 }
-            
-               // Create a buffer to hold the image data
-                const imageBuffer:Buffer = await new Promise((resolve, reject) => {
-                    const chunks:any = [];
-                    imageResponse.data.on('data', (chunk:any) => chunks.push(chunk));
+
+                // Create a buffer to hold the image data
+                const imageBuffer: Buffer = await new Promise((resolve, reject) => {
+                    const chunks: any = [];
+                    imageResponse.data.on('data', (chunk: any) => chunks.push(chunk));
                     imageResponse.data.on('end', () => resolve(Buffer.concat(chunks)));
-                    imageResponse.data.on('error', (error:any) => reject(error));
+                    imageResponse.data.on('error', (error: any) => reject(error));
                 });
                 // Set the parameters for the S3 upload
                 const s3Params: AWS.S3.PutObjectRequest = {
@@ -205,27 +221,39 @@ export async function updateContent(repoID: string, projectID: string, userID: s
                 };
 
                 // Upload the image to the Cloudflare R2 bucket
-                s3.upload(s3Params, (s3Err , data) => {
+                s3.upload(s3Params, (s3Err, data) => {
                     if (s3Err) {
                         console.error('Error uploading to S3: ', s3Err);
                         return { success: false, message: "Error uploading to S3." }
                     }
                 });
-            
+
             } catch (error) {
                 console.error('Error during Axios request: ', error);
-                return { success: false, message: "Error during Axios request." };
+                return { success: false, message: "Error during Axios request.", prevSHA: "", newSHA: "" };
             }
         }
+        let message = ''
+        let contentFileUsed = ''
+        if (contentFile === "HASTI") {
+            contentFileUsed = 'HASTI.md'
+        } else {
+            contentFileUsed = gitHubReadmeResponse.data.name
+        }
 
-        return retVal = { success: true, message: "Successfully updated project content." }
+        if (project.contentSHA === contentSHA) {
+            message = `Content from '${contentFileUsed}' is up-to-date. No changes. SHA: ${contentSHA}`
+        } else {
+            message = `Successfully updated project content from '${contentFileUsed}'. From SHA: ${project.contentSHA} → new SHA: ${contentSHA}`
+        }
+        return retVal = { success: true, message: message, prevSHA: project.contentSHA, newSHA: contentSHA }
     }
 
 
 }
 
 
-function getNewImageURL(imageURL: string, userID: string, projectID: string): {newImageURL: string, imagePath: string}{
+function getNewImageURL(imageURL: string, userID: string, projectID: string): { newImageURL: string, imagePath: string } {
     // Split the image URL to get the image name
     const imageUrlParts = imageURL.split('/');
     // get image name from url
@@ -235,7 +263,7 @@ function getNewImageURL(imageURL: string, userID: string, projectID: string): {n
     const imagePath = `user/${userID}/${projectID}/${fileName}`
     const newImageURL = `${process.env.CLOUDFLARE_R2_PUBLIC_URL}/${imagePath}`
 
-    return {newImageURL: newImageURL, imagePath: imagePath}
+    return { newImageURL: newImageURL, imagePath: imagePath }
 }
 
 // Function to extract image URLs from Markdown content
@@ -250,7 +278,7 @@ function extractImageUrls(markdownContent: string): string[] {
         if (token.type === 'inline') {
             const line = token.content;
             const mediaExtensions = ['jpg', 'jpeg', 'png', 'gif', 'svg', 'mp4', 'webm', 'mov']; // Add more extensions if needed
-            
+
             // Extract image github media URLs. Don't want to abuse the GitHub content delivery network / use up their bandwidth.
             // Other sites can be added to the regex if needed. ATM it is assumed you have full rights to the content.
             const gitHubUserImagesMatches = line.match(/\bhttps?:\/\/user-images.githubusercontent.com\S+\.(jpg|jpeg|png|gif|svg|mp4|webm|mov)\b/gi);
@@ -328,13 +356,13 @@ function handleHTMLinMarkDown(markdown: string) {
     const dom = new JSDOM(markdown, { contentType: 'text/html', });
     let document = dom.window.document;
     // if the markdown has safeHTML tags, return the markdown as is
-    
-    if(document.body.innerHTML.includes('{% safeHTML %}')){
+
+    if (document.body.innerHTML.includes('{% safeHTML %}')) {
         return markdown
     }
 
     const blocks = findHtmlBlocks(document.body.innerHTML)
-    
+
     // convertHtmlToMarkdoc(document.body);
     // console.log("blocks", blocks)
     // console.log("document AFTER", document.body.innerHTML)
@@ -347,10 +375,10 @@ function handleHTMLinMarkDown(markdown: string) {
 
     // Extract all self-closing tags
     const tags = selfClosingTags.map(tag => {
-    return $(tag).map((i, el) => ({
-        tag: tag,
-        html: $.html(el) // get outer HTML of each tag
-    })).get();
+        return $(tag).map((i, el) => ({
+            tag: tag,
+            html: $.html(el) // get outer HTML of each tag
+        })).get();
     }).flat();
 
     let tagsIndex = 0
@@ -372,7 +400,7 @@ function handleHTMLinMarkDown(markdown: string) {
 
         if (blockStart === blockEnd) {
             docLines[blockStart] = docLines[blockStart].replace(blockContent, ' {% safeHTML %} ' + blockContent + ' {% /safeHTML %} ')
-        }else{
+        } else {
             docLines[blockStart] = docLines[blockStart].replace(blockContent[0], '{% safeHTML %} ' + blockContent[0])
             // console.log("blockContent[blockContent.length -1 ]", blockContent[blockContent.length -1 ])
             docLines[blockEnd] = replaceLastOccurrence(docLines[blockEnd], '</' + startTagName + '>', '</' + startTagName + '>{% /safeHTML %}')
@@ -387,31 +415,31 @@ function handleHTMLinMarkDown(markdown: string) {
         // console.log("docLines[blockEnd]", docLines[blockEnd])
     }
     // console.log("tags", tags)
-    for(const tag of tags){
+    for (const tag of tags) {
         // if(!isSubStringFoundBetween(tag.html, '{% safeHTML %}', '{% /safeHTML %}', document.body.innerHTML)){
         //     console.log("tag.html", tag.html)
-            docLines.find((line, index) => {
-                if(line.includes(tag.html)){
-                    let tagInBlock = false;
-                    for (const block of blocks) {
-                        const blockContent = block.block;
-                
-                        const blockStart = block.start - 1; // Adjust for 0-based index
-                        let blockEnd = block.end - 1;
-                
-                        if(index >= blockStart && index <= blockEnd){
-                            tagInBlock = true
-                        }
-                    }
-                    if(!tagInBlock){
-                        docLines[index] = '{% safeHTML %}\n' + tag.html + '\n{% /safeHTML %}'
+        docLines.find((line, index) => {
+            if (line.includes(tag.html)) {
+                let tagInBlock = false;
+                for (const block of blocks) {
+                    const blockContent = block.block;
+
+                    const blockStart = block.start - 1; // Adjust for 0-based index
+                    let blockEnd = block.end - 1;
+
+                    if (index >= blockStart && index <= blockEnd) {
+                        tagInBlock = true
                     }
                 }
-            })
+                if (!tagInBlock) {
+                    docLines[index] = '{% safeHTML %}\n' + tag.html + '\n{% /safeHTML %}'
+                }
+            }
+        })
         // }
     }
 
-    
+
     // remove blank lines between safeHTML tags
     let remove = false
     for (let i = 0; i < docLines.length; i++) {
@@ -459,7 +487,7 @@ export async function getGitHubRepoData(user: User, owner: string, repo: string)
     }
 }
 
-export async function deleteProject(projectID: string){
+export async function deleteProject(projectID: string) {
     await prisma.project.delete({
         where: {
             id: projectID
@@ -472,9 +500,9 @@ export default function isValidProjectName(name: string): boolean {
     return regex.test(name);
 }
 
-export function handleInvalidFiles(files: Files): {code: number, json: AddProjectResponse} {
+export function handleInvalidFiles(files: Files): { code: number, json: AddProjectResponse } {
     // Get file Size too large error
-    const okFiles = Object.keys(files).map((fieldName:string) => {
+    const okFiles = Object.keys(files).map((fieldName: string) => {
         const file = files[fieldName as string];
         if (file) {
             console.log(file)
@@ -490,11 +518,11 @@ export function handleInvalidFiles(files: Files): {code: number, json: AddProjec
         response.extraInfo = 'File fields OK: ' + okFiles.join(', ')
     }
 
-    return {code: 413, json: response}
+    return { code: 413, json: response }
 }
 
 
-export async function handleProjectImages(files: Files, project: Project|null, user: User): Promise<{ code: number, json: AddProjectResponse }>{
+export async function handleProjectImages(files: Files, project: Project | null, user: User): Promise<{ code: number, json: AddProjectResponse }> {
     Object.keys(files).map(async (fieldName) => {
         const file = files[fieldName];
 
@@ -567,7 +595,7 @@ export async function handleProjectImages(files: Files, project: Project|null, u
                 });
             }
         }
-        })
+    })
     return { code: 200, json: { success: true, message: 'Project images handled successfully' } };
 
 }
@@ -603,7 +631,7 @@ export async function writeFileAsync(filePath: string, data: string): Promise<bo
     }
 }
 
-export function stringToBase64(inputString:string): string {
+export function stringToBase64(inputString: string): string {
     // Create a buffer from the string
     const buffer = Buffer.from(inputString, 'utf8');
 
@@ -611,4 +639,269 @@ export function stringToBase64(inputString:string): string {
     const base64String = buffer.toString('base64');
 
     return base64String;
+}
+
+
+const getRepoDetails = async (gitHubUserAuth: Octokit, owner: string, repo: string) => {
+    const { data } = await gitHubUserAuth.request('GET /repos/{owner}/{repo}', {
+        owner,
+        repo,
+    });
+    return data;
+};
+
+const getRepoContributors = async (gitHubUserAuth: Octokit, owner: string, repo: string) => {
+    const { data } = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/contributors', {
+        owner,
+        repo,
+    });
+    return data;
+};
+
+const getRepoCommits = async (gitHubUserAuth: Octokit, owner: string, repo: string) => {
+
+    const { data } = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/commits', {
+        owner,
+        repo,
+    });
+    return data;
+};
+
+const getRepoIssues = async (gitHubUserAuth: Octokit, owner: string, repo: string) => {
+    console.log("owner", owner)
+    console.log("repo", repo)
+    const { data } = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/issues', {
+        owner,
+        repo,
+        state: 'all',
+    });
+    console.log('issues', data)
+
+    return data;
+};
+
+const getRepoPullRequests = async (gitHubUserAuth: Octokit, owner: string, repo: string) => {
+    const { data } = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/pulls', {
+        owner,
+        repo,
+        state: 'all',
+    });
+    return data;
+};
+
+const getRepoReleases = async (gitHubUserAuth: Octokit, owner: string, repo: string) => {
+    const { data } = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/releases', {
+        owner,
+        repo,
+    });
+    return data;
+};
+
+const calculateAvgTimeToClosePRs = (pullRequests: any[]): number => {
+    const closedPRs = pullRequests.filter(pr => pr.state === 'closed');
+    const timeDiffs = closedPRs.map(pr => {
+        const createdAt = new Date(pr.created_at);
+        const closedAt = new Date(pr.closed_at);
+        return closedAt.getTime() - createdAt.getTime();
+    });
+
+    if (timeDiffs.length === 0) return 0;
+
+    const avgTimeDiff = timeDiffs.reduce((acc, timeDiff) => acc + timeDiff, 0) / timeDiffs.length;
+    return avgTimeDiff / (1000 * 60 * 60 * 24); // Convert from milliseconds to days
+};
+
+const calculateScore = (
+    stars: number,
+    forks: number,
+    watchers: number,
+    contributors: number,
+    commits: number,
+    releases: number,
+    license: boolean,
+    closedIssuesRatio: number,
+    pullRequests: number,
+    lastCommitDate: Date,
+    avgTimeToClosePRs: number
+): number => {
+    console.log("stars", stars)
+    console.log("forks", forks)
+    console.log("watchers", watchers)
+    console.log("contributors", contributors)
+    console.log("commits", commits)
+    console.log("releases", releases)
+    console.log("license", license)
+    console.log("closedIssuesRatio", closedIssuesRatio)
+    console.log("pullRequests", pullRequests)
+    console.log("lastCommitDate", lastCommitDate)
+    console.log("avgTimeToClosePRs", avgTimeToClosePRs)
+
+
+    const weights = {
+        stars: 2,
+        forks: 1.5,
+        watchers: 1.5,
+        contributors: 1.5,
+        commits: 1,
+        releases: 1,
+        license: 1,
+        closedIssuesRatio: 1.5,
+        pullRequests: 1.5,
+        lastCommitDate: 2,
+        avgTimeToClosePRs: 1.5
+
+    };
+
+    const now = new Date();
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(now.getMonth() - 6);
+    const isRecentlyUpdated = lastCommitDate >= sixMonthsAgo;
+
+    const score =
+        stars * weights.stars +
+        forks * weights.forks +
+        watchers * weights.watchers +
+        contributors * weights.contributors +
+        commits * weights.commits +
+        releases * weights.releases +
+        (license ? weights.license : 0) +
+        closedIssuesRatio * weights.closedIssuesRatio +
+        pullRequests * weights.pullRequests +
+        (isRecentlyUpdated ? weights.lastCommitDate : 0) +
+        avgTimeToClosePRs * weights.avgTimeToClosePRs;
+
+
+    const maxScore =
+        100 * weights.stars +
+        100 * weights.forks +
+        100 * weights.watchers +
+        100 * weights.contributors +
+        100 * weights.commits +
+        100 * weights.releases +
+        weights.license + // License is either 0 or the weight value
+        1 * weights.closedIssuesRatio + // Closed issues ratio is at most 1
+        100 * weights.pullRequests +
+        weights.lastCommitDate + // Last commit date weight (if recently updated)
+        100; // Average time to close PRs weight
+        console.log("score", score)
+        console.log("maxScore", maxScore)
+        const scorePercentage = (score / maxScore) * 100;
+
+    return scorePercentage;
+};
+
+
+const logTransform = (value:number) => Math.log10(value + 1); // +1 to handle log(0)
+
+
+const calculatePopularityScore = (stars:number, forks:number, watchers:number, contributors:number) => {
+    const weights = {
+        stars: 2,
+        forks: 1.5,
+        watchers: 1.5,
+        contributors: 1.5,
+    };
+
+    const score =
+        logTransform(stars) * weights.stars +
+        logTransform(forks) * weights.forks +
+        logTransform(watchers) * weights.watchers +
+        logTransform(contributors) * weights.contributors;
+
+    const maxScore =
+        logTransform(100) * weights.stars +
+        logTransform(100) * weights.forks +
+        logTransform(100) * weights.watchers +
+        logTransform(100) * weights.contributors;
+
+    return (score / maxScore) * 100;
+};
+
+const calculateActivityScore = (commits:number, releases:number, closedIssuesRatio:number, pullRequests:number, lastCommitDate:Date, avgTimeToClosePRs:number) => {
+    const weights = {
+        commits: 1,
+        releases: 1,
+        closedIssuesRatio: 1.5,
+        pullRequests: 1.5,
+        lastCommitDate: 2,
+        avgTimeToClosePRs: 1.5
+    };
+
+
+    const now = new Date();
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(now.getMonth() - 6);
+    const isRecentlyUpdated = lastCommitDate >= sixMonthsAgo;
+
+    const score =
+        logTransform(commits) * weights.commits +
+        logTransform(releases) * weights.releases +
+        closedIssuesRatio * weights.closedIssuesRatio + // This remains linear because it's a ratio
+        logTransform(pullRequests) * weights.pullRequests +
+        (isRecentlyUpdated ? weights.lastCommitDate : 0) +
+        logTransform(avgTimeToClosePRs) * weights.avgTimeToClosePRs;
+
+    const maxScore =
+        logTransform(100) * weights.commits +
+        logTransform(100) * weights.releases +
+        1 * weights.closedIssuesRatio + // Closed issues ratio is at most 1
+        logTransform(100) * weights.pullRequests +
+        weights.lastCommitDate + // Last commit date weight (if recently updated)
+        logTransform(100); // Average time to close PRs weight
+
+    return (score / maxScore) * 100;
+};
+
+export async function rankRepositories(user: User, repoName: string): Promise<number> {
+
+    const gitHubUserAuth = await getGitHubUserAuth(user);
+    const owner: string = user.username;
+
+    const details = await getRepoDetails(gitHubUserAuth, owner, repoName);
+    const contributors = await getRepoContributors(gitHubUserAuth, owner, repoName);
+    const commits = await getRepoCommits(gitHubUserAuth, owner, repoName);
+    const issues = await getRepoIssues(gitHubUserAuth, owner, repoName);
+    const pullRequests = await getRepoPullRequests(gitHubUserAuth, owner, repoName);
+    const releases = await getRepoReleases(gitHubUserAuth, owner, repoName);
+
+    const closedIssues:number = issues.filter(issue => issue.state === 'closed').length;
+    const closedIssuesRatio = closedIssues / issues.length;
+
+    const avgTimeToClosePRs = calculateAvgTimeToClosePRs(pullRequests);
+
+
+    const score = calculateScore(
+        details.stargazers_count,
+        details.forks_count,
+        details.subscribers_count,
+        contributors.length,
+        commits.length,
+        releases.length,
+        !!details.license,
+        issues.length > 0 ? closedIssuesRatio : 1,
+        pullRequests.length,
+        commits?.[0]?.commit?.author?.date ? new Date(commits[0].commit.author.date) : new Date(),
+        avgTimeToClosePRs
+    );
+
+    const popularityScore = calculatePopularityScore(
+        details.stargazers_count,
+        details.forks_count,
+        details.subscribers_count,
+        contributors.length
+    );
+
+    const activityScore = calculateActivityScore(
+        commits.length,
+        releases.length,
+        closedIssuesRatio,
+        pullRequests.length,
+        commits?.[0]?.commit?.author?.date ? new Date(commits[0].commit.author.date) : new Date(),
+        avgTimeToClosePRs
+    );
+
+    console.log("score", score)
+    console.log("popularityScore", popularityScore)
+    console.log("activityScore", activityScore)
+    return score;
 }

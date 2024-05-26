@@ -29,7 +29,7 @@ import { ProjectTypeSelectDropdownBox } from '@/frontend/components/ui/ProjectTy
 
 import { FileInput } from '@mantine/core';
 import { HAInstallTypeSelectDropdownBox } from '@/frontend/components/ui/HAInstallTypeSelectDropdownBox'
-import { AddProjectResponse, GetProjectsQueryParams, MAX_FILE_SIZE, RefreshContentResponse } from '@/backend/interfaces/project/request'
+import { AddProjectResponse, GetContentResponse, GetProjectsQueryParams, MAX_FILE_SIZE, RefreshContentResponse } from '@/backend/interfaces/project/request'
 
 
 import ProjectGrid from '@/frontend/components/project/ProjectGrid';
@@ -46,6 +46,8 @@ import DialogPanel from '@/frontend/components/ui/DialogPanel';
 import axios from 'axios';
 import { RefreshRepoDataRequest } from '@/backend/interfaces/repo/request';
 import { CheckAuthResponse, AuthCheckType } from '@/backend/interfaces/auth';
+import { ContentSwitchHelp, DescriptionHelp, ImageUploadHelp, ProjectNameHelp, ProjectTypeHelp, TagsHelp } from '../ui/HelpDialogs';
+import { downloadHASTIData } from '@/frontend/helpers/project';
 
 
 const GIT_APP_NAME = process.env.NODE_ENV === 'production' ? 'hasti-bot' : 'hasti-bot-dev';
@@ -83,10 +85,14 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
   const [ghuTokenOkResponse, setGhuTokenOkResponse] = useState<CheckAuthResponse>({ success: false, message: '', check: AuthCheckType.USER_OK });
 
   const [refreshRepoDialogOpen, setRefreshRepoDialogOpen] = useState(false)
-  const [refreshRepoResponse, setRefreshRepoResponse] = useState<RefreshRepoDataRequest>({ success: false, message: 'Refreshing Repository Data...' });
+  const [refreshRepoResponse, setRefreshRepoResponse] = useState<RefreshRepoDataRequest|null>(null);
 
   const [refreshContentDialogOpen, setRefreshContentDialogOpen] = useState(false)
-  const [refreshContentResponse, setRefreshContentResponse] = useState<RefreshContentResponse>({ success: false, message: 'Refreshing README Data...' });
+  const [refreshContentResponse, setRefreshContentResponse] = useState<RefreshContentResponse|null>(null);
+
+  const [exportHastiMDDialogOpen, setExportHastiMDDialogOpen] = useState(false)
+  const [exportHastiMDResponse, setExportHastiMDResponse] = useState<GetContentResponse|null>(null);
+
 
   // To handle which README to use, the user's or the repo's
   const [hastiMdAvailable, setHastiMdAvailable] = useState<boolean>(false);
@@ -469,6 +475,8 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
       formData.append('projectID', projectID)
     }
 
+    formData.append('usinghastiMd', String(usinghastiMd))
+
     iconImage ? formData.append('iconImage', iconImage) : null
     backgroundImage ? formData.append('backgroundImage', backgroundImage) : null
 
@@ -626,10 +634,10 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
     }).then(response => {
       const refreshResponse: RefreshRepoDataRequest = response.data
 
-      setRefreshContentResponse(refreshResponse)
+      setRefreshRepoResponse(refreshResponse)
     }).catch(error => {
       const refreshResponse: RefreshRepoDataRequest = error.data
-      setRefreshContentResponse(refreshResponse)
+      setRefreshRepoResponse(refreshResponse)
       console.error('Error with PUT /api/v1/repos/refresh/:repoID', error)
     });
 
@@ -641,8 +649,14 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
     e.preventDefault()
     const project = projects && projects[0] as ProjectAllInfo
     const projectID = project?.id
+    let updateContentFile = ''
+    if(usinghastiMd){
+      updateContentFile = 'HASTI'
+    }else{
+      updateContentFile = 'README'
+    }
     axios({
-      url: `${process.env.API_URL}/api/v1/projects/${projectID}/content`,
+      url: `${process.env.API_URL}/api/v1/projects/${projectID}/content?updateContentFile=${updateContentFile}`,
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -677,7 +691,6 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
   }
 
   function renderClaimButton() {
-    const project = projects && projects[0] as ProjectAllInfo
     return (
 
       !isOwner() ? null : <div>
@@ -722,6 +735,18 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
     window.open(`https://github.com/apps/${GIT_APP_NAME}/installations/new?state=${session?.user?.id}`)
   }
 
+
+  async function handleExportHastiMd(e: React.MouseEvent<HTMLButtonElement>) {
+    const project = projects && projects[0] as ProjectAllInfo
+    e.preventDefault()
+    if(project){
+      const dlResponse:GetContentResponse = await downloadHASTIData(project.id, project.contentSHA)
+      console.log('dlResponse:', dlResponse)
+      setExportHastiMDResponse(dlResponse)
+      setExportHastiMDDialogOpen(true)   
+    }
+  }
+
   return (
     <>
       {/* GitHub App issue dialog */}
@@ -740,7 +765,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
       />
       {/* Adding project dialog */}
       <DialogPanel
-        title="New Project"
+        title={projectID? "Updating project" : "New Project"}
         message={projectResponse.message}
         open={createProjectDialogOpen}
         setOpen={setCreateProjectDialogOpen}
@@ -751,6 +776,20 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
         customAction={() => { }}
         customBtnText=''
         stateType={projectResponse.success ? 'success' : 'error'}
+      />
+      {/* Export HASTI.md dialog */}
+      <DialogPanel
+        title="Export HASTI.md"
+        message={exportHastiMDResponse && exportHastiMDResponse.success ? 'HASTI.md exported successfully.' : 'Error exporting HASTI.md.'}
+        open={exportHastiMDDialogOpen}
+        setOpen={setExportHastiMDDialogOpen}
+        confirmBtnText='ok'
+        cancelBtnText=''
+        onCancel={() => { }}
+        onConfirm={() => { }}
+        customAction={() => { }}
+        customBtnText=''
+        stateType={exportHastiMDResponse ? exportHastiMDResponse.success ? 'success' : 'error' : 'pending'}
       />
       <Box pos="relative">
 
@@ -774,7 +813,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                 && projectLoadedState?.projects.length > 0) ? false : true} zIndex={1000} overlayProps={{ radius: "xl", blur: 2, center: true }}
                 className='fixed'
               />
-              {isOwnerAndNotClaimed() ? renderClaimButton() : <div className="border-b border-gray-900/10 pb-12">
+              {isOwnerAndNotClaimed() ? renderClaimButton() : <div className="border-b border-gray-900/10">
                 {/* <h2 className="text-base font-semibold leading-7 text-gray-900">New Project</h2> */}
 
                 <div className="text-black">
@@ -800,14 +839,16 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
                         {/* Add content to right */}
                         <div className='md:pl-5 col-span-2'>
+                          <div className='md:pt-3'>
+                            <ImageUploadHelp/>
+                          </div>
 
-                          <div className='grid grid-cols-2 space-x-1.5 h-full my-auto'>
+                          <div className='grid grid-cols-2 space-x-1.5 h-full my-auto pb-6'>
 
 
 
 
-
-                            <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 relative"
+                            <div className="flex justify-center rounded-lg border border-dashed border-gray-900/25 relative"
                               style={{ backgroundImage: `url(${iconPreview?.toString()})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
 
                               <div className="text-center z-10 backdrop-blur-sm bg-white/30 rounded-lg h-full w-full flex justify-center items-center">
@@ -842,7 +883,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                                 </div>
                               </div>
                             </div>
-                            <div className="mt-2 flex justify-center rounded-lg border border-dashed border-gray-900/25 relative"
+                            <div className="flex justify-center rounded-lg border border-dashed border-gray-900/25 relative"
                               style={{ backgroundImage: `url(${bgImagePreview?.toString()})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
 
                               <div className="text-center z-10 backdrop-blur-sm bg-white/30 rounded-lg h-full w-full flex justify-center items-center">
@@ -888,11 +929,13 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                       <div className='grid grid-cols-1 md:grid-cols-2 md:space-x-3 md:divide-x-2 divide-dashed py-2'>
 
                         <div className="">
-                          <TextInput id={projects ? projects[0]?.id : selectRepo?.id} className="w-full" label="Project Name" placeholder={selectRepo?.name} defaultValue={selectRepo?.name} {...form.getInputProps('projectName')} disabled={projectID ? true : false} />
+                          <ProjectNameHelp/>
+                          <TextInput id={projects ? projects[0]?.id : selectRepo?.id} className="w-full" placeholder={selectRepo?.name} defaultValue={selectRepo?.name} {...form.getInputProps('projectName')} disabled={projectID ? true : false} />
 
                         </div>
 
                         <div className="pt-3 md:pt-0 md:pl-3">
+                          <ProjectTypeHelp/>
                           <ProjectTypeSelectDropdownBox projectType={projectType} setProjectType={setProjectType} inputProps={getInputProps} disabled={projectID ? true : false} />
 
                         </div>
@@ -920,12 +963,12 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                       <div className="col-span-full">
 
                         <div className="mt-2">
+                          <DescriptionHelp/>
                           <Textarea
                             placeholder="Short description of the project."
                             autosize
                             minRows={4}
                             maxRows={4}
-                            label="Description"
                             {...form.getInputProps('description')}
                           />
                         </div>
@@ -938,7 +981,8 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                         <HAInstallTypeSelectDropdownBox haInstallTypes={haInstallTypes} setHaInstallTypes={setHaInstallTypes} inputProps={getInputProps} />
                       </div>
                       <div className="pt-1.5">
-                        <SearchTagComboBox label="Select tags"
+                        <TagsHelp/>
+                        <SearchTagComboBox
                           placeholder="Select or add a tag..."
                           searchable={true}
                           nothingFoundMessage='Nothing found... Add to create a new tag, space delimited'
@@ -952,14 +996,18 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                     </div>
 
                     <div className="col-span-2 md:pl-5 grid place-items-center">
-                      <span>Markdown file to use:
+                      <span>
+                        <ContentSwitchHelp/>
                         <div className='flex justify-center text-center p-3 cursor-pointer'>
                           <Switch size="xl" onLabel={"HASTI.md"} offLabel={"README.md"} className='-mt-1 px-2' disabled={!hastiMdAvailable} 
                           checked={usinghastiMd} onChange={(event) => setUsinghastiMd(event.currentTarget.checked)}/>
                         </div>
                         </span>
 
-                        <Button rightSection={<IconDownload size={14} className='text-black'/>} className='text-black border-1 border-gray-700 mt-5'>
+                        <Button 
+                        rightSection={<IconDownload size={14} className='text-black'/>} 
+                        className='text-black border-1 border-gray-700 mt-5'
+                        onClick={(e) => {handleExportHastiMd(e)}}>
                           Export Hasti.md
                         </Button>
 
@@ -976,30 +1024,40 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                 {/* Refresh README Dialog */}
                 <DialogPanel
                   title="README Refresh"
-                  message={refreshContentResponse?.message}
+                  message={refreshContentResponse ? refreshContentResponse.message : ''}
                   open={refreshContentDialogOpen}
                   setOpen={setRefreshContentDialogOpen}
                   confirmBtnText='Ok'
                   cancelBtnText=''
                   onCancel={null}
-                  onConfirm={null}
+                  onConfirm={() => {
+                    setTimeout(() => {
+                      // Wait 1 second to reset the response so closing animation can play
+                      setRefreshContentResponse(null); // Reset to null, null is used for the loading state
+                    }, 500);
+                  }}
                   customAction={null}
                   customBtnText=''
-                  stateType={refreshContentResponse?.success ? 'success' : 'error'}
+                  stateType={refreshContentResponse ? refreshContentResponse?.success ? 'success' : 'error' : 'pending'}
                 />
                 {/* Refresh Repo Dialog */}
                 <DialogPanel
                   title="Repository Refresh"
-                  message={refreshRepoResponse?.message}
+                  message={refreshRepoResponse ? refreshRepoResponse?.message : ''}
                   open={refreshRepoDialogOpen}
                   setOpen={setRefreshRepoDialogOpen}
                   confirmBtnText='Ok'
                   cancelBtnText=''
                   onCancel={null}
-                  onConfirm={null}
+                  onConfirm={() => {
+                    setTimeout(() => {
+                      // Wait 1 second to reset the response so closing animation can play
+                      setRefreshRepoResponse(null); // Reset to null, null is used for the loading state
+                    }, 500);
+                  }}                  
                   customAction={null}
                   customBtnText=''
-                  stateType={refreshRepoResponse?.success ? 'success' : 'error'}
+                  stateType={refreshRepoResponse ? refreshRepoResponse?.success ? 'success' : 'error' : 'pending'}
                 />
                 {/* Delete Dialog */}
                 <DialogPanel
@@ -1023,14 +1081,14 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                     && projectLoadedState?.projects.length > 0) ? null :
                     <div>
 
-                      <div className="relative py-5">
+                      {/* <div className="relative py-5">
                         <div className="absolute inset-0 flex items-center" aria-hidden="true">
                           <div className="w-full border-t border-gray-300" />
                         </div>
                         <div className="relative flex justify-center">
                           <span className="bg-white px-2 text-sm text-gray-500"></span>
                         </div>
-                      </div>
+                      </div> */}
                       <div className='grid grid-cols-4 space-x-1.5 h-full '>
                         <div className='col-span-4 md:col-span-1 order-last md:order-1'>
                           <div className="relative py-5">

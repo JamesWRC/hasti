@@ -20,7 +20,7 @@ export default function SearchComboBox({
     setTags,
     searchParams,
     inputProps}: 
-    {label: string,
+    {label?: string,
         placeholder: string,
         searchable: boolean,
         maxSelectedValues: number,

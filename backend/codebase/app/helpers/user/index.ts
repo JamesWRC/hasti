@@ -8,6 +8,8 @@ import { NextApiResponse } from "next/types";
 import { decrypt, encrypt } from "../auth";
 import { OctokitResponse } from "@octokit/types";
 import { NotificationAbout, NotificationType } from "@/backend/interfaces/notification";
+import axios from "axios";
+import { getGitHubUserAuth } from "../auth/github";
 
 
 
@@ -136,4 +138,103 @@ export async function createTempUser(newUserGitHubID:number, newUserGithubNodeID
   });
 
   return projectOwnerUser
+}
+
+interface UserData {
+  followers: number;
+  publicRepos: number;
+  createdAt: string;
+  recentActivityCount: number;
+  starsCount: number;
+  forksCount: number;
+  contributorsCount: number;
+}
+
+async function fetchUserGitHubData(user: User): Promise<UserData> {
+  console.log('fetchUserGitHubData', user)
+  // const userResponse = await axios.get(`https://api.github.com/users/${username}`);
+  const gitHubUserAuth = await getGitHubUserAuth(user);
+  const userResponse = await gitHubUserAuth.request('GET /users/{username}', {
+    username: user.username
+  });
+  console.log('userResponse', userResponse)
+
+  const userData = userResponse.data;
+  console.log('userData.repos_url', userData.repos_url)
+  const reposResponse = await gitHubUserAuth.request('GET /users/{username}/repos', {
+    username: user.username
+  });
+  const reposData = reposResponse.data;
+
+  let starsCount = 0;
+  let forksCount = 0;
+  let contributorsCount = 0;
+  if(reposData){
+    for (const repo of reposData) {
+      // console.log("repo++", repo)
+        if(repo && repo.stargazers_count && repo.forks_count && repo.contributors_url){
+          starsCount += repo.stargazers_count;
+          forksCount += repo.forks_count;
+          // console.log("++", repo.contributors_url)
+          // const contributorsResponse = await axios.get(repo.contributors_url);
+          const contributorsResponse = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/contributors', {
+            owner: user.username,
+            repo: repo.name
+          });
+          
+          contributorsCount += contributorsResponse.data.length;
+        }
+    }
+
+    console.log('userData.events_url', userData.events_url)
+    const eventsResponse = await gitHubUserAuth.request('GET /users/{username}/events', {
+      username: user.username
+    });
+    const recentActivityCount = eventsResponse.data.length;
+
+    return {
+        followers: userData.followers,
+        publicRepos: userData.public_repos,
+        createdAt: userData.created_at,
+        recentActivityCount,
+        starsCount,
+        forksCount,
+        contributorsCount
+    };
+  }else{
+    return {
+      followers: 0,
+      publicRepos: 0,
+      createdAt: new Date().toISOString(),
+      recentActivityCount: 0,
+      starsCount: 0,
+      forksCount: 0,
+      contributorsCount: 0
+    };
+  
+  }
+
+}
+
+function calculateTrustworthinessRating(userData: UserData): number {
+  const { followers, publicRepos, createdAt, recentActivityCount, starsCount, forksCount, contributorsCount } = userData;
+
+  // Normalize the values
+  const followerScore = Math.min(followers / 1000, 1) * 25;
+  const repoScore = Math.min(publicRepos / 50, 1) * 10;
+  const ageInYears = (new Date().getTime() - new Date(createdAt).getTime()) / (1000 * 3600 * 24 * 365);
+  const ageScore = Math.min(ageInYears / 5, 1) * 15;
+  const activityScore = Math.min(recentActivityCount / 100, 1) * 10;
+  const starsScore = Math.min(starsCount / 1000, 1) * 20;
+  const forksScore = Math.min(forksCount / 500, 1) * 10;
+  const contributorsScore = Math.min(contributorsCount / 100, 1) * 10;
+
+  const totalScore = followerScore + repoScore + ageScore + activityScore + starsScore + forksScore + contributorsScore;
+  
+  return Math.min(Math.round(totalScore), 100);
+}
+
+export async function getTrustworthinessRating(user: User): Promise<number> {
+  const userData = await fetchUserGitHubData(user);
+  return calculateTrustworthinessRating(userData);
 }

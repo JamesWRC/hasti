@@ -77,6 +77,8 @@ export interface ChangeProjectOwnershipResponse {
 export interface RefreshContentResponse {
     success: boolean;
     message: string;
+    prevSHA: string;
+    newSHA: string;
 }
 
 export interface GetContentResponse {

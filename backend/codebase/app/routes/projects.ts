@@ -11,13 +11,13 @@ import { AddProjectResponse, ChangeProjectOwnershipResponse, DeleteProjectRespon
 import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
 import { Project, getAllProjectTypes, ProjectWithUser, HAInstallType } from '@/backend/interfaces/project';
 import AWS from 'aws-sdk';
-import isValidProjectName, { updateContent, deleteProject, getGitHubRepoData, handleInvalidFiles, handleProjectImages, readFileIfExists, stringToBase64 } from '@/backend/helpers/project';
+import isValidProjectName, { updateContent, deleteProject, getGitHubRepoData, handleInvalidFiles, handleProjectImages, readFileIfExists, stringToBase64, rankRepositories } from '@/backend/helpers/project';
 import tsClient from '@/backend/clients/typesense';
 import type { SearchResponse } from '@/backend/interfaces/search';
 import { isAuthenticated } from '@/backend/helpers/auth';
 import { OctokitResponse } from '@octokit/types';
 import { deleteRepo } from '@/backend/helpers/repo';
-import { createTempUser } from '@/backend/helpers/user';
+import { createTempUser, getTrustworthinessRating } from '@/backend/helpers/user';
 import { GHAppSenderWHSender, RepositoryData } from '@/backend/interfaces/repo';
 import addOrUpdateRepo from '@/backend/helpers/repo';
 
@@ -367,6 +367,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
 
                         // Handle invalid form field types & missing fields
                         const addMethod: string | null = fields.addMethod ? fields.addMethod[0] : null;
+                        const contentFile:string = fields.usinghastiMd && fields.usinghastiMd[0] === 'true' ? 'HASTI' : 'README';
                         const badFormResponse: AddProjectResponse = {
                             success: false,
                             message: 'Invalid form field types.',
@@ -419,6 +420,9 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                     })
                                     if (!userExists) {
                                         projectOwnerUser = await createTempUser(repoOwnerGitHubID, newUserGitHubNodeID, newUserUsername, newUserImage, user, repoName)
+                                    }else{
+                                        // Set the project owner user to the existing user
+                                        projectOwnerUser = userExists
                                     }
                                 }
 
@@ -693,7 +697,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                             }
 
                             // Update content and images
-                            const updateResponse = await updateContent(repositoryID, createdProject.id, user.id)
+                            const updateResponse = await updateContent(repositoryID, createdProject.id, user.id, contentFile)
 
                             if (!updateResponse.success) {
                                 const response: AddProjectResponse = {
@@ -816,7 +820,10 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
                             const description: string = fields.description[0];
                             const haInstallType: string = fields.haInstallType[0];
                             const tags: string = fields.tags[0];
+                            const contentFile:string = fields.usinghastiMd && fields.usinghastiMd[0] === 'true' ? 'HASTI' : 'README';
 
+                            console.log('fields', fields)
+                            console.log('contentFile', contentFile)
                             let repo: Repo | null = await prisma.repo.findFirst({
                                 where: {
                                     id: repositoryID
@@ -919,7 +926,7 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
                                     })
 
                                     // Update content and images
-                                    const updateResponse = await updateContent(repositoryID, project.id, user.id)
+                                    const updateResponse = await updateContent(repositoryID, project.id, user.id, contentFile)
 
                                     if (!updateResponse.success) {
                                         const response: AddProjectResponse = {
@@ -1003,6 +1010,9 @@ projectsRouter.delete<Record<string, string>, DeleteProjectResponse | BadRequest
                         { userID: user.id },
                         { id: req.params.projectID },
                     ]
+                },
+                include: {
+                    repo: true,
                 }
             })
 
@@ -1012,7 +1022,27 @@ projectsRouter.delete<Record<string, string>, DeleteProjectResponse | BadRequest
                         id: userProject.id
                     }
                 })
+                // If the project is not claimed, delete the repo
+                if(!userProject.claimed && user.githubID !== userProject.repo.ownerGithubID){
+                    await prisma.repo.delete({
+                        where: {
+                            id: userProject.repoID
+                        }
+                    })
+                }
 
+
+                // Notify the owner of the repo that a project has been deleted
+                await prisma.notification.create({
+                    data: {
+                        type: NotificationType.SUCCESS,
+                        title: userProject.title,
+                        message: `The project: '${userProject.title}' has been deleted by user: '${user.username}'.`,
+                        about: NotificationAbout.PROJECT,
+                        read: false,
+                        userID: userProject.userID,
+                    }
+                });
                 return res.status(200).json({ success: true, projectID: userProject.id});
             }else{
                 return res.status(404).json({ success: false, message: 'Project not found.' });
@@ -1129,7 +1159,9 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
     async (req, res) => {
         try {
             console.log('req:', req.params.projectID)
+            console.log('file:', req.query.updateContentFile)
             const projectID: string = req.params.projectID
+            const updateContentFile: string = req.query.updateContentFile as string
             const user: User | undefined = req.user;
             if (!user) {
                 return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
@@ -1140,14 +1172,31 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
                     id: projectID
                 },
                 include: {
-                    user: true
+                    user: true,                    
                 }
             })
 
 
             if(project){
-                await updateContent(project.repoID, project.id, project.user.id)
-                return res.status(200).json({ success: true, message: 'Readme updated.'});
+                let contentFile = 'README'
+                if(updateContentFile === 'HASTI'){
+                    contentFile = 'HASTI'
+                }
+
+                // Update the project config to use HASTI MD if the user has requested to update the content from HASTI MD/
+                if(!project.usingHastiMD && contentFile === 'HASTI'){
+                    await prisma.project.update({
+                        where: {
+                            id: project.id
+                        },
+                        data: {
+                            usingHastiMD: true
+                        }
+                    })
+                }
+
+                const updatedData:RefreshContentResponse = await updateContent(project.repoID, project.id, project.user.id, contentFile)
+                return res.status(200).json(updatedData);
 
             }
 
@@ -1185,11 +1234,29 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
                         contentSHA: true,
                         id: true,
                         repoID: true,
-                        userID: true
+                        userID: true,
+                        usingHastiMD: true,
+                        user: true,
+                        repo: {
+                            select:{
+                                name: true,
+                            }
+                        }
                     }
                 })
-    
-    
+
+                /// Get the trustworthiness rating of the developer
+                if(project?.user){
+                    console.log('devTrust-------:')
+
+                    // const devTrust = await getTrustworthinessRating(project.user)
+                    // console.log('devTrust:', devTrust)
+                    const projectRating = await rankRepositories(project.user, project.repo.name)
+                    console.log('projectRating:', projectRating)
+
+                }
+
+
                 if(project){
                     const contentSHA:string = project.contentSHA
                     const filePath:string = './temp/projects/' + projectID + '/' + contentSHA + '/content.md'
@@ -1201,7 +1268,11 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
                     }else{
                         // If the content doesn't exist, update it and return base64 encoded content
                         console.log(project.repoID, project.id, project.userID)
-                        await updateContent(project.repoID, project.id, project.userID)
+                        let contentFile = 'README'
+                        if(project.usingHastiMD){
+                            contentFile = 'HASTI'
+                        }
+                        await updateContent(project.repoID, project.id, project.userID, contentFile)
                         const content = await readFileIfExists(filePath)
                         console.log('content:', content)
                         if(content){
@@ -1218,7 +1289,7 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
     
             } catch (error) {
                 logger.warn(`Request threw an exception: ${error}`, {
-                    label: 'DELETE: /projects/:projectID: ',
+                    label: 'GET: /:projectID/content/:contentSHA ',
                 });
                 return res.status(500).json({ success: false, message: 'Error getting token' });
             }

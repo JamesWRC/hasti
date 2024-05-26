@@ -288,7 +288,7 @@ export default function Page({ params }: { params: { developer:string, name: str
                     >
                       {stat.change}
                     </dd>
-                    {reqStatus === 'success' ? 
+                    {reqStatus === 'success' && projects && projects[0]? 
                     <dd className="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 text-center">
                        {stat.value}
                     </dd> : <DynamicSkeletonText max={1} min={1}/> }

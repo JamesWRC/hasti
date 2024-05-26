@@ -1,11 +1,12 @@
-import { Dispatch, Fragment, SetStateAction, useEffect, useRef, useState } from 'react'
+import { Dispatch, Fragment, SetStateAction, useEffect, useRef, useState, ReactElement } from 'react'
 import { Dialog, Transition } from '@headlessui/react'
-import { CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
+import { ArrowPathIcon, CheckIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline'
 import { QuestionIcon, XIcon } from '@primer/octicons-react'
 import { TextInput } from '@mantine/core';
+import React from 'react';
 
 export default function DialogPanel({setOpen, open, stateType, title, message, confirmBtnText, cancelBtnText, onConfirm, onCancel, customBtnText, customAction, confirmActionText }
-    : {setOpen:Dispatch<SetStateAction<boolean>>, open: boolean, stateType: string, title: string, message: string, confirmBtnText: string, cancelBtnText: string, onConfirm: any, onCancel: any, customBtnText: string, customAction: any, confirmActionText?:string }) {
+    : {setOpen:Dispatch<SetStateAction<boolean>>, open: boolean, stateType: string, title: string, message: string|ReactElement, confirmBtnText: string, cancelBtnText: string, onConfirm: any, onCancel: any, customBtnText: string, customAction: any, confirmActionText?:string }) {
 
     const cancelButtonRef = useRef(null)
     const [confirmDisabled, setConfirmDisabled] = useState(false)
@@ -52,6 +53,10 @@ export default function DialogPanel({setOpen, open, stateType, title, message, c
         statusIcon = <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                         <CheckIcon className="h-6 w-6 text-green-600" aria-hidden="true" />
                     </div>
+    } else if(stateType === 'pending') {
+        statusIcon = <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
+                        <ArrowPathIcon className="h-6 w-6 text-gray-600 animate-spin animate-duration-1000" aria-hidden="true" />
+                    </div>
     }else if(stateType === 'warn') {
         statusIcon = <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
                         <ExclamationTriangleIcon className="h-6 w-6 text-yellow-600" aria-hidden="true" />
@@ -65,6 +70,16 @@ export default function DialogPanel({setOpen, open, stateType, title, message, c
                         <QuestionIcon className="h-6 w-6 text-blue-600" aria-hidden="true" />
                     </div>
     }
+
+    let messageContent = null
+    console.log("typeof message")
+    console.log(typeof message)
+    if(typeof message === 'string') {
+        messageContent = <p className="">{message}</p>
+    } else if(typeof message === 'object') {
+        messageContent = message
+    }
+
     return (
         <Transition.Root show={open} as={Fragment}>
             <Dialog className="relative z-[1000]" initialFocus={cancelButtonRef} onClose={setOpen}>
@@ -100,7 +115,7 @@ export default function DialogPanel({setOpen, open, stateType, title, message, c
                                         </Dialog.Title>
                                         <div className="mt-2">
                                             <p className="text-sm text-gray-500">
-                                                {message}
+                                                <React.Fragment>{messageContent}</React.Fragment>
                                             </p>
                                         </div>
                                     </div>

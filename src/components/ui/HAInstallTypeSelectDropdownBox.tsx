@@ -5,6 +5,7 @@ import { Combobox, ComboboxData, ComboboxItem, ComboboxItemGroup, Input, InputBa
 import { HAInstallType, getAllHaInstallTypes, getHaInstallType } from '@/backend/interfaces/project'
 import { GetInputProps } from '@mantine/form/lib/types';
 import { useEffect, useState } from 'react'
+import { InstallTypeHelp } from './HelpDialogs';
 
 
 const allHAInstallTypes = getAllHaInstallTypes()
@@ -103,8 +104,9 @@ export function HAInstallTypeSelectDropdownBox({ haInstallTypes, setHaInstallTyp
 
 
     return (
+        <>
+        <InstallTypeHelp />
         <MultiSelect
-            label="Install Type"
             data={groupedData()}
             defaultValue={['Any']}
             onChange={(val) => { handleChange(val) }}
@@ -116,5 +118,7 @@ export function HAInstallTypeSelectDropdownBox({ haInstallTypes, setHaInstallTyp
             className='text-black'
 
         />
+        </>
+        
     );
 }

@@ -37,9 +37,8 @@ export function ProjectTypeSelectDropdownBox({projectType, setProjectType, input
             disabled={disabled}
             {...inputProps('projectType')}
         >
-                            <Combobox.Target>
+            <Combobox.Target>
                 <InputBase
-                    label="Project Type" 
                     component="button"
                     type="button"
                     pointer

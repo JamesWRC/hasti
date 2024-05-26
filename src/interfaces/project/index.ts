@@ -20,9 +20,14 @@ export interface LoadProjects {
 
 
 export function getProjectLink(project: ProjectWithUser) {
+  if(project === null) return '/404';
+  
+  let typePrefix = '';
   if (project?.projectType === ProjectType.THEME) {
-    return 'themes/' + project.title;
+    typePrefix = '/themes'
   } else if (project?.projectType === ProjectType.INTEGRATION) {
-    return 'integrations/' + project.title;
+    typePrefix = '/integrations'
   }
+
+  return `${typePrefix}/${project.user.username}/${project.title}`;
 }
