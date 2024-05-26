@@ -72,7 +72,7 @@ module.exports = {
     '@tailwindcss/aspect-ratio',
     require('@tailwindcss/typography'),
     '@tailwindcss/line-clamp',
-    require('tailwindcss-animated')
+    require('tailwindcss-animated'),
   ],
 }
   

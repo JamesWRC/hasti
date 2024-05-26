@@ -209,9 +209,6 @@ export async function updateRepoData(repo: Repo, user: User){
         id: repo.id
       },
       data: {
-        gitHubStars: updatedRepoData.data.stargazers_count,
-        gitHubWatchers: updatedRepoData.data.watchers_count,
-        openIssues: updatedRepoData.data.open_issues_count,
         repoCreatedAt: updatedRepoData.data.created_at,
         repoPushedAt: updatedRepoData.data.updated_at,
         

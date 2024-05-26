@@ -18,6 +18,8 @@ import { JSDOM } from 'jsdom';
 import cherrio from 'cheerio';
 import fs from 'fs';
 import { promises as fs_promise } from 'fs';
+import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types';
+import { getRepoCommits, getRepoContributors, getRepoDetails, getRepoIssues, getRepoPullRequests, getRepoReleases } from '@/backend/helpers/github';
 
 // Init s3
 const s3 = new AWS.S3({
@@ -618,7 +620,6 @@ export async function writeFileAsync(filePath: string, data: string): Promise<bo
     try {
 
         const dir = require('path').dirname(filePath);
-
         await fs_promise.mkdir(dir, { recursive: true });
 
         // Write data to file asynchronously
@@ -642,60 +643,6 @@ export function stringToBase64(inputString: string): string {
 }
 
 
-const getRepoDetails = async (gitHubUserAuth: Octokit, owner: string, repo: string) => {
-    const { data } = await gitHubUserAuth.request('GET /repos/{owner}/{repo}', {
-        owner,
-        repo,
-    });
-    return data;
-};
-
-const getRepoContributors = async (gitHubUserAuth: Octokit, owner: string, repo: string) => {
-    const { data } = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/contributors', {
-        owner,
-        repo,
-    });
-    return data;
-};
-
-const getRepoCommits = async (gitHubUserAuth: Octokit, owner: string, repo: string) => {
-
-    const { data } = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/commits', {
-        owner,
-        repo,
-    });
-    return data;
-};
-
-const getRepoIssues = async (gitHubUserAuth: Octokit, owner: string, repo: string) => {
-    console.log("owner", owner)
-    console.log("repo", repo)
-    const { data } = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/issues', {
-        owner,
-        repo,
-        state: 'all',
-    });
-    console.log('issues', data)
-
-    return data;
-};
-
-const getRepoPullRequests = async (gitHubUserAuth: Octokit, owner: string, repo: string) => {
-    const { data } = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/pulls', {
-        owner,
-        repo,
-        state: 'all',
-    });
-    return data;
-};
-
-const getRepoReleases = async (gitHubUserAuth: Octokit, owner: string, repo: string) => {
-    const { data } = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/releases', {
-        owner,
-        repo,
-    });
-    return data;
-};
 
 const calculateAvgTimeToClosePRs = (pullRequests: any[]): number => {
     const closedPRs = pullRequests.filter(pr => pr.state === 'closed');
@@ -710,6 +657,22 @@ const calculateAvgTimeToClosePRs = (pullRequests: any[]): number => {
     const avgTimeDiff = timeDiffs.reduce((acc, timeDiff) => acc + timeDiff, 0) / timeDiffs.length;
     return avgTimeDiff / (1000 * 60 * 60 * 24); // Convert from milliseconds to days
 };
+
+const calculateAverageTimeToCloseIssues = (issues: any[]): number => {
+    const closedIssues = issues.filter(issue => issue.closed_at !== null);
+    if (closedIssues.length === 0) {
+        return 0;
+    }
+
+    const totalHours = closedIssues.reduce((sum, issue) => {
+        const createdDate = new Date(issue.created_at);
+        const closedDate = new Date(issue.closed_at as string);
+        return sum + ((closedDate.getTime() - createdDate.getTime()) / (1000 * 60 * 60));
+    }, 0);
+
+    return totalHours / closedIssues.length;
+};
+
 
 const calculateScore = (
     stars: number,
@@ -818,6 +781,7 @@ const calculatePopularityScore = (stars:number, forks:number, watchers:number, c
 };
 
 const calculateActivityScore = (commits:number, releases:number, closedIssuesRatio:number, pullRequests:number, lastCommitDate:Date, avgTimeToClosePRs:number) => {
+    
     const weights = {
         commits: 1,
         releases: 1,
@@ -829,17 +793,20 @@ const calculateActivityScore = (commits:number, releases:number, closedIssuesRat
 
 
     const now = new Date();
-    const sixMonthsAgo = new Date();
-    sixMonthsAgo.setMonth(now.getMonth() - 6);
-    const isRecentlyUpdated = lastCommitDate >= sixMonthsAgo;
+    const last2Years = new Date();
+    last2Years.setMonth(now.getMonth() - 24);
+    const isRecentlyUpdated = lastCommitDate >= last2Years;
 
+    // Activity score multiplier. Recent activity based off recent commits should be weighted more
+    const recentActivityMultiplier = commits > 0 ? 1 + Math.min(1, (now.getTime() - lastCommitDate.getTime()) / (1000 * 60 * 60 * 24 * 365))/2 : 0;
+    console.log("recentActivityMultiplier", recentActivityMultiplier)
     const score =
-        logTransform(commits) * weights.commits +
+        (logTransform(commits) * weights.commits +
         logTransform(releases) * weights.releases +
         closedIssuesRatio * weights.closedIssuesRatio + // This remains linear because it's a ratio
         logTransform(pullRequests) * weights.pullRequests +
         (isRecentlyUpdated ? weights.lastCommitDate : 0) +
-        logTransform(avgTimeToClosePRs) * weights.avgTimeToClosePRs;
+        logTransform(avgTimeToClosePRs) * weights.avgTimeToClosePRs) * recentActivityMultiplier;
 
     const maxScore =
         logTransform(100) * weights.commits +
@@ -849,59 +816,119 @@ const calculateActivityScore = (commits:number, releases:number, closedIssuesRat
         weights.lastCommitDate + // Last commit date weight (if recently updated)
         logTransform(100); // Average time to close PRs weight
 
-    return (score / maxScore) * 100;
+    return (score / maxScore) * 100 ;
 };
 
-export async function rankRepositories(user: User, repoName: string): Promise<number> {
+export async function updateRepoAnalytics(user: User, repoName: string, projectID: string, repoID: string): Promise<number|null> {
 
     const gitHubUserAuth = await getGitHubUserAuth(user);
     const owner: string = user.username;
 
-    const details = await getRepoDetails(gitHubUserAuth, owner, repoName);
-    const contributors = await getRepoContributors(gitHubUserAuth, owner, repoName);
-    const commits = await getRepoCommits(gitHubUserAuth, owner, repoName);
-    const issues = await getRepoIssues(gitHubUserAuth, owner, repoName);
-    const pullRequests = await getRepoPullRequests(gitHubUserAuth, owner, repoName);
-    const releases = await getRepoReleases(gitHubUserAuth, owner, repoName);
+    const details = getRepoDetails(gitHubUserAuth, owner, repoName);
+    const contributors = getRepoContributors(gitHubUserAuth, owner, repoName);
+    const commits = getRepoCommits(gitHubUserAuth, owner, repoName);
+    const issues = getRepoIssues(gitHubUserAuth, owner, repoName);
+    const pullRequests = getRepoPullRequests(gitHubUserAuth, owner, repoName);
+    const releases = getRepoReleases(gitHubUserAuth, owner, repoName);
 
-    const closedIssues:number = issues.filter(issue => issue.state === 'closed').length;
-    const closedIssuesRatio = closedIssues / issues.length;
+    await Promise.all([details, contributors, commits, issues, pullRequests, releases]).then(async (values) => {
+        const details = values[0];
+        const contributors = values[1];
+        const commits = values[2];
+        const issues = values[3];
+        const pullRequests = values[4];
+        const releases = values[5];
 
-    const avgTimeToClosePRs = calculateAvgTimeToClosePRs(pullRequests);
+        let closedIssues:number = 0 
+        let openIssues:number = 0
+        for(const issue of issues){
+            if(issue.state === 'closed'){
+                closedIssues++
+            }else{
+                openIssues++
+            }
+        }
 
+        const closedIssuesRatio = closedIssues / issues.length;
 
-    const score = calculateScore(
-        details.stargazers_count,
-        details.forks_count,
-        details.subscribers_count,
-        contributors.length,
-        commits.length,
-        releases.length,
-        !!details.license,
-        issues.length > 0 ? closedIssuesRatio : 1,
-        pullRequests.length,
-        commits?.[0]?.commit?.author?.date ? new Date(commits[0].commit.author.date) : new Date(),
-        avgTimeToClosePRs
-    );
+        const avgTimeToClosePRs = calculateAvgTimeToClosePRs(pullRequests);
+        const avgTimeToCloseIssues = calculateAverageTimeToCloseIssues(issues);
 
-    const popularityScore = calculatePopularityScore(
-        details.stargazers_count,
-        details.forks_count,
-        details.subscribers_count,
-        contributors.length
-    );
+        const score = calculateScore(
+            details.stargazers_count,
+            details.forks_count,
+            details.subscribers_count,
+            contributors.length,
+            commits.length,
+            releases.length,
+            !!details.license,
+            issues.length > 0 ? closedIssuesRatio : 1,
+            pullRequests.length,
+            commits?.[0]?.commit?.author?.date ? new Date(commits[0].commit.author.date) : new Date(),
+            avgTimeToClosePRs
+        );
 
-    const activityScore = calculateActivityScore(
-        commits.length,
-        releases.length,
-        closedIssuesRatio,
-        pullRequests.length,
-        commits?.[0]?.commit?.author?.date ? new Date(commits[0].commit.author.date) : new Date(),
-        avgTimeToClosePRs
-    );
+        let data = {
+                repo: {
+                    connect: {
+                        id: repoID
+                    }
+                },
+                stars: details.stargazers_count,
+                forks: details.forks_count,
+                watchers: details.subscribers_count,
+                contributors: contributors.length,
+                commits: commits.length,
+                releases: releases.length,
+                license: details.license ? details.license.name : "",
+                openIssues: openIssues,
+                closedIssues: closedIssues,
+                pullRequests: pullRequests.length,
+            }
 
-    console.log("score", score)
-    console.log("popularityScore", popularityScore)
-    console.log("activityScore", activityScore)
-    return score;
+        await prisma.repoAnalytics.create({
+            data: {
+                ...data,
+                lastCommit: commits?.[0]?.commit?.author?.date ? new Date(commits[0].commit.author.date).toISOString() : undefined
+            }
+        })
+
+        const popularityScore = calculatePopularityScore(
+            details.stargazers_count,
+            details.forks_count,
+            details.subscribers_count,
+            contributors.length
+        );
+
+        const activityScore = calculateActivityScore(
+            commits.length,
+            releases.length,
+            issues.length > 0 ? closedIssuesRatio : 1,
+            pullRequests.length,
+            commits?.[0]?.commit?.author?.date ? new Date(commits[0].commit.author.date) : new Date(),
+            avgTimeToClosePRs
+        );
+
+        await prisma.project.update({
+            where: {
+                id: projectID
+            },
+            data: {
+                popularityRating: popularityScore,
+                activityRating: activityScore,
+                overallRating: Math.ceil(popularityScore + activityScore / 2)
+            }
+        })
+        
+        console.log("score", score)
+        console.log("popularityScore", popularityScore)
+        console.log("activityScore", activityScore)
+        console.log("avgTimeToClosePRs", avgTimeToClosePRs)
+        console.log("avgTimeToCloseIssues", avgTimeToCloseIssues, openIssues, closedIssues)
+        return score;
+    }).catch((error) => {
+        console.error("Error fetching repo data:", error);
+        return null
+    })
+    return null
 }

@@ -3,6 +3,8 @@ import { getGitHubAppAuth } from "../auth/github";
 import convoy from "../../clients/convoy";
 import { GitHubRepoRequest } from "../../interfaces/repo";
 import prisma from "../../clients/prisma/client";
+import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types';
+import { Octokit } from "octokit/dist-types/octokit";
 
 
 async function getFailedConvoyWebhooks(failedWebHookEventIDs: string[], next_page_cursor?: string): Promise<string[]> {
@@ -115,3 +117,76 @@ export async function redeliverFailedWebhookInvocations() {
         }
     })
 } 
+
+// Type definitions for various GitHub entities
+type RepositoryData = RestEndpointMethodTypes['repos']['get']['response']['data'];
+type ContributorsData = RestEndpointMethodTypes['repos']['listContributors']['response']['data'];
+type CommitsData = RestEndpointMethodTypes['repos']['listCommits']['response']['data'];
+type IssuesData = RestEndpointMethodTypes['issues']['listForRepo']['response']['data'];
+type PullRequestsData = RestEndpointMethodTypes['pulls']['list']['response']['data'];
+type ReleasesData = RestEndpointMethodTypes['repos']['listReleases']['response']['data'];
+
+
+const getRepoDetails = async (gitHubUserAuth: Octokit, owner: string, repo: string): Promise<RepositoryData> => {
+    const { data } = await gitHubUserAuth.request('GET /repos/{owner}/{repo}', {
+        owner,
+        repo,
+    });
+    return data;
+};
+
+const getRepoContributors = async (gitHubUserAuth: Octokit, owner: string, repo: string): Promise<ContributorsData> => {
+    const { data } = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/contributors', {
+        owner,
+        repo,
+    });
+    return data;
+};
+
+const getRepoCommits = async (gitHubUserAuth: Octokit, owner: string, repo: string): Promise<CommitsData> => {
+
+    const { data } = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/commits', {
+        owner,
+        repo,
+    });
+    return data;
+};
+
+const getRepoIssues = async (gitHubUserAuth: Octokit, owner: string, repo: string): Promise<IssuesData> => {
+    console.log("owner", owner)
+    console.log("repo", repo)
+    const data = await gitHubUserAuth.paginate('GET /repos/{owner}/{repo}/issues', {
+        owner,
+        repo,
+        state: 'all',
+        per_page: 100
+    })
+
+    return data;
+};
+
+const getRepoPullRequests = async (gitHubUserAuth: Octokit, owner: string, repo: string): Promise<PullRequestsData> => {
+    const data = await gitHubUserAuth.paginate('GET /repos/{owner}/{repo}/pulls', {
+        owner,
+        repo,
+        state: 'all',
+    });
+    return data;
+};
+
+const getRepoReleases = async (gitHubUserAuth: Octokit, owner: string, repo: string): Promise<ReleasesData> => {
+    const { data } = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/releases', {
+        owner,
+        repo,
+    });
+    return data;
+};
+
+export {
+    getRepoDetails,
+    getRepoContributors,
+    getRepoCommits,
+    getRepoIssues,
+    getRepoPullRequests,
+    getRepoReleases
+};

@@ -36,7 +36,12 @@ async function getProjectAllInfo() {
           ghuToken: true
         },
       }, 
-      tags: true, repo: true } })
+      tags: true, 
+      repo: {
+        include: { repoAnalytics: { take: 1 } }
+        } 
+      } 
+    })
 }
 
 // Extract `ProjectWithUser` type with

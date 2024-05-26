@@ -11,7 +11,7 @@ import { AddProjectResponse, ChangeProjectOwnershipResponse, DeleteProjectRespon
 import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
 import { Project, getAllProjectTypes, ProjectWithUser, HAInstallType } from '@/backend/interfaces/project';
 import AWS from 'aws-sdk';
-import isValidProjectName, { updateContent, deleteProject, getGitHubRepoData, handleInvalidFiles, handleProjectImages, readFileIfExists, stringToBase64, rankRepositories } from '@/backend/helpers/project';
+import isValidProjectName, { updateContent, deleteProject, getGitHubRepoData, handleInvalidFiles, handleProjectImages, readFileIfExists, stringToBase64, updateRepoAnalytics } from '@/backend/helpers/project';
 import tsClient from '@/backend/clients/typesense';
 import type { SearchResponse } from '@/backend/interfaces/search';
 import { isAuthenticated } from '@/backend/helpers/auth';
@@ -237,7 +237,16 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
             }
 
             if (queryParams.allContent) {
-                include.repo = true
+                include.repo = {
+                    include: {
+                        repoAnalytics:{
+                            take: 1,
+                            orderBy: {
+                                createdAt: 'desc'
+                            }
+                        }
+                    },
+                }
                 include.tags = true
             }
 
@@ -526,20 +535,6 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                 const repoName: string = repoFullName[1]
 
                                 repoData = await getGitHubRepoData(user, repoOwner, repoName)
-
-                                // Update Repo with new data
-                                if (repoData) {
-                                    await prisma.repo.update({
-                                        where: {
-                                            id: repositoryID
-                                        },
-                                        data: {
-                                            gitHubNodeID: repoData.data.node_id,
-                                            gitHubStars: repoData.data.stargazers_count,
-                                            gitHubWatchers: repoData.data.watchers_count,
-                                        }
-                                    })
-                                }
 
                             } else {
                                 const response: AddProjectResponse = {
@@ -1251,8 +1246,8 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
 
                     // const devTrust = await getTrustworthinessRating(project.user)
                     // console.log('devTrust:', devTrust)
-                    const projectRating = await rankRepositories(project.user, project.repo.name)
-                    console.log('projectRating:', projectRating)
+                    // const projectRating = await updateRepoAnalytics(project.user, project.repo.name, project.id, project.repoID)
+                    // console.log('projectRating:', projectRating)
 
                 }
 

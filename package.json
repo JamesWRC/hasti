@@ -7,13 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "vercel-install": "yarn install && cd backend/codebase/hasti_api/ && yarn install --production --prefer-offline && yarn prisma generate --schema=clients/prisma/schema.prisma"
+    "vercel-install": "yarn install && cd backend/codebase/ && yarn install --production --prefer-offline && yarn prisma generate --schema=clients/prisma/schema.prisma"
   },
   "dependencies": {
     "@algolia/autocomplete-core": "^1.12.1",
     "@babel/runtime": "^7.24.0",
     "@dicebear/collection": "^8.0.0",
     "@dicebear/core": "^8.0.0",
+    "@emotion/react": "^11.11.4",
+    "@emotion/styled": "^11.11.5",
     "@headlessui/react": "^1.7.15",
     "@heroicons/react": "^2.0.18",
     "@mantine/carousel": "^7.1.7",
@@ -30,6 +32,8 @@
     "@mantine/tiptap": "^7.1.7",
     "@markdoc/markdoc": "^0.3.5",
     "@markdoc/next.js": "^0.3.6",
+    "@mui/material": "^5.15.18",
+    "@mui/styled-engine-sc": "^6.0.0-alpha.18",
     "@next/font": "13.4.10",
     "@primer/octicons-react": "^19.9.0",
     "@sindresorhus/slugify": "^2.2.1",
@@ -80,6 +84,7 @@
     "react-router-dom": "^6.14.2",
     "reactflow": "^11.10.3",
     "simple-functional-loader": "^1.2.1",
+    "styled-components": "^6.1.11",
     "tailwindcss": "^3.3.3",
     "tailwindcss-animated": "^1.0.1",
     "types": "^0.1.1",
@@ -93,6 +98,10 @@
   "devDependencies": {
     "postcss-preset-mantine": "^1.9.0",
     "postcss-simple-vars": "^7.0.1"
+  },
+  "peerDependencies": {
+    "react": "^17.0.0 || ^18.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0"
   },
   "browser": {
     "fs": false,

@@ -1,6 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react';
-import { Box, Button, Group, Portal, rem, Switch, Title, Tooltip } from '@mantine/core';
+import { useState, useEffect, useRef } from 'react';
 
 import { Prose } from '@/frontend/components/markdoc/Prose';
 
@@ -24,11 +23,15 @@ import { LoadProjects } from '@/frontend/interfaces/project';
 import { DynamicSkeletonImage, DynamicSkeletonText, DynamicSkeletonTitle } from '@/frontend/components/ui/skeleton';
 import { IconArrowRight, IconCheck, IconSettings, IconX } from '@tabler/icons-react';
 import { base64ToString } from '@/frontend/helpers/project';
+import { RepoAnalytics } from '@/backend/interfaces/repoAnalytics';
+
+
 // import projectCSS
 import '@/frontend/app/page.module.css';
 import axios from 'axios';
-
-export default function Page({ params }: { params: { developer:string, name: string } }) {
+import Box from '@mui/material/Box';
+import React from 'react';
+export default function Page({ params }: { params: { developer: string, name: string } }) {
   const { data: session, status } = useSession()
 
   const [scrollPosition, setScrollPosition] = useState(0);
@@ -39,13 +42,15 @@ export default function Page({ params }: { params: { developer:string, name: str
   // Used to handle the switch for the published state. Project owner Only
   const [projectPublished, setProjectPublished] = useState(false);
   const [projectPublishedDebounce, setProjectPublishedDebounce] = useDebouncedState(false, 1000);
-  const [content, setContent] = useState<GetContentResponse>({ success: false, content: '',  sha: ''});
+  const [content, setContent] = useState<GetContentResponse>({ success: false, content: '', sha: '' });
   const [projectStats, setProjectStats] = useState([
     { name: 'Type', value: 'Theme', change: '', changeType: 'positive' },
     { name: 'Compatibility', value: '', change: '', changeType: 'positive' },
-    { name: 'Stars', value: '3.2', change: '', changeType: 'positive' },
-    { name: 'Activity', value: '$30,156.00', change: '', changeType: 'negative' },
+    { name: 'Stars', value: 0, change: '', changeType: 'positive' },
+    { name: 'Status', value: '', change: '', changeType: 'negative' },
   ]);
+
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   const fetchProjects: GetProjectsQueryParams = {
 
@@ -59,41 +64,42 @@ export default function Page({ params }: { params: { developer:string, name: str
 
   useEffect(() => {
 
-    setLoadedProject({ projects, reqStatus, setSearchProps: () => {} });
+    setLoadedProject({ projects, reqStatus, setSearchProps: () => { } });
 
     // Set project stats
     let newStats = [];
 
     if (projects && projects.length > 0) {
       const project = projects[0] as ProjectAllInfo;
-      if(project){
+      const repoAnalytics: RepoAnalytics|null = project?.repo?.repoAnalytics?.at(0) || null;
+      if (project) {
 
-        const worksWithOS:boolean = project.worksWithOS;
-        const worksWithContainer:boolean = project.worksWithContainer;
-        const worksWithCore:boolean = project.worksWithCore;
-        const worksWithSupervised:boolean = project.worksWithSupervised;
+        const worksWithOS: boolean = project.worksWithOS;
+        const worksWithContainer: boolean = project.worksWithContainer;
+        const worksWithCore: boolean = project.worksWithCore;
+        const worksWithSupervised: boolean = project.worksWithSupervised;
 
-        let worksWithCount:number = 0
-        let worksWith:string[] = []
+        let worksWithCount: number = 0
+        let worksWith: string[] = []
 
-        if(worksWithOS) {
+        if (worksWithOS) {
           worksWithCount++
           worksWith.push('OS')
         }
-        if(worksWithContainer) {
+        if (worksWithContainer) {
           worksWithCount++
           worksWith.push('Container')
         }
-        if(worksWithCore) {
+        if (worksWithCore) {
           worksWithCount++
           worksWith.push('Core')
         }
-        if(worksWithSupervised) {
+        if (worksWithSupervised) {
           worksWithCount++
           worksWith.push('Supervised')
         }
         // If all are selected, set to ANY
-        if(worksWithCount === getAllHaInstallTypes().length - 1){
+        if (worksWithCount === getAllHaInstallTypes().length - 1) {
           worksWithCount = 1
           worksWith = ['All']
         }
@@ -102,14 +108,45 @@ export default function Page({ params }: { params: { developer:string, name: str
 
         newStats.push({ name: 'Type', value: project.projectType, change: '', changeType: 'positive' })
 
-        if(worksWithCount === 1){
+        if (worksWithCount === 1) {
           newStats.push({ name: 'Compatibility', value: worksWithStr, change: '', changeType: 'positive' })
-        }else{
+        } else {
           newStats.push({ name: 'Compatibility', value: '', change: worksWithStr, changeType: 'positive' })
         }
+
         
-        newStats.push({ name: 'Stars', value: project.repo.gitHubStars.toString(), change: '', changeType: 'positive' })
-        newStats.push({ name: 'Activity', value: project.repo.gitHubStars.toString(), change: '', changeType: 'positive' })
+        const statuses:string[] = ['New', 'Active', 'Inactive', 'Beta', 'Deprecated', 'Archived', ]
+        // Determine if the project is active or not based on the last commit date
+        // If project created within the last 6 months, set to NEW
+        // If the last commit date is within the last 1 year, set to ACTIVE
+        // If the last commit date is over 1 year, set to INACTIVE
+        // If repo is archived, set to ARCHIVED
+        // TODO: Add beta and deprecated
+        let projStatus = 'Active'
+        let projStars = 0
+        if (repoAnalytics && repoAnalytics.lastCommit) {
+          const lastCommitDate = new Date(repoAnalytics.lastCommit)
+          const sixMonthsAgo = new Date()
+          sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+          const oneYearAgo = new Date()
+          oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
+
+          if (lastCommitDate < sixMonthsAgo) {
+            projStatus = 'New'
+          } else if (lastCommitDate < oneYearAgo) {
+            projStatus = 'Inactive'
+          }
+
+          if (project.repo.archived) {
+            projStatus = 'Archived'
+          }
+        }
+        if(repoAnalytics && repoAnalytics.stars){
+          projStars = repoAnalytics.stars
+        }
+        newStats.push({ name: 'Stars', value: projStars, change: '', changeType: 'positive' })
+
+        newStats.push({ name: 'Status', value: projStatus, change: '', changeType: 'positive' })
 
 
         setProjectStats(newStats)
@@ -125,22 +162,22 @@ export default function Page({ params }: { params: { developer:string, name: str
           timeoutErrorMessage: 'Request timed out. Please try again.',
         }).then((response) => {
           const data = base64ToString(response.data.content)
-          if(data){ 
-            setContent({success: true, content: data, sha: project.contentSHA})
-          }else{
-            setContent({success: false, content: 'Error getting content', sha: project.contentSHA})
+          if (data) {
+            setContent({ success: true, content: data, sha: project.contentSHA })
+          } else {
+            setContent({ success: false, content: 'Error getting content', sha: project.contentSHA })
           }
         }).catch((error) => {
           const data = base64ToString(error.data.content)
-          if(data){ 
-            setContent({success: false, content: data, sha: project.contentSHA})
-          }else{
-            setContent({success: false, content: 'Error getting content', sha: project.contentSHA})
+          if (data) {
+            setContent({ success: false, content: data, sha: project.contentSHA })
+          } else {
+            setContent({ success: false, content: 'Error getting content', sha: project.contentSHA })
           }
           console.error('Error fetching project content', error)
         })
       }
-      
+
     }
 
   }, [reqStatus])
@@ -162,15 +199,15 @@ export default function Page({ params }: { params: { developer:string, name: str
   }
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrollPosition(window.pageYOffset);
-    };
+      const handleScroll = () => {
+        setScrollPosition(window.pageYOffset);
+      };
 
-    window.addEventListener('scroll', handleScroll);
+      window.addEventListener('scroll', handleScroll);
 
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-    };
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+      };
   }, []);
 
 
@@ -240,46 +277,70 @@ export default function Page({ params }: { params: { developer:string, name: str
     )
   }
 
+
+    // useEffect(() => {
+    //   // Using setTimeout to ensure this runs in the client-side environment only
+    //   const timer = setTimeout(() => {
+    //     const halfwayPoint = document.documentElement.scrollHeight / 2;
+    //     window.scrollTo({
+    //       top: halfwayPoint,
+    //       behavior: 'smooth' // for smooth scrolling
+    //     });
+    //   }, 5000); // A slight delay to ensure all page content has loaded, especially in dynamic situations
+  
+    //   return () => clearTimeout(timer); // Clean up the timeout
+    // }, []);
+  
+
   return (
     // Using tailwindcss design a page that showcases a a developers application
     // This page will be used to display the application and its features
 
 
-    <>
+    <div >
 
 
       {/* // Banner if user doesnt upload a background image */}
       <div className="relative bg-white -mt-3 max-h-full">
         {/* <canvas id="myCanvas" className="absolute top-0 left-0 w-full h-28 lg:h-96 z-0 rounded-xl"></canvas> */}
         {/* <canvas id="myCanvas" className="absolute top-0 left-0 w-full h-28 z-0 rounded-xl"></canvas> */}
-        <ColorBackground projectID={"b"} />
-        <div className="relative z-10 rounded-b-2xl">
+        {reqStatus === 'success' && projects && projects.length > 0 && projects[0] && projects[0].backgroundImage ? <div>
+          <img src={`${process.env.USER_CONTENT_URL}/${projects[0].backgroundImage}`} className="w-full h-72 sm:h-[25rem] 5xl:h-[35rem] object-cover rounded-t-2xl" />
+        </div> : <><ColorBackground projectID={`${params.name}/${params.name} D`} /> 
+        <div className="relative z-10 rounded-b-2xl bg-red">
           <div className="sm:py-24 sm:px-6 lg:px-8 bg-opacity-30 backdrop-filter backdrop-blur-2xl h-40 w-full">
             {/* <div className=""> */}
 
           </div>
-        </div>
+        </div></>}
       </div>
       {/* // End Banner */}
 
       {/* // Start of the main content */}
       {/* <div className='xl:px-24 2xl:px-40 3xl:px-72'> */}
 
-      <div className='transition-all duration-700 mx-auto xl:max-w-5xl 2xl:max-w-6xl 4xl:max-w-8xl xl:-mt-24'>
+      <div className='transition-all duration-700 mx-auto max-w-5xl 2xl:max-w-6xl 4xl:max-w-8xl -mt-24 z-50'>
 
         {/* // Header of stats */}
         <div className="relative bg-white -mt-3 h-8 z-10 rounded-2xl">
-          <div className='bg-white rounded-2xl px-4 pt-6 md:px-28 md:pt-3 lg:px-40 lg:pt-4 mx-auto my-8'>
-            <div className='mt-1 text-4xl font-extrabold text-gray-900 sm:text-5xl lg:text-6xl'>
+          <div className='bg-white rounded-2xl px-4 pt-6 md:px-10 md:pt-3 lg:px-40 lg:pt-4 mx-auto my-8'>
 
+            <div className='mt-1 text-4xl font-extrabold text-gray-900 sm:text-5xl lg:text-6xl'>
+            {/* <div className='bg-white h-16 w-16 rounded-2xl transition-all duration-700 -mt-20 sm:-mt-20 md:-mt-16 ml-8 md:-ml-12'> */}
+            {reqStatus === 'success' && projects && projects.length > 0 && projects[0] && projects[0].iconImage ? 
+            <div className='bg-white h-16 w-16 lg:h-24 lg:w-24 rounded-2xl transition-all duration-700 -mt-20 md:-mt-[4.5rem] lg:-mt-16 ml-8 md:ml-6 lg:-ml-20'>
+              
+              <img img={`${process.env.USER_CONTENT_URL}/${projects[0]?.iconImage}`} className="w-full h-40 h-96 object-cover rounded-t-2xl" /> 
+              </div>
+            :  <div className='bg-transparent h-16 w-16 lg:h-24 lg:w-24 rounded-2xl transition-all duration-700 -mt-20 md:-mt-[4.5rem] lg:-mt-16 ml-8 md:ml-6 lg:-ml-20 mb-2'/>}
               {/* // Package banner stats */}
-              <dl className="mx-auto grid grid-cols-1 gap-px sm:grid-cols-2 lg:grid-cols-4 mt-4">
+              <dl className="mx-auto grid grid-cols-2 gap-px xs:grid-cols-4 lg:-mt-8">
                 {projectStats.map((stat) => (
                   <div
                     key={stat.name}
-                    className="flex flex-wrap items-baseline gap-x-1 bg-white px-4 sm:px-6 xl:px-8 text-center justify-center"
+                    className="flex flex-wrap items-baseline gap-x-1  px-4 sm:px-6 xl:px-8 text-center justify-center"
                   >
-                    <dt className="text-sm font-medium leading-6 text-gray-500 text-center  w-64">{stat.name}</dt>
+                    <dt className="text-sm font-medium leading-6 text-gray-500 text-center w-64">{stat.name}</dt>
                     <dd
                       className={classNames(
                         stat.changeType === 'negative' ? 'text-rose-600' : 'text-gray-700',
@@ -288,12 +349,13 @@ export default function Page({ params }: { params: { developer:string, name: str
                     >
                       {stat.change}
                     </dd>
-                    {reqStatus === 'success' && projects && projects[0]? 
-                    <dd className="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 text-center">
-                       {stat.value}
-                    </dd> : <DynamicSkeletonText max={1} min={1}/> }
+                    {reqStatus === 'success' && projects && projects[0] ?
+                      <dd className="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 text-center">
+                        {stat.value}
+                      </dd> : <DynamicSkeletonText max={1} min={1} />}
                   </div>
                 ))}
+
               </dl>
 
 
@@ -303,9 +365,9 @@ export default function Page({ params }: { params: { developer:string, name: str
 
         {/* // Square image of package header */}
         {/* <div className='bg-white h-16 w-16 md:h-24 md:w-24 ml-7 2xl:ml-28 -mt-16 md:-mt-20 z-20 relative rounded-2xl transition-all duration-700 '> */}
-        <div className='bg-white h-16 w-16 md:h-24 md:w-24 ml-7 md:ml-14 2xl:ml-20 -mt-10 md:-mt-20 z-20 relative rounded-2xl transition-all duration-700'>
+        {/* <div className='bg-white h-16 w-16 md:h-24 md:w-24 ml-7 md:ml-6 2xl:ml-20 -mt-6 sm:-mt-2 md:-mt-20 z-20 relative rounded-2xl transition-all duration-700'>
           <img src="https://www.freepnglogos.com/uploads/512x512-logo/512x512-transparent-instagram-logo-icon-5.png" alt="Theme Icon" className="h-16 w-16 md:h-24 md:w-24 p-1" />
-        </div>
+        </div> */}
 
 
       </div>
@@ -315,7 +377,7 @@ export default function Page({ params }: { params: { developer:string, name: str
         <main className="flex-1">
 
           <Prose>
-            {reqStatus === 'success' && loadedProject && loadedProject.projects && content.success? <UGCDocument source={content.content}></UGCDocument> :
+            {reqStatus === 'success' && loadedProject && loadedProject.projects && content.success ? <UGCDocument source={content.content}></UGCDocument> :
               <RenderDynamicPlaceholderContent />
             }
           </Prose>
@@ -333,7 +395,7 @@ export default function Page({ params }: { params: { developer:string, name: str
       {/* // End of the main content */}
 
 
-    </>
+    </div>
 
   )
 

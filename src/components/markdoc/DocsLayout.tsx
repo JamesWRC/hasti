@@ -89,7 +89,7 @@ export function DocsLayout({
         <TableOfContents tableOfContents={tableOfContents} />
       </div> */}
 
-      <div className="flex-auto py-16 w-0 max-w-full">
+      <div className="flex-auto w-0 max-w-full">
         <article>
           {/* // ---------------------------------------------- TABLE OF CONTENTS FOR PAGE FOR MOBILE */}
 
