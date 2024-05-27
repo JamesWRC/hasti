@@ -35,6 +35,7 @@ import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
+import { size } from 'lodash';
 
 export default function Page({ params }: { params: { developer: string, name: string } }) {
   const { data: session, status } = useSession()
@@ -240,7 +241,7 @@ export default function Page({ params }: { params: { developer: string, name: st
     }));
 
     const PopularityBar = styled(LinearProgress)(({ theme }) => ({
-      height: 10,
+      height: 7.5,
       borderRadius: 5,
       [`&.${linearProgressClasses.colorPrimary}`]: {
         backgroundColor: "#2c3242"
@@ -252,7 +253,7 @@ export default function Page({ params }: { params: { developer: string, name: st
     }));
 
     const ActivityBar = styled(LinearProgress)(({ theme }) => ({
-      height: 10,
+      height: 7.5,
       borderRadius: 5,
       [`&.${linearProgressClasses.colorPrimary}`]: {
         backgroundColor: "#2c3242"
@@ -303,7 +304,7 @@ export default function Page({ params }: { params: { developer: string, name: st
                     <div className='text-white'>Popularity</div>
                     <div className='text-white font'>{popularityRating}</div>
                   </div>
-                  <PopularityBar variant="determinate" value={popularityRating} />
+                  <PopularityBar variant="determinate" value={popularityRating}/>
                 </Stack>
               </div>
               <div className='py-2'>
