@@ -82,7 +82,7 @@ reposRouter.get<Record<string, string>, UserReposResponse | BadRequestResponse>(
         }
     });
 
-// Will be used by authenticated users to manually update the repo for the project. And AUTHENTICATED users whe they view their project if the repo hasnt been updated in a while.
+// Will be used by authenticated users to manually update the repo for the project. And AUTHENTICATED users when they view their project if the repo hasnt been updated in a while.
 reposRouter.put<Record<string, string>, RefreshRepoDataRequest | BadRequestResponse>(
     '/:repoID',
     isAuthenticated,

@@ -925,7 +925,7 @@ export async function updateRepoAnalytics(user: User, repoName: string, projectI
         console.log("activityScore", activityScore)
         console.log("avgTimeToClosePRs", avgTimeToClosePRs)
         console.log("avgTimeToCloseIssues", avgTimeToCloseIssues, openIssues, closedIssues)
-        return score;
+        return Math.ceil(popularityScore + activityScore / 2);
     }).catch((error) => {
         console.error("Error fetching repo data:", error);
         return null

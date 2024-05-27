@@ -1167,7 +1167,8 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
                     id: projectID
                 },
                 include: {
-                    user: true,                    
+                    user: true,      
+                    repo: true,              
                 }
             })
 
@@ -1191,6 +1192,14 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
                 }
 
                 const updatedData:RefreshContentResponse = await updateContent(project.repoID, project.id, project.user.id, contentFile)
+
+                if(project?.user){
+
+                    await updateRepoAnalytics(project.user, project.repo.name, project.id, project.repoID)
+
+                }
+
+
                 return res.status(200).json(updatedData);
 
             }
@@ -1239,18 +1248,6 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
                         }
                     }
                 })
-
-                /// Get the trustworthiness rating of the developer
-                if(project?.user){
-                    console.log('devTrust-------:')
-
-                    // const devTrust = await getTrustworthinessRating(project.user)
-                    // console.log('devTrust:', devTrust)
-                    // const projectRating = await updateRepoAnalytics(project.user, project.repo.name, project.id, project.repoID)
-                    // console.log('projectRating:', projectRating)
-
-                }
-
 
                 if(project){
                     const contentSHA:string = project.contentSHA

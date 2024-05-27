@@ -29,8 +29,13 @@ import { RepoAnalytics } from '@/backend/interfaces/repoAnalytics';
 // import projectCSS
 import '@/frontend/app/page.module.css';
 import axios from 'axios';
-import Box from '@mui/material/Box';
 import React from 'react';
+
+import { styled } from '@mui/material/styles';
+import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
+import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
+
 export default function Page({ params }: { params: { developer: string, name: string } }) {
   const { data: session, status } = useSession()
 
@@ -71,7 +76,7 @@ export default function Page({ params }: { params: { developer: string, name: st
 
     if (projects && projects.length > 0) {
       const project = projects[0] as ProjectAllInfo;
-      const repoAnalytics: RepoAnalytics|null = project?.repo?.repoAnalytics?.at(0) || null;
+      const repoAnalytics: RepoAnalytics | null = project?.repo?.repoAnalytics?.at(0) || null;
       if (project) {
 
         const worksWithOS: boolean = project.worksWithOS;
@@ -114,8 +119,8 @@ export default function Page({ params }: { params: { developer: string, name: st
           newStats.push({ name: 'Compatibility', value: '', change: worksWithStr, changeType: 'positive' })
         }
 
-        
-        const statuses:string[] = ['New', 'Active', 'Inactive', 'Beta', 'Deprecated', 'Archived', ]
+
+        const statuses: string[] = ['New', 'Active', 'Inactive', 'Beta', 'Deprecated', 'Archived',]
         // Determine if the project is active or not based on the last commit date
         // If project created within the last 6 months, set to NEW
         // If the last commit date is within the last 1 year, set to ACTIVE
@@ -141,7 +146,7 @@ export default function Page({ params }: { params: { developer: string, name: st
             projStatus = 'Archived'
           }
         }
-        if(repoAnalytics && repoAnalytics.stars){
+        if (repoAnalytics && repoAnalytics.stars) {
           projStars = repoAnalytics.stars
         }
         newStats.push({ name: 'Stars', value: projStars, change: '', changeType: 'positive' })
@@ -199,15 +204,15 @@ export default function Page({ params }: { params: { developer: string, name: st
   }
 
   useEffect(() => {
-      const handleScroll = () => {
-        setScrollPosition(window.pageYOffset);
-      };
+    const handleScroll = () => {
+      setScrollPosition(window.pageYOffset);
+    };
 
-      window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll);
 
-      return () => {
-        window.removeEventListener('scroll', handleScroll);
-      };
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
   }, []);
 
 
@@ -221,8 +226,94 @@ export default function Page({ params }: { params: { developer: string, name: st
       isUserOwner = session?.user?.id === projectUser.id;
     }
 
+
+    const OverallRatingBar = styled(LinearProgress)(({ theme }) => ({
+      height: 10,
+      borderRadius: 5,
+      [`&.${linearProgressClasses.colorPrimary}`]: {
+        backgroundColor: "#42485c"
+      },
+      [`& .${linearProgressClasses.bar}`]: {
+        borderRadius: 5,
+        background: 'linear-gradient(to right, #FF5F6D , #FFC371)', // Change this line
+      },
+    }));
+
+    const PopularityBar = styled(LinearProgress)(({ theme }) => ({
+      height: 10,
+      borderRadius: 5,
+      [`&.${linearProgressClasses.colorPrimary}`]: {
+        backgroundColor: "#2c3242"
+      },
+      [`& .${linearProgressClasses.bar}`]: {
+        borderRadius: 5,
+        background: 'linear-gradient(90deg,  #009efd 0%, #2af598 100%)', // Change this line
+      },
+    }));
+
+    const ActivityBar = styled(LinearProgress)(({ theme }) => ({
+      height: 10,
+      borderRadius: 5,
+      [`&.${linearProgressClasses.colorPrimary}`]: {
+        backgroundColor: "#2c3242"
+      },
+      [`& .${linearProgressClasses.bar}`]: {
+        borderRadius: 5,
+        background: 'linear-gradient(to right, #b8cbb8 0%, #b8cbb8 0%, #b465da 0%, #cf6cc9 33%, #fa709a 66%, #fa709a 100%)', // Change this line
+      },
+    }));
+
+    let popularityRating = 0
+    let activityRating = 0
+    let overallRating = 0
+    if (projectData) {
+      overallRating = projectData.overallRating
+      popularityRating = projectData.popularityRating
+      activityRating = projectData.activityRating
+
+    }
+    // overallRating = 100
+    // activityRating = 80
+    // popularityRating = 100
     return (
       <aside className="transition-all duration-700 sticky top-8 xl:w-96 shrink-0">
+        <div className="bg-gray-900 rounded-3xl mb-4">
+          <div className="mx-auto max-w-7xl">
+            <div className="bg-gray-900 py-10 rounded-3xl min-w-full divide-y divide-gray-700">
+              <div className="px-4 pb-8">
+              <Stack spacing={1} sx={{ flexGrow: 1 }} className='px-4'>
+                  <div className="flex justify-between">
+                    <div className='text-white font-bold'>Rating</div>
+                    <div className='text-white font-bold flex'>{overallRating}<div className='text-white font-thin pl-1'>/100</div></div>
+                  </div>
+                  <OverallRatingBar variant="determinate" value={overallRating} />
+                </Stack>
+
+                <Stack spacing={1} sx={{ flexGrow: 1 }} className='pt-6 px-8'>
+                  <div className="flex justify-between">
+                    <div className='text-white font'>Activity</div>
+                    <div className='text-white font'>{activityRating}</div>
+                  </div>
+
+                  <ActivityBar variant="determinate" value={activityRating} />
+                </Stack>
+
+                <Stack spacing={1} sx={{ flexGrow: 1 }} className='pt-2 px-8'>
+                  <div className="flex justify-between">
+                    <div className='text-white'>Popularity</div>
+                    <div className='text-white font'>{popularityRating}</div>
+                  </div>
+                  <PopularityBar variant="determinate" value={popularityRating} />
+                </Stack>
+              </div>
+              <div className='py-2'>
+              graphs
+            </div>
+            </div>
+
+          </div>
+        </div>
+
         <Details project={loadedProject} />
       </aside>
 
@@ -278,19 +369,19 @@ export default function Page({ params }: { params: { developer: string, name: st
   }
 
 
-    // useEffect(() => {
-    //   // Using setTimeout to ensure this runs in the client-side environment only
-    //   const timer = setTimeout(() => {
-    //     const halfwayPoint = document.documentElement.scrollHeight / 2;
-    //     window.scrollTo({
-    //       top: halfwayPoint,
-    //       behavior: 'smooth' // for smooth scrolling
-    //     });
-    //   }, 5000); // A slight delay to ensure all page content has loaded, especially in dynamic situations
-  
-    //   return () => clearTimeout(timer); // Clean up the timeout
-    // }, []);
-  
+  // useEffect(() => {
+  //   // Using setTimeout to ensure this runs in the client-side environment only
+  //   const timer = setTimeout(() => {
+  //     const halfwayPoint = document.documentElement.scrollHeight / 2;
+  //     window.scrollTo({
+  //       top: halfwayPoint,
+  //       behavior: 'smooth' // for smooth scrolling
+  //     });
+  //   }, 5000); // A slight delay to ensure all page content has loaded, especially in dynamic situations
+
+  //   return () => clearTimeout(timer); // Clean up the timeout
+  // }, []);
+
 
   return (
     // Using tailwindcss design a page that showcases a a developers application
@@ -305,14 +396,14 @@ export default function Page({ params }: { params: { developer: string, name: st
         {/* <canvas id="myCanvas" className="absolute top-0 left-0 w-full h-28 lg:h-96 z-0 rounded-xl"></canvas> */}
         {/* <canvas id="myCanvas" className="absolute top-0 left-0 w-full h-28 z-0 rounded-xl"></canvas> */}
         {reqStatus === 'success' && projects && projects.length > 0 && projects[0] && projects[0].backgroundImage ? <div>
-          <img src={`${process.env.USER_CONTENT_URL}/${projects[0].backgroundImage}`} className="w-full h-72 sm:h-[25rem] 5xl:h-[35rem] object-cover rounded-t-2xl" />
-        </div> : <><ColorBackground projectID={`${params.name}/${params.name} D`} /> 
-        <div className="relative z-10 rounded-b-2xl bg-red">
-          <div className="sm:py-24 sm:px-6 lg:px-8 bg-opacity-30 backdrop-filter backdrop-blur-2xl h-40 w-full">
-            {/* <div className=""> */}
+          <img src={`${process.env.USER_CONTENT_URL}/${projects[0].backgroundImage}`} className="w-full h-72 sm:h-[25rem] md:h-[20rem] 5xl:h-[35rem] object-cover rounded-t-2xl" />
+        </div> : <><ColorBackground projectID={`${params.name}/${params.name} D`} />
+          <div className="relative z-10 rounded-b-2xl bg-red">
+            <div className="sm:py-24 sm:px-6 lg:px-8 bg-opacity-30 backdrop-filter backdrop-blur-2xl h-40 w-full">
+              {/* <div className=""> */}
 
-          </div>
-        </div></>}
+            </div>
+          </div></>}
       </div>
       {/* // End Banner */}
 
@@ -326,13 +417,13 @@ export default function Page({ params }: { params: { developer: string, name: st
           <div className='bg-white rounded-2xl px-4 pt-6 md:px-10 md:pt-3 lg:px-40 lg:pt-4 mx-auto my-8'>
 
             <div className='mt-1 text-4xl font-extrabold text-gray-900 sm:text-5xl lg:text-6xl'>
-            {/* <div className='bg-white h-16 w-16 rounded-2xl transition-all duration-700 -mt-20 sm:-mt-20 md:-mt-16 ml-8 md:-ml-12'> */}
-            {reqStatus === 'success' && projects && projects.length > 0 && projects[0] && projects[0].iconImage ? 
-            <div className='bg-white h-16 w-16 lg:h-24 lg:w-24 rounded-2xl transition-all duration-700 -mt-20 md:-mt-[4.5rem] lg:-mt-16 ml-8 md:ml-6 lg:-ml-20'>
-              
-              <img img={`${process.env.USER_CONTENT_URL}/${projects[0]?.iconImage}`} className="w-full h-40 h-96 object-cover rounded-t-2xl" /> 
-              </div>
-            :  <div className='bg-transparent h-16 w-16 lg:h-24 lg:w-24 rounded-2xl transition-all duration-700 -mt-20 md:-mt-[4.5rem] lg:-mt-16 ml-8 md:ml-6 lg:-ml-20 mb-2'/>}
+              {/* <div className='bg-white h-16 w-16 rounded-2xl transition-all duration-700 -mt-20 sm:-mt-20 md:-mt-16 ml-8 md:-ml-12'> */}
+              {reqStatus === 'success' && projects && projects.length > 0 && projects[0] && projects[0].iconImage ?
+                <div className='bg-white h-16 w-16 lg:h-24 lg:w-24 rounded-2xl transition-all duration-700 -mt-20 md:-mt-[4.5rem] lg:-mt-16 ml-8 md:ml-6 lg:-ml-20'>
+
+                  <img img={`${process.env.USER_CONTENT_URL}/${projects[0]?.iconImage}`} className="w-full h-40 h-96 object-cover rounded-t-2xl" />
+                </div>
+                : <div className='bg-transparent h-16 w-16 lg:h-24 lg:w-24 rounded-2xl transition-all duration-700 -mt-20 md:-mt-[4.5rem] lg:-mt-16 ml-8 md:ml-6 lg:-ml-20 mb-2' />}
               {/* // Package banner stats */}
               <dl className="mx-auto grid grid-cols-2 gap-px xs:grid-cols-4 lg:-mt-8">
                 {projectStats.map((stat) => (
@@ -381,9 +472,9 @@ export default function Page({ params }: { params: { developer: string, name: st
               <RenderDynamicPlaceholderContent />
             }
           </Prose>
-          {/* <div className='block xl:hidden'>
-              {renderDetails()}
-            </div> */}
+          <div className='block xl:hidden'>
+              {renderDetails(loadedProject)}
+            </div>
         </main>
         <div className='hidden xl:block sticky top-0 pt-5'>
           <div className=''>
