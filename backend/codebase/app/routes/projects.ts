@@ -1264,11 +1264,13 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
                         if(project.usingHastiMD){
                             contentFile = 'HASTI'
                         }
-                        await updateContent(project.repoID, project.id, project.userID, contentFile)
+                        await updateContent(project.repoID, project.id, project.userID, contentFile, true)
                         const content = await readFileIfExists(filePath)
                         console.log('content:', content)
                         if(content){
                             return res.status(200).json({ success: true, sha: contentSHA, content: stringToBase64(content)});
+                        }else{
+
                         }
                     }
 

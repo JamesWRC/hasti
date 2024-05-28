@@ -29,7 +29,7 @@ const s3 = new AWS.S3({
     secretAccessKey: process.env.CLOUDFLARE_BUCKET_SECRET_KEY,
 });
 
-export async function updateContent(repoID: string, projectID: string, userID: string, contentFile: string): Promise<RefreshContentResponse> {
+export async function updateContent(repoID: string, projectID: string, userID: string, contentFile: string, forceUpdate:boolean=false): Promise<RefreshContentResponse> {
 
     // get repo owner and name
     const repo = await prisma.repo.findUnique({
@@ -123,7 +123,7 @@ export async function updateContent(repoID: string, projectID: string, userID: s
             return { success: false, message: "Project not found.", prevSHA: "", newSHA: "" }
         }
 
-        if (project.contentSHA === gitHubReadmeResponse.data.sha) {
+        if (project.contentSHA === gitHubReadmeResponse.data.sha && !forceUpdate) {
             const message = `Content is up-to-date. No changes. SHA: ${project.contentSHA}`
             return { success: true, message: message, prevSHA: project.contentSHA, newSHA: gitHubReadmeResponse.data.sha }
         }
@@ -464,10 +464,70 @@ function handleHTMLinMarkDown(markdown: string) {
     const modifiedHTML = docLines.join('\n');
 
 
+    // unEscape characters any HTML in code blocks
+    // console.log("docLines before", tags)
+    const unescapeLines = modifiedHTML.split('\n');
 
+    // Remove content within triple backtick code blocks
+    let inCodeBlock = false;
+    const unescapeLinesNew = unescapeLines.map((line, index) => {
+        if (line.trim().startsWith('```')) {
+            inCodeBlock = !inCodeBlock; // Toggle state on entering or leaving a code block
+        }
+
+        if (inCodeBlock) {
+            line = line.replace(/&lt;/g, '<')
+            line = line.replace(/&gt;/g, '>')
+            line = line.replace(/&amp;/g, '&')
+            line = line.replace(/&quot;/g, '"')
+            line = line.replace(/&#39;/g, "'")
+            line = line.replace(/&nbsp;/g, ' ')
+            line = line.replace(/&copy;/g, '©')
+            line = line.replace(/&reg;/g, '®')
+            line = line.replace(/&trade;/g, '™')
+            line = line.replace(/&euro;/g, '€')
+            line = line.replace(/&pound;/g, '£')
+            line = line.replace(/&yen;/g, '¥')
+            line = line.replace(/&sect;/g, '§')
+            line = line.replace(/&deg;/g, '°')
+            line = line.replace(/&plusmn;/g, '±')
+            line = line.replace(/&times;/g, '×')
+            line = line.replace(/&divide;/g, '÷')
+            line = line.replace(/&apos;/g, "'")
+            line = line.replace(/&ndash;/g, '–')
+            line = line.replace(/&mdash;/g, '—')
+            line = line.replace(/&laquo;/g, '«')
+            line = line.replace(/&raquo;/g, '»')
+            line = line.replace(/&lsaquo;/g, '‹')
+            line = line.replace(/&rsaquo;/g, '›')         
+            line = line.replace(/&ldquo;/g, '“')
+            line = line.replace(/&rdquo;/g, '”')
+            line = line.replace(/&lsquo;/g, '‘')
+            line = line.replace(/&rsquo;/g, '’')
+            line = line.replace(/&hellip;/g, '…')
+            line = line.replace(/&bull;/g, '•')
+            line = line.replace(/&middot;/g, '·')
+            line = line.replace(/&larr;/g, '←')
+            line = line.replace(/&uarr;/g, '↑')
+            line = line.replace(/&rarr;/g, '→')
+            line = line.replace(/&darr;/g, '↓')
+            line = line.replace(/&harr;/g, '↔')
+            line = line.replace(/&crarr;/g, '↵')
+            line = line.replace(/&lceil;/g, '⌈')
+            line = line.replace(/&rceil;/g, '⌉')
+            line = line.replace(/&lfloor;/g, '⌊')
+            line = line.replace(/&rfloor;/g, '⌋')
+
+            // escape any {% %} tages with \{\% \%\} to prevent Marcdoc from thinking its a tag
+            line = line.replace(/{%/g, '\\{\\%')
+            line = line.replace(/%}/g, '\\%\\}')
+            return line        
+        }
+        return line;
+    }).join('\n');
     // console.log("docLines after", tags)
 
-    return modifiedHTML
+    return unescapeLinesNew
 }
 
 export async function getGitHubRepoData(user: User, owner: string, repo: string): Promise<OctokitResponse<any, number> | null> {
@@ -620,6 +680,7 @@ export async function writeFileAsync(filePath: string, data: string): Promise<bo
     try {
 
         const dir = require('path').dirname(filePath);
+        console.log("dir", dir)
         await fs_promise.mkdir(dir, { recursive: true });
 
         // Write data to file asynchronously

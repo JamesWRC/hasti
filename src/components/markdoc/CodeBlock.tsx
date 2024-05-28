@@ -18,7 +18,7 @@ export function CodeBlock({children, 'data-language': language}: CodeBlockProps)
     <div className="code" aria-live="polite">
       <pre
         ref={ref}
-        className={`language-${language}`}
+        className={`languadddge-${language}`}
       >
         {children}
       </pre>
