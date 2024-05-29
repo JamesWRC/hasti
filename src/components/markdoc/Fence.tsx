@@ -18,8 +18,13 @@ function getSpaces(counter: number, totalLines: number): string {
 
 
 function unEscapeTags(line: string):string {
-  let retString: string = line.replaceAll('\\{\\%', '{%').replaceAll('\\%\\}', '%}')
-  return retString
+  let retString = line
+  if(line){
+    retString = retString.replaceAll('\\{\\%', '{%').replaceAll('\\%\\}', '%}')  
+  }else if(line === undefined){
+    retString = ''
+  }
+return retString
 }
 
 export function Fence({ children, language }: { children: string, language: string }) {

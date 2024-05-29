@@ -50,6 +50,38 @@ const nodes = {
       },
     },
   },
+  item: {
+    parse: (node, context) => {
+      let listType = 'default'
+      if(node.startsWith('- [x]')){
+        listType = 'checked'
+      }else if(node.startsWith('- [ ]')){
+        listType = node
+      }
+      return new Markdoc.Tag(this.render, {}, []);
+
+    },
+    render: ({ children }) => {
+      const checkBoxLabel = children.toString().replace('[x]', '').replace('[ ]', '')
+      if(children.toString().startsWith('[x]')) {
+        return <>
+          <input id={`${children}`} type="checkbox" checked={true}
+           className='w-4 h-4 text-dark bg-dark border-gray-300 rounded focus:ring-gray-500 dark:focus:ring-gray-600 dark:border-gray-700 dark:bg-gray-700 dark:checked:bg-gray-600 dark:checked:border-transparent'></input>
+          <label for={`${children}`} className='text-sm font-medium text-gray-900 dark:text-gray-300'>{checkBoxLabel}</label>
+          <br/>
+        </>
+      }else if(children.toString().startsWith('[ ]')){
+        return <>
+        <input id={`${children}`} type="checkbox" checked={false}
+           className='w-4 h-4 text-dark bg-dark border-gray-300 rounded focus:ring-gray-500 dark:focus:ring-gray-600 dark:border-gray-700 dark:bg-gray-700 dark:checked:bg-gray-600 dark:checked:border-transparent'></input>
+           <label for={`${children}`}>{checkBoxLabel}</label>
+        <br/>
+        </>
+      }else{
+        return <li>{children}</li>
+      }    
+    }
+  },
   fence: {
     render: Fence,
     attributes: {

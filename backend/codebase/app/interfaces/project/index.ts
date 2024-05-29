@@ -65,3 +65,12 @@ export function getHaInstallType(installType: string): HAInstallType {
     return HAInstallType.ANY;
   }
 
+
+// Allowed HTML in content
+export const allowedContentHTMLTags:string[] = [
+  'div', 'span', 'img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'b', 'i', 'em', 'strong', 'small', 'strike', 'del', 'ins',
+  'ul', 'ol', 'li', 'a', 'img', 'code', 'pre',
+  'table', 'tr', 'td', 'th', 'tbody', 'thead', 'tfoot',
+  'p', 'br', 'hr', 'blockquote', 'sub', 'sup'
+];

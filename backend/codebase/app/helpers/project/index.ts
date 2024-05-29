@@ -11,7 +11,7 @@ import { OctokitResponse } from "@octokit/types";
 import { Repo, User } from '@prisma/client';
 import { AddProjectResponse, RefreshContentResponse } from '@/backend/interfaces/project/request';
 import { Files } from 'formidable';
-import { Project } from '@/backend/interfaces/project';
+import { Project, allowedContentHTMLTags } from '@/backend/interfaces/project';
 import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
 import axios from 'axios';
 import { JSDOM } from 'jsdom';
@@ -20,6 +20,7 @@ import fs from 'fs';
 import { promises as fs_promise } from 'fs';
 import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods/dist-types/generated/parameters-and-response-types';
 import { getRepoCommits, getRepoContributors, getRepoDetails, getRepoIssues, getRepoPullRequests, getRepoReleases } from '@/backend/helpers/github';
+import sanitizeHtml from 'sanitize-html';
 
 // Init s3
 const s3 = new AWS.S3({
@@ -336,7 +337,12 @@ function handleHTMLinMarkDown(markdown: string) {
         });
 
         const filteredText = filteredLines.join('\n');
-        const regex = /<(\w+)(?:\s+[^>]*)?>([\s\S]*?)<\/\1>/g;
+        // const regex = /<(\w+)(?:\s+[^>]*)?>([\s\S]*?)<\/\1>/g;
+        const tagPattern = allowedContentHTMLTags.join('|');
+
+        // const regex = /<(div|span|img|h[1-6]|b|i|em|strong|small|strike|del|ins|ul|ol|li|a|img|code|pre|table|tr|td|th|tbody|thead|tfoot|p|br|hr|blockquote|sub|sup)(?:\s+[^>]*)?>([\s\S]*?)<\/\1>/gi;
+        const regexString = `<(${tagPattern})(?:\\s+[^>]*)?>([\\s\\S]*?)<\\/\\1>`;
+        const regex = new RegExp(regexString, 'gi');
 
         let match;
         const blocks = [];
@@ -354,16 +360,33 @@ function handleHTMLinMarkDown(markdown: string) {
 
         return blocks;
     }
+    
 
-    const dom = new JSDOM(markdown, { contentType: 'text/html', });
+    // Escape any HTML in the markdown
+    const contentWithEscapedHTML = sanitizeHtml(markdown, {
+        allowedTags: allowedContentHTMLTags,
+        allowedAttributes: {
+            'a': ['href', 'name', 'target', 'rel'], // Attributes allowed on <a>
+            'img': ['src', 'alt', 'title', 'width', 'height', 'align'], // Attributes allowed on <img>
+            'div': ['class'], // Attributes allowed on <div>
+            '*': ['style'] // Allowing styles universally, but can be restricted further
+        },
+        selfClosing: ['img', 'br', 'hr'], // Self-closing tags
+        allowProtocolRelative: true,
+        disallowedTagsMode: 'recursiveEscape'
+    });
+    const dom = new JSDOM(contentWithEscapedHTML, { contentType: 'text/html', });
     let document = dom.window.document;
     // if the markdown has safeHTML tags, return the markdown as is
 
     if (document.body.innerHTML.includes('{% safeHTML %}')) {
         return markdown
     }
-
+    console.log('contentWithEscapedHTML', contentWithEscapedHTML)
+    console.log('----------------------')
+    console.log("document BEFORE", document.body.innerHTML)
     const blocks = findHtmlBlocks(document.body.innerHTML)
+    console.log("blocks", blocks)
 
     // convertHtmlToMarkdoc(document.body);
     // console.log("blocks", blocks)
@@ -475,9 +498,12 @@ function handleHTMLinMarkDown(markdown: string) {
             inCodeBlock = !inCodeBlock; // Toggle state on entering or leaving a code block
         }
 
+        // Escape chars in any context
+        line = line.replace(/&lt;/g, '<')
+        line = line.replace(/&gt;/g, '>')
+
+        // Escape tags in code blocks
         if (inCodeBlock) {
-            line = line.replace(/&lt;/g, '<')
-            line = line.replace(/&gt;/g, '>')
             line = line.replace(/&amp;/g, '&')
             line = line.replace(/&quot;/g, '"')
             line = line.replace(/&#39;/g, "'")
