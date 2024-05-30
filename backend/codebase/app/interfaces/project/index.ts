@@ -72,5 +72,5 @@ export const allowedContentHTMLTags:string[] = [
   'b', 'i', 'em', 'strong', 'small', 'strike', 'del', 'ins',
   'ul', 'ol', 'li', 'a', 'img', 'code', 'pre',
   'table', 'tr', 'td', 'th', 'tbody', 'thead', 'tfoot',
-  'p', 'br', 'hr', 'blockquote', 'sub', 'sup'
+  'p', 'br', 'hr', 'blockquote', 'sub', 'sup', 'details'
 ];

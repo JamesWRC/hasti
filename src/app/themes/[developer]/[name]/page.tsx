@@ -35,7 +35,7 @@ import { styled } from '@mui/material/styles';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import LinearProgress, { linearProgressClasses } from '@mui/material/LinearProgress';
-import { size } from 'lodash';
+import $ from 'jquery';
 
 export default function Page({ params }: { params: { developer: string, name: string } }) {
   const { data: session, status } = useSession()
@@ -56,8 +56,6 @@ export default function Page({ params }: { params: { developer: string, name: st
     { name: 'Status', value: '', change: '', changeType: 'negative' },
   ]);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
-
   const fetchProjects: GetProjectsQueryParams = {
 
     limit: 1,
@@ -67,6 +65,29 @@ export default function Page({ params }: { params: { developer: string, name: st
   }
 
   const { projects, reqStatus } = useProjects(fetchProjects);
+  const [projectContentRendered, setProjectContentRendered] = useState(false);
+
+  // Handle anchor snapping on page load
+  useEffect(() => {
+    const handleRouteChange = (url:string) => {
+        const hash = url.split('#')[1];
+        if (hash) {
+          setTimeout(() => {
+            const element = document.getElementById(hash);
+
+            if (element) {
+                element.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+            }
+          }, 2500);
+        }
+    };
+
+    // If the page is loaded with a hash directly
+    if (window.location.hash) {
+        handleRouteChange(window.location.href);
+    }
+  }, [projectContentRendered]);
+
 
   useEffect(() => {
 
@@ -370,20 +391,6 @@ export default function Page({ params }: { params: { developer: string, name: st
   }
 
 
-  // useEffect(() => {
-  //   // Using setTimeout to ensure this runs in the client-side environment only
-  //   const timer = setTimeout(() => {
-  //     const halfwayPoint = document.documentElement.scrollHeight / 2;
-  //     window.scrollTo({
-  //       top: halfwayPoint,
-  //       behavior: 'smooth' // for smooth scrolling
-  //     });
-  //   }, 5000); // A slight delay to ensure all page content has loaded, especially in dynamic situations
-
-  //   return () => clearTimeout(timer); // Clean up the timeout
-  // }, []);
-
-
   return (
     // Using tailwindcss design a page that showcases a a developers application
     // This page will be used to display the application and its features
@@ -469,7 +476,7 @@ export default function Page({ params }: { params: { developer: string, name: st
         <main className="flex-1">
 
           <Prose>
-            {reqStatus === 'success' && loadedProject && loadedProject.projects && content.success ? <UGCDocument source={content.content}></UGCDocument> :
+            {reqStatus === 'success' && loadedProject && loadedProject.projects && content.success ? <UGCDocument source={content.content} setProjectContentRendered={setProjectContentRendered}></UGCDocument> :
               <RenderDynamicPlaceholderContent />
             }
           </Prose>

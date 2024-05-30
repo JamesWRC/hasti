@@ -11,6 +11,7 @@ import '@/frontend/app/prism.js'
 import { useEffect, useState } from 'react';
 import DOMPurify from "isomorphic-dompurify";
 import ReactDOMServer from 'react-dom/server';
+import 'src/app/projectCSS.css';
 
 
 
@@ -62,13 +63,10 @@ import ReactDOMServer from 'react-dom/server';
 
 interface DocumentProps {
     source: string | undefined;
+    setProjectContentRendered: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function UGCDocument({ source }: DocumentProps) {
-
-    const [safeHtml, setSafeHtml] = useState('');
-
-
+export function UGCDocument({ source, setProjectContentRendered }: DocumentProps) {
 
 
       
@@ -116,7 +114,7 @@ export function UGCDocument({ source }: DocumentProps) {
     
     const reactElement = Markdoc.renderers.react(content, React);
         // const clean = DOMPurify.sanitize(reactElement, {ALLOWED_TAGS: ['p', 'div']});
-    console.log('reactElement', reactElement)
+    setProjectContentRendered(true);
     return reactElement
     // return <div dangerouslySetInnerHTML={{ __html: reactElement }} />;
     // const html = ReactDOMServer.renderToString(reactElement);
