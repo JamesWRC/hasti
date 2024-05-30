@@ -61,5 +61,5 @@ details > *:not(summary) {
   font-size: 0.875rem; /* Smaller font size, similar to inline code */
   border: 1px solid #ddd; /* Light border to highlight the code block */
   --tw-bg-opacity: 1;
-  background-color: #2d3748; /* Dark background color for the code block */
+  background-color: rgb(1, 22, 39); /* Dark background color for the code block */
 }
