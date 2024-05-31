@@ -99,7 +99,7 @@ const nodes = {
           {/* Render the note icon next to the type text */}
           <div className="flex items-center -mb-8">
               <InformationCircleIcon className="h-6 w-6 rounded-full text-blue-500 shadow-sm font-bold" aria-hidden="true" />
-              <span className="ml-2 block text-sm font-extrabold leading-6 text-blue-500">NOTE</span>
+              <span className="ml-2 block text-sm font-extrabold leading-6 text-blue-500">Note</span>
             </div>
 
             <p className="text-sm text-black">{alertTypeChildren}</p>
@@ -111,7 +111,7 @@ const nodes = {
          {/* Render the note icon next to the type text */}
          <div className="flex items-center -mb-3">
              <LightBulbIcon className="h-6 w-6 rounded-full text-green-500 shadow-sm font-bold" aria-hidden="true" />
-             <span className="ml-2 block text-sm font-extrabold leading-6 text-green-500">NOTE</span>
+             <span className="ml-2 block text-sm font-extrabold leading-6 text-green-500">Tip</span>
            </div>
 
            <p className="text-sm text-black">{alertTypeChildren}</p>
@@ -123,7 +123,7 @@ const nodes = {
           {/* Render the note icon next to the type text */}
           <div className="flex items-center -mb-8">
               <HandRaisedIcon className="h-6 w-6 rounded-full text-purple-500 shadow-sm font-bold" aria-hidden="true" />
-              <span className="ml-2 block text-sm font-extrabold leading-6 text-purple-500">IMPORTANT</span>
+              <span className="ml-2 block text-sm font-extrabold leading-6 text-purple-500">Important</span>
             </div>
 
             <p className="text-sm text-black">{alertTypeChildren}</p>
@@ -135,7 +135,7 @@ const nodes = {
           {/* Render the note icon next to the type text */}
           <div className="flex items-center -mb-8">
               <ExclamationTriangleIcon className="h-6 w-6 rounded-full text-yellow-500 shadow-sm font-bold" aria-hidden="true" />
-              <span className="ml-2 block text-sm font-extrabold leading-6 text-yellow-500">WARNING</span>
+              <span className="ml-2 block text-sm font-extrabold leading-6 text-yellow-500">Waring</span>
             </div>
 
             <p className="text-sm text-black">{alertTypeChildren}</p>
@@ -147,7 +147,7 @@ const nodes = {
           {/* Render the note icon next to the type text */}
           <div className="flex items-center -mb-4">
               <ShieldExclamationIcon className="h-6 w-6 rounded-full text-red-500 shadow-sm font-bold" aria-hidden="true" />
-              <span className="ml-2 block text-sm font-extrabold leading-6 text-red-500">CAUTION</span>
+              <span className="ml-2 block text-sm font-extrabold leading-6 text-red-500">CAUTION!</span>
             </div>
 
             <p className="text-sm text-black">{alertTypeChildren}</p>
@@ -182,20 +182,34 @@ const nodes = {
       }else{
         href = `${children.toString().replace(/ /g, '_')}`
       }
-      if(href.endsWith('_')) {
+      // Make sure the href doesn't end with an underscore
+      while(href.endsWith('_')) {
         href = href.slice(0, -1)
       }
+
+      // Make tags lowercase
+      href = href.toLowerCase()
+      
       console.log('href2', href)
 
-      return <div className='flex items-center'>
-      <a id={href} className="no-underline hover:underline" aria-label="Permalink: Documentation" href={`#${href}`} name={href}>
-        <svg class="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true">
-          <path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 .018-1.042.751.751 0 0 1 1.042-.018 1.998 1.998 0 0 0 2.83 0l2.5-2.5a2.002 2.002 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.042-.018.751.751 0 0 1-.018-1.042Zm-4.69 9.64a1.998 1.998 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.042.018.751.751 0 0 1 .018 1.042l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-.018 1.042.751.751 0 0 1-1.042.018 1.998 1.998 0 0 0-2.83 0l-2.5 2.5a1.998 1.998 0 0 0 0 2.83Z">
-          </path>
+      return <div className='flex items-center group'>
+      <a 
+        className="no-underline hover:underline opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-4" 
+        aria-label="Permalink: Documentation" 
+        href={`#${href}`} 
+      >
+        <svg className="octicon octicon-link" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true">
+          <path fill-rule="evenodd" d="M7.775 3.275l1.25-1.25a3.5 3.5 0 114.95 4.95l-2.5 2.5a3.5 3.5 0 01-4.95 0 .75.75 0 01.018-1.042.75.75 0 011.042-.018 2 2 0 002.83 0l2.5-2.5a2 2 0 00-2.83-2.83l-1.25 1.25a.75.75 0 01-1.042-.018.75.75 0 01-.018-1.042zM3.085 12.915a2 2 0 002.83 0l1.25-1.25a.75.75 0 011.042.018.75.75 0 01.018 1.042l-1.25 1.25a3.5 3.5 0 11-4.95-4.95l2.5-2.5a3.5 3.5 0 014.95 0 .75.75 0 01-.018 1.042.75.75 0 01-1.042.018 2 2 0 00-2.83 0l-2.5 2.5a2 2 0 000 2.83z"></path>
         </svg>
       </a>
-      <h1 className={`${level} text-2xl font-bold mt-8 mb-4`}>{children}</h1>
-      </div>
+      <h1 
+        id={href}
+        name={href}
+        className={`${level} text-2xl font-bold mt-8 mb-4`}
+      >
+        {children}
+      </h1>
+    </div>
     },
   },
 }

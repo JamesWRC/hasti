@@ -12,6 +12,10 @@ const allHAInstallTypes = getAllHaInstallTypes()
 export function HAInstallTypeSelectDropdownBox({ haInstallTypes, setHaInstallTypes, inputProps }: { haInstallTypes: HAInstallType[], setHaInstallTypes: (haInstallTypes: HAInstallType[]) => void, inputProps: GetInputProps<any> }) {
     const [tempInstallTypes, setTempInstallTypes] = useState<HAInstallType[] | undefined>(haInstallTypes)
 
+    useEffect(() => {
+        setTempInstallTypes(haInstallTypes);
+    }, [haInstallTypes])
+
     const optionsFilter: OptionsFilter = ({ options, search }) => {
         const filtered = (options as ComboboxItem[]).filter((option) => {
             // if(tempProjectType && tempProjectType.length > 1) {

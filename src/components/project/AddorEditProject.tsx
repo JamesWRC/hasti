@@ -199,16 +199,25 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
         if (loadedProject.worksWithContainer) {
           instalTypes.push(HAInstallType.CONTAINER);
         }
+
         if (loadedProject.worksWithCore) {
           instalTypes.push(HAInstallType.CORE);
         }
+
         if (loadedProject.worksWithOS) {
           instalTypes.push(HAInstallType.OS);
         }
+
         if (loadedProject.worksWithSupervised) {
           instalTypes.push(HAInstallType.SUPERVISED);
         }
-        setHaInstallTypes(instalTypes);
+
+
+        if (instalTypes.length === getAllHaInstallTypes().length -1) {
+          setHaInstallTypes([HAInstallType.ANY]);
+        }else{
+          setHaInstallTypes(instalTypes);
+        }
         setTags(loadedProject.tags.map((tag) => tag.name))
 
         const imageHostPrefix = process.env.USER_CONTENT_URL;

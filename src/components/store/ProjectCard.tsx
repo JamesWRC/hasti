@@ -81,7 +81,7 @@ export default function ProjectCard({userProject, style, loaded}: {userProject: 
     }
     
 
-    let className = "col-span-1 relative isolate flex flex-col justify-end overflow-hidden rounded-2xl px-8 pb-8 pt-80 sm:pt-48 lg:pt-80 mb-4 min-w-[10.5rem] sm:max-h-none"
+    let className = "text-ellipsis overflow-hidden col-span-1 relative isolate flex flex-col justify-end rounded-2xl px-8 pb-8 pt-80 sm:pt-48 lg:pt-80 mb-4 min-w-[10.5rem] sm:max-h-none"
     
     if(style === 'featured') {
         className = classNames(className, "max-h-[15rem] h-full")
@@ -109,7 +109,7 @@ export default function ProjectCard({userProject, style, loaded}: {userProject: 
                 <a href={getProjectLink(userProject)}>
                     {/* <span className="absolute inset-0" /> */}
                     <span className={"inset-0"} />
-                    {loaded ? userProject?.title : <DynamicSkeletonTitle max={10} min={4}/>}
+                    {loaded ? userProject?.title : <DynamicSkeletonTitle max={5} min={3} maxWidth={100}/>}
                 </a>
             </h3>
             <a className="mt-2 text-base text-gray-300 line-clamp-5 -mb-4" href={getProjectLink(userProject)}>{loaded ? userProject?.description : <DynamicSkeletonText max={10} min={4}/>}</a>

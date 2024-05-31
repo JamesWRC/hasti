@@ -6,18 +6,29 @@ import { Container, Grid, SimpleGrid, Skeleton, rem } from '@mantine/core';
 import { Button } from '@mantine/core';
 import { Tag } from '@/backend/interfaces/tag';
 import { DynamicSkeletonText } from '@/frontend/components/ui/skeleton';
+import { useRouter } from 'next/router';
 
-const data = [
-  {
-    name: 'Tags',
-    company: 'Little - Rippin',
-    email: 'Elouise.Prohaska@yahoo.com',
+function handleQueryParams(tagName: string, searchParamKey: string) {
+
+  // See if the there are any query params
+  const url = new URL(window.location.href);
+  const searchParams = new URLSearchParams(url.search);
+  if (searchParams && searchParams.has(searchParamKey)) {
+    const currentTags = searchParams.get(searchParamKey)?.split(',') || [];
+    if (!currentTags.includes(tagName)) {
+      currentTags.push(tagName);
+      searchParams.set(searchParamKey, currentTags.join(','));
+    }else{
+      searchParams.set(searchParamKey, tagName);
+    }
+  }else{
+    searchParams.set(searchParamKey, tagName);
   }
-];
+  return searchParams.toString().replaceAll(/%2C/g, ',');
+}
 
 
-
-function Tags({ tags, loaded }: { tags: Tag[], loaded: boolean}) {
+function Tags({ tags, searchParamKey, loaded }: { tags: Tag[], searchParamKey:string, loaded: boolean}) {
 
   // const PRIMARY_COL_HEIGHT = rem(300);
   // const SECONDARY_COL_HEIGHT = `calc(${PRIMARY_COL_HEIGHT} / 2 - var(--mantine-spacing-md) / 2)`;
@@ -30,8 +41,9 @@ function Tags({ tags, loaded }: { tags: Tag[], loaded: boolean}) {
       p={3}
       radius={'md'}
       variant="default"
-      m={2}>
-      <a href={`/search?tags=${tag.name}`} className='px-1 pb-1'>
+      m={2}
+    >
+      <a href={`/search?${handleQueryParams(tag.name, searchParamKey)}`} className='px-1 pb-1'>
         {loaded ? tag.name : DynamicSkeletonText({max:1, min:1}) }
       </a>
     </Button>
@@ -67,7 +79,7 @@ export default function SidePanelTagsContent({ tags, loaded }: { tags: Tag[], lo
             <Table.Td>
               <div className='text-white'>Tags</div></Table.Td>
             <Table.Td>
-              <Tags tags={tags} loaded={loaded} />
+              <Tags tags={tags} searchParamKey={'tags'} loaded={loaded} />
             </Table.Td>
           </Table.Tr>
         </Table.Tbody>

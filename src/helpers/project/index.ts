@@ -1,4 +1,6 @@
+import { Project, ProjectAllInfo, getAllHaInstallTypes } from "@/backend/interfaces/project";
 import { GetContentResponse } from "@/backend/interfaces/project/request";
+import { RepoAnalytics } from "@/backend/interfaces/repoAnalytics";
 import axios from "axios";
 
 /**
@@ -66,4 +68,81 @@ function downloadToFile(content: string, filename: string, contentType: string) 
     // Clean up
     document.body.removeChild(element);
     URL.revokeObjectURL(url);
+}
+
+
+export function getProjectWorksWithList(project:ProjectAllInfo): string[]{
+    let worksWith: string[] = []
+
+    if(project){
+        const worksWithOS: boolean = project.worksWithOS;
+        const worksWithContainer: boolean = project.worksWithContainer;
+        const worksWithCore: boolean = project.worksWithCore;
+        const worksWithSupervised: boolean = project.worksWithSupervised;
+
+        let worksWithCount: number = 0
+
+        if (worksWithOS) {
+          worksWithCount++
+          worksWith.push('OS')
+        }
+        if (worksWithContainer) {
+          worksWithCount++
+          worksWith.push('Container')
+        }
+        if (worksWithCore) {
+          worksWithCount++
+          worksWith.push('Core')
+        }
+        if (worksWithSupervised) {
+          worksWithCount++
+          worksWith.push('Supervised')
+        }
+        // If all are selected, set to ANY
+        if (worksWithCount === getAllHaInstallTypes().length - 1) {
+          worksWithCount = 1
+          worksWith = ['All']
+        }
+    }      
+    console.log('worksWith:', worksWith)
+    return worksWith
+}
+
+export function getProjectActivity(repoAnalytics: RepoAnalytics | null, project: ProjectAllInfo): string {
+    const statuses: string[] = ['New', 'Active', 'Inactive', 'Beta', 'Deprecated', 'Archived',]
+    // Determine if the project is active or not based on the last commit date
+    // If project created within the last 6 months, set to NEW
+    // If the last commit date is within the last 1 year, set to ACTIVE
+    // If the last commit date is over 1 year, set to INACTIVE
+    // If repo is archived, set to ARCHIVED
+    // TODO: Add beta and deprecated
+    let projStatus = 'Active'
+    if (repoAnalytics && repoAnalytics.lastCommit) {
+      const lastCommitDate = new Date(repoAnalytics.lastCommit)
+      const sixMonthsAgo = new Date()
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
+      const oneYearAgo = new Date()
+      oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
+
+      if (lastCommitDate < sixMonthsAgo) {
+        projStatus = 'New'
+      } else if (lastCommitDate < oneYearAgo) {
+        projStatus = 'Inactive'
+      }
+
+      if (project && project.repo.archived) {
+        projStatus = 'Archived'
+      }
+
+    }
+
+    return projStatus
+}
+
+export function getProjectStars(repoAnalytics: RepoAnalytics | null): number {
+    let projStars:number = 0
+    if (repoAnalytics && repoAnalytics.stars) {
+        projStars = repoAnalytics.stars
+    }
+    return projStars
 }

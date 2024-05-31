@@ -22,8 +22,9 @@ import useProjects from '@/frontend/components/project';
 import { LoadProjects } from '@/frontend/interfaces/project';
 import { DynamicSkeletonImage, DynamicSkeletonText, DynamicSkeletonTitle } from '@/frontend/components/ui/skeleton';
 import { IconArrowRight, IconCheck, IconSettings, IconX } from '@tabler/icons-react';
-import { base64ToString } from '@/frontend/helpers/project';
+import { base64ToString, getProjectActivity, getProjectStars, getProjectWorksWithList } from '@/frontend/helpers/project';
 import { RepoAnalytics } from '@/backend/interfaces/repoAnalytics';
+import { Skeleton } from "@mantine/core";
 
 
 // import projectCSS
@@ -78,14 +79,16 @@ export default function Page({ params }: { params: { developer: string, name: st
             if (element) {
                 element.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
             }
-          }, 2500);
+          }, 1500);
         }
     };
 
+    console.log('projectContentRendered', projectContentRendered)
     // If the page is loaded with a hash directly
-    if (window.location.hash) {
+    if (window.location.hash && projectContentRendered) {
         handleRouteChange(window.location.href);
     }
+    
   }, [projectContentRendered]);
 
 
@@ -101,41 +104,12 @@ export default function Page({ params }: { params: { developer: string, name: st
       const repoAnalytics: RepoAnalytics | null = project?.repo?.repoAnalytics?.at(0) || null;
       if (project) {
 
-        const worksWithOS: boolean = project.worksWithOS;
-        const worksWithContainer: boolean = project.worksWithContainer;
-        const worksWithCore: boolean = project.worksWithCore;
-        const worksWithSupervised: boolean = project.worksWithSupervised;
-
-        let worksWithCount: number = 0
-        let worksWith: string[] = []
-
-        if (worksWithOS) {
-          worksWithCount++
-          worksWith.push('OS')
-        }
-        if (worksWithContainer) {
-          worksWithCount++
-          worksWith.push('Container')
-        }
-        if (worksWithCore) {
-          worksWithCount++
-          worksWith.push('Core')
-        }
-        if (worksWithSupervised) {
-          worksWithCount++
-          worksWith.push('Supervised')
-        }
-        // If all are selected, set to ANY
-        if (worksWithCount === getAllHaInstallTypes().length - 1) {
-          worksWithCount = 1
-          worksWith = ['All']
-        }
-
-        let worksWithStr = worksWith.join(', ')
+        const worksWithList = getProjectWorksWithList(project)
+        const worksWithStr = worksWithList.join(', ')
 
         newStats.push({ name: 'Type', value: project.projectType, change: '', changeType: 'positive' })
 
-        if (worksWithCount === 1) {
+        if (worksWithList.length === 1) {
           newStats.push({ name: 'Compatibility', value: worksWithStr, change: '', changeType: 'positive' })
         } else {
           newStats.push({ name: 'Compatibility', value: '', change: worksWithStr, changeType: 'positive' })
@@ -149,28 +123,9 @@ export default function Page({ params }: { params: { developer: string, name: st
         // If the last commit date is over 1 year, set to INACTIVE
         // If repo is archived, set to ARCHIVED
         // TODO: Add beta and deprecated
-        let projStatus = 'Active'
-        let projStars = 0
-        if (repoAnalytics && repoAnalytics.lastCommit) {
-          const lastCommitDate = new Date(repoAnalytics.lastCommit)
-          const sixMonthsAgo = new Date()
-          sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6)
-          const oneYearAgo = new Date()
-          oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
+        let projStatus = getProjectActivity(repoAnalytics, project)
+        let projStars = getProjectStars(repoAnalytics)
 
-          if (lastCommitDate < sixMonthsAgo) {
-            projStatus = 'New'
-          } else if (lastCommitDate < oneYearAgo) {
-            projStatus = 'Inactive'
-          }
-
-          if (project.repo.archived) {
-            projStatus = 'Archived'
-          }
-        }
-        if (repoAnalytics && repoAnalytics.stars) {
-          projStars = repoAnalytics.stars
-        }
         newStats.push({ name: 'Stars', value: projStars, change: '', changeType: 'positive' })
 
         newStats.push({ name: 'Status', value: projStatus, change: '', changeType: 'positive' })
@@ -238,8 +193,10 @@ export default function Page({ params }: { params: { developer: string, name: st
   }, []);
 
 
-  function renderDetails(projectInfo: LoadProjects | undefined) {
-    const projectData: ProjectAllInfo | null = projectInfo && projectInfo.projects ? projectInfo.projects[0] as ProjectAllInfo : null
+  function renderDetails(loadProjects: LoadProjects | undefined) {
+    // const repoAnalytics: RepoAnalytics | null = projectInfo?.repo?.repoAnalytics?.at(0) || null;
+
+    const projectData: ProjectAllInfo | null = loadProjects ? loadProjects.projects?.at(0) as ProjectAllInfo : null
     const projectUser = projectData?.user || null;
 
     let isUserOwner = false;
@@ -306,15 +263,25 @@ export default function Page({ params }: { params: { developer: string, name: st
               <Stack spacing={1} sx={{ flexGrow: 1 }} className='px-4'>
                   <div className="flex justify-between">
                     <div className='text-white font-bold'>Rating</div>
-                    <div className='text-white font-bold flex'>{overallRating}<div className='text-white font-thin pl-1'>/100</div></div>
-                  </div>
+                    {
+                      projectContentRendered ? 
+                        <div className='text-white font-bold flex'>{overallRating}<div className='text-white font-thin pl-1'>/100</div></div>
+                      : 
+                      <Skeleton height={10} mt={6} radius="xl" width={30} className="mr-1.5 opacity-75"/>
+                    }
+                    </div>
                   <OverallRatingBar variant="determinate" value={overallRating} />
                 </Stack>
 
                 <Stack spacing={1} sx={{ flexGrow: 1 }} className='pt-6 px-8'>
                   <div className="flex justify-between">
                     <div className='text-white font'>Activity</div>
-                    <div className='text-white font'>{activityRating}</div>
+                    { 
+                      projectContentRendered ? 
+                        <div className='text-white font'>{activityRating}</div>
+                      :
+                        <Skeleton height={10} mt={6} radius="xl" width={20} className="mr-1.5 opacity-75"/>
+                    }
                   </div>
 
                   <ActivityBar variant="determinate" value={activityRating} />
@@ -323,7 +290,12 @@ export default function Page({ params }: { params: { developer: string, name: st
                 <Stack spacing={1} sx={{ flexGrow: 1 }} className='pt-2 px-8'>
                   <div className="flex justify-between">
                     <div className='text-white'>Popularity</div>
-                    <div className='text-white font'>{popularityRating}</div>
+                    {
+                      projectContentRendered ? 
+                        <div className='text-white font'>{popularityRating}</div>
+                      :
+                        <Skeleton height={10} mt={6} radius="xl" width={20} className="mr-1.5 opacity-75"/>
+                    }
                   </div>
                   <PopularityBar variant="determinate" value={popularityRating}/>
                 </Stack>
@@ -336,7 +308,7 @@ export default function Page({ params }: { params: { developer: string, name: st
           </div>
         </div>
 
-        <Details project={loadedProject} />
+        <Details loadedProject={loadedProject} reqStatus={reqStatus} />
       </aside>
 
     )
@@ -476,8 +448,11 @@ export default function Page({ params }: { params: { developer: string, name: st
         <main className="flex-1">
 
           <Prose>
-            {reqStatus === 'success' && loadedProject && loadedProject.projects && content.success ? <UGCDocument source={content.content} setProjectContentRendered={setProjectContentRendered}></UGCDocument> :
-              <RenderDynamicPlaceholderContent />
+            {
+              reqStatus === 'success' && loadedProject && loadedProject.projects && content.success ? 
+                <UGCDocument source={content.content} setProjectContentRendered={setProjectContentRendered}></UGCDocument> 
+              :
+                <RenderDynamicPlaceholderContent />
             }
           </Prose>
           <div className='block xl:hidden'>

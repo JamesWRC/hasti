@@ -47,7 +47,7 @@ export function Fence({ children, language }: { children: string, language: stri
           <div className="relative">
                             <button
       onClick={() => copy(code)}
-      className='absolute top-0 right-0 m-4 p-1 text-xs text-white bg-dark rounded hover:bg-gray-500'
+      className='absolute top-0 right-0 m-2.5 p-1 text-xs text-white bg-dark rounded hover:bg-gray-500'
     >
       <DocumentDuplicateIcon className='text-white h-5 w-5'/>
     </button>
