@@ -401,7 +401,7 @@ export default function Page({ params }: { params: { developer: string, name: st
               {reqStatus === 'success' && projects && projects.length > 0 && projects[0] && projects[0].iconImage ?
                 <div className='bg-white h-16 w-16 lg:h-24 lg:w-24 rounded-2xl transition-all duration-700 -mt-20 md:-mt-[4.5rem] lg:-mt-16 ml-8 md:ml-6 lg:-ml-20'>
 
-                  <img img={`${process.env.USER_CONTENT_URL}/${projects[0]?.iconImage}`} className="w-full h-40 h-96 object-cover rounded-t-2xl" />
+                  <img src={`${process.env.USER_CONTENT_URL}/${projects[0]?.iconImage}`} className="w-full h-40 h-96 object-cover rounded-t-2xl" />
                 </div>
                 : <div className='bg-transparent h-16 w-16 lg:h-24 lg:w-24 rounded-2xl transition-all duration-700 -mt-20 md:-mt-[4.5rem] lg:-mt-16 ml-8 md:ml-6 lg:-ml-20 mb-2' />}
               {/* // Package banner stats */}

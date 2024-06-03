@@ -4,7 +4,7 @@ import { Skeleton } from "@mantine/core";
 
 
 // Generate a function will return a skelton that wil have random  amounts to make it look more realistic
-export function DynamicSkeletonTitle({max=10, min=4, maxWidth=200}: {max: number, min: number, maxWidth:number}) {
+export function DynamicSkeletonTitle({max=10, min=4, maxWidth=200}: {max: number, min: number, maxWidth?:number}) {
     const [random, setRandom] = useState(0);
 
     useEffect(() => {
@@ -25,7 +25,7 @@ export function DynamicSkeletonTitle({max=10, min=4, maxWidth=200}: {max: number
 }
 
 
-export function DynamicSkeletonImage({height=10, width=4, maxWidth=200}: {height: number, width: number, maxWidth:number}) {
+export function DynamicSkeletonImage({height=10, width=4, maxWidth=200}: {height: number, width: number, maxWidth?:number}) {
     const randomValue = Math.floor(Math.random() * (1000 - 4 + 1)) + 4;
 
     return (

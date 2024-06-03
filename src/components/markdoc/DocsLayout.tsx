@@ -1,10 +1,10 @@
 import { type Node } from '@markdoc/markdoc'
 
-import { DocsHeader } from '@/frontend/components/markdoc/DocsHeader'
-import { PrevNextLinks } from '@/frontend/components/markdoc/PrevNextLinks'
+// import { DocsHeader } from '@/frontend/components/markdoc/DocsHeader'
+// import { PrevNextLinks } from '@/frontend/components/markdoc/PrevNextLinks'
 import { Prose } from '@/frontend/components/markdoc/Prose'
-import { TableOfContents } from '@/frontend/components/markdoc/TableOfContents'
-import { collectSections } from '@/frontend/components/markdoc/lib/sections'
+// import { TableOfContents } from '@/frontend/components/markdoc/TableOfContents'
+// import { collectSections } from '@/frontend/components/markdoc/lib/sections'
 
 
 // Mantine 
@@ -51,9 +51,9 @@ function LinksGroup({ icon: Icon, label, initiallyOpened, tableOfContents }: Lin
 
         </Group>
       </UnstyledButton>
-      {tableOfContents ? <Collapse in={opened}>
+      {/* {tableOfContents ? <Collapse in={opened}>
         <TableOfContents tableOfContents={tableOfContents} />
-      </Collapse> : null}
+      </Collapse> : null} */}
     </>
   );
 }
@@ -70,12 +70,12 @@ export function DocsLayout({
   frontmatter: { title?: string }
   nodes: Array<Node>
 }) {
-  let tableOfContents = collectSections(nodes)
-  const mockdata = {
-    label: 'Table of Contents',
-    icon: IconListNumbers,
-    tableOfContents: tableOfContents,
-  };
+  // let tableOfContents = collectSections(nodes)
+  // const mockdata = {
+  //   label: 'Table of Contents',
+  //   icon: IconListNumbers,
+  //   tableOfContents: tableOfContents,
+  // };
   return (
     <div className='flex'>
       {/* <Box mih={220} p="md" className='visible md:hidden'>
@@ -96,7 +96,7 @@ export function DocsLayout({
           {/* <div className='2xl:hidden '>
             <LinksGroup {...mockdata} />
           </div> */}
-          <DocsHeader title={title} />
+          {/* <DocsHeader title={title} /> */}
 
           <Prose>
             {children}
