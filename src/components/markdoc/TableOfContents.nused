@@ -63,22 +63,25 @@ export function TableOfContents({
 
   return (
     // <div className="hidden xl:sticky xl:top-[4.75rem] xl:-mr-6 xl:block xl:h-[calc(100vh-4.75rem)] xl:flex-none xl:overflow-y-auto xl:py-16 xl:pr-6">
-    <div className="transition-all duration-700 sticky top-0 2xl:-ml-16 3xl:-ml-32 5xl:-ml-80">
+    <div className="transition-all duration-700 sticky top-0 pt-1">
       <nav aria-labelledby="on-this-page-title" className="w-56 top-0">
         {tableOfContents.length > 0 && (
           <>
             <ol role="list" className="mt-4 space-y-3 text-sm">
               {tableOfContents.map((section) => (
-                <li key={section.id}>
-                  <h3>
+                <li key={section.id} id={section.id}>
+                  <h3  
+                    style={{ marginTop: '0.5rem', fontSize: '1rem', lineHeight: '1.5rem', fontWeight: '500'}}
+                    >
                     <Link
                       href={`#${section.id}`}
                       className={clsx(
                         isActive(section)
-                          ? 'text-sky-500'
-                          : 'font-normal text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300',
+                          ? 'text-red-500'
+                          : 'font-normal text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300 no-underline-table-of-contents',
                       )}
-                    >
+                      style={{ textDecoration: 'none', boxShadow: 'none'}}
+                      >
                       {section.title}
                     </Link>
                   </h3>
@@ -93,9 +96,11 @@ export function TableOfContents({
                             href={`#${subSection.id}`}
                             className={
                               isActive(subSection)
-                                ? 'text-sky-500'
-                                : 'hover:text-slate-600 dark:hover:text-slate-300'
+                                ? 'text-red-500'
+                                : 'hover:text-slate-600 dark:hover:text-slate-300 no-underline-table-of-contents'
                             }
+                            style={{ textDecoration: 'none', boxShadow: 'none'}}
+
                           >
                             {subSection.title}
                           </Link>

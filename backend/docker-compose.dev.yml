@@ -11,6 +11,7 @@ services:
       - /mnt/dbstore/databases/hasti/dev/postgres/data:/var/lib/postgresql/data
     env_file:
       - .env
+    restart: always
 
   # hastibackend:
   #   container_name: hastibackend

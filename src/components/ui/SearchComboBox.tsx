@@ -7,6 +7,7 @@ import { useSession } from 'next-auth/react'
 import { TagSearchResponse } from '@/backend/interfaces/tag/request'
 import { SearchParams } from '@/backend/interfaces/tag';
 import { GetInputProps } from '@mantine/form/lib/types';
+import axios from 'axios';
 
 export default function SearchComboBox({
     label,
@@ -19,7 +20,7 @@ export default function SearchComboBox({
     setTags,
     searchParams,
     inputProps}: 
-    {label: string,
+    {label?: string,
         placeholder: string,
         searchable: boolean,
         maxSelectedValues: number,
@@ -49,18 +50,22 @@ export default function SearchComboBox({
                 searchParams.q = debounceValue
                 const params = new URLSearchParams(searchParams as Record<string, any>)
 
-                const res = await fetch(`${process.env.API_URL}/api/v1/tags/search?` + params, {
+                const res = await axios({
+                    url: `${process.env.API_URL}/api/v1/tags/search?` + params,
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${session?.user.jwt}`
-                    }
-                })
-                const tagSearchResponse: TagSearchResponse = await res.json()
+                    },
+                    timeout: 30000,
+                    timeoutErrorMessage: 'Request timed out. Please try again.',
+                  })
+
+                const tagSearchResponse: TagSearchResponse = res.data;
 
                 const tags = tagSearchResponse.hits.map((hit) => hit.document.name)
 
-                if (res.ok) {
+                if (res.status === 200) {
                     // Concat and de duplicate the tags
                     setCachedTags(tags.concat(cachedTags.filter((cachedTag:string) => tags.indexOf(cachedTag) < 0)))
                     // setExistingTags(tags)

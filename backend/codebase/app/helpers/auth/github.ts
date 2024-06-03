@@ -3,8 +3,8 @@ import { createAppAuth } from "@octokit/auth-app";
 import { createTokenAuth  } from "@octokit/auth-token";
 import fs from 'fs';
 import 'dotenv/config'
-import { getGitHubUserToken } from "@/backend/app/helpers/user";
-import { User } from "@/backend/app/interfaces/user";
+import { getGitHubUserToken } from "@/backend/helpers/user";
+import { User } from "@/backend/interfaces/user";
 
 
 const AUTH_GITHUB_APP_ID = process.env.NODE_ENV === 'production' ? process.env.AUTH_GITHUB_APP_ID : process.env.DEV_AUTH_GITHUB_APP_ID;
@@ -61,15 +61,19 @@ export async function getGitHubAppAuth(): Promise<Octokit> {
         });
 }
 
-export async function getGitHubUserAuth(user:User):Promise<Octokit> {
-    const ghuToken:string = await getGitHubUserToken(user.ghuToken)
-    const auth = createTokenAuth(ghuToken)
+
+export async function constructUserOctoKitAuth(token:string):Promise<Octokit>{
+    const auth = createTokenAuth(token)
     const authData = await auth()
     
     // Create Octokit instance with authentication
     return new Octokit({
         auth: authData.token,
     });
-
 }
   
+export async function getGitHubUserAuth(user:User):Promise<Octokit> {
+    const ghuToken:string = await getGitHubUserToken(user.ghuToken)
+    return constructUserOctoKitAuth(ghuToken)
+
+}

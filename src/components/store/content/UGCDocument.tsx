@@ -8,6 +8,11 @@ import { Callout } from '@/frontend/components/markdoc/Callout'
 import { QuickLink, QuickLinks } from '@/frontend/components/markdoc/QuickLinks'
 import { type Node, Config } from '@markdoc/markdoc';
 import '@/frontend/app/prism.js'
+import { useEffect, useState } from 'react';
+import DOMPurify from "isomorphic-dompurify";
+import ReactDOMServer from 'react-dom/server';
+import 'src/app/projectCSS.css';
+
 
 
 // const config = {
@@ -57,44 +62,65 @@ import '@/frontend/app/prism.js'
 
 
 interface DocumentProps {
-    source: string;
+    source: string | undefined;
+    setProjectContentRendered: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function UGCDocument({ source }: DocumentProps) {
-//     source = `
-// ---
-// title: Getting started
-// ---
-
-// Learn how to get CacheAdvance set up in your project in under thirty minutes or it's free. {% .lead %}
-// {% quick-links %}
-// {% quick-link title="Installation" icon="installation" href="#help" description="Step-by-step guides to setting up your system and installing the library." /%}
-// {% quick-link title="Architecture guide" icon="presets" href="/" description="Learn how the internals work and contribute." /%}
-// {% quick-link title="Plugins" icon="plugins" href="/" description="Extend the library with third-party plugins or write your own." /%}
-// {% quick-link title="API reference" icon="theming" href="/" description="Learn to easily customize and modify your app's visual design to fit your brand." /%}
-// {% /quick-links %}
+export function UGCDocument({ source, setProjectContentRendered }: DocumentProps) {
 
 
-// Possimus saepe veritatis sint nobis et quam eos. Architecto consequatur odit perferendis fuga eveniet possimus rerum cumque. Ea deleniti voluptatum deserunt voluptatibus ut non iste. Provident nam asperiores vel laboriosam omnis ducimus enim nesciunt quaerat. Minus tempora cupiditate est quod.
+      
+    // useEffect(() => {
+    //     const config  = {
+    //         nodes: nodes,
+    //         tags: tags,
+    //     };
 
-// {% callout type="warning" title="Oh no! Something bad happened!" %}
-// This is what a disclaimer message looks like. You might want to include inline in it. Or maybe you’ll want to include a [link](/) in it. I don’t think we should get too carried away with other scenarios like lists or tables — that would be silly.
-// {% /callout %}
+    //     const domPurifyConfig = {
+    //         ALLOWED_TAGS: ['p']  // Only allow <p> tags
+    //     };
 
-// `
+    //     if (!source) {
+    //         source = 'No content :(';
+    //     }
+    //     const ast = Markdoc.parse(source);
 
+    //     // ignore type error
+    //     // @ts-expect-error
+    //     const content = Markdoc.transform(ast, config);
+    //     const clean = DOMPurify.sanitize(Markdoc.renderers.react(content, React), domPurifyConfig);
+
+    //     setSafeHtml(clean);
+    //     console.log('safeHtml', safeHtml)
+    // }, []);
+  
+    // return <div dangerouslySetInnerHTML={{ __html: safeHtml }} />;
+
+    if (!source) {
+        source = 'No content :(';
+    }
+    // const a = DOMPurify.sanitize(source, {ALLOWED_TAGS: ['p', 'div']});
+
+
+    console.log('source', source)
     const ast = Markdoc.parse(source);
-    // ignore the error
-    const config  = {
-        nodes: nodes,
-        tags: tags,
-    };
+
     // ignore type error
     // @ts-expect-error
-    const content = Markdoc.transform(ast, config);
-
-    return Markdoc.renderers.react(content, React);
+    const content = Markdoc.transform(ast, {
+        nodes: nodes,
+        tags: tags,
+    });
     
+    const reactElement = Markdoc.renderers.react(content, React);
+        // const clean = DOMPurify.sanitize(reactElement, {ALLOWED_TAGS: ['p', 'div']});
+    setProjectContentRendered(true);
+    return reactElement
+    // return <div dangerouslySetInnerHTML={{ __html: reactElement }} />;
+    // const html = ReactDOMServer.renderToString(reactElement);
+
+    // return Markdoc.renderers.react(content, React).
+
 }
 
 export default UGCDocument;

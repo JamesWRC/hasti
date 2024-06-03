@@ -25,11 +25,11 @@ export default function ProjectGrid({projectParams, setProjectState}: {projectPa
       }
     }
 
-    const {projects, reqStatus} = useProjects(fetchProjects);
+    const {projects, reqStatus, setSearchProps} = useProjects(fetchProjects);
     
     useEffect(() => {
       
-      setProjectState ? setProjectState({projects, reqStatus}) : null;
+      setProjectState ? setProjectState({projects, reqStatus, setSearchProps}) : null;
 
     }, [reqStatus])
 

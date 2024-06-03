@@ -9,6 +9,8 @@ import {
   BellIcon
 } from '@heroicons/react/24/outline'
 import { useSession } from 'next-auth/react';
+import axios from 'axios';
+import { UserNotificationCountResponse, UserProjectCountResponse } from '@/backend/interfaces/user/request';
 
 const UserNavigation: React.FC = () => {
     const pathname = usePathname()
@@ -30,28 +32,37 @@ const UserNavigation: React.FC = () => {
       useEffect(() => {
         console.log("session", session)
         const fetchRepoCount = async () => {
-          const res = await fetch(`${process.env.API_URL}/api/v1/projects/${session?.user.id}/count`, {
+
+          const res = await axios({
+            url: `${process.env.API_URL}/api/v1/projects/${session?.user.id}/count`,
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${session?.user.jwt}`
             },
+            timeout: 60000,
+            timeoutErrorMessage: 'Request timed out. Please try again.',
           })
-          const data = await res.json()
+
+          const data:UserProjectCountResponse = res.data;
           if (data.success) {
             setRepoCount(data.count)
           }
         }
         const fetchNotificationCount = async () => {
-          const res = await fetch(`${process.env.API_URL}/api/v1/notifications/${session?.user.id}/count`, {
+
+          const res = await axios({
+            url: `${process.env.API_URL}/api/v1/notifications/${session?.user.id}/count`,
             method: 'GET',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${session?.user.jwt}`
-            }
+            },
+            timeout: 60000,
+            timeoutErrorMessage: 'Request timed out. Please try again.',
           })
-          const data = await res.json()
-          console.log("data", data)
+
+          const data:UserNotificationCountResponse = res.data;
           if (data.success) {
             setNotificationCount(data.count)
           }

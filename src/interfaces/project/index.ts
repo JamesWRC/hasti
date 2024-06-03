@@ -2,7 +2,8 @@
 
 import { ProjectType } from "@/backend/interfaces/project";
 import type { Project } from  '@/backend/interfaces/project';
-import { ProjectWithUser } from "@/backend/clients/prisma/client";
+import { ProjectWithUser, ProjectAllInfo } from "@/backend/clients/prisma/client";
+import { GetProjectsQueryParams } from "@/backend/interfaces/project/request";
 
 
 export interface Author {
@@ -13,15 +14,20 @@ export interface Author {
 
 export interface LoadProjects {
   reqStatus: string,
-  projects: ProjectWithUser[] | null
-
+  projects: ProjectWithUser[] | ProjectAllInfo[] | null
+  setSearchProps: React.Dispatch<React.SetStateAction<GetProjectsQueryParams>>
 }
 
 
 export function getProjectLink(project: ProjectWithUser) {
+  if(project === null) return '/404';
+  
+  let typePrefix = '';
   if (project?.projectType === ProjectType.THEME) {
-    return 'themes/' + project.title;
+    typePrefix = '/themes'
   } else if (project?.projectType === ProjectType.INTEGRATION) {
-    return 'integrations/' + project.title;
+    typePrefix = '/integrations'
   }
+
+  return `${typePrefix}/${project.user.username}/${project.title}`;
 }

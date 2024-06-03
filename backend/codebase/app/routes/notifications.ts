@@ -1,15 +1,15 @@
 import { Router } from 'express';
-import { UserNotificationCountResponse } from '@/backend/app/interfaces/user/request';
-import type { User } from '@/backend/app/interfaces/user';
-import type { Notification } from '@/backend/app/interfaces/notification';
-// import { JWTResult, handleUserJWTPayload } from '@/backend/app/helpers/user';
-import { BadRequestResponse } from '@/backend/app/interfaces/request';
-import prisma from '@/backend/app/clients/prisma/client';
+import { UserNotificationCountResponse } from '@/backend/interfaces/user/request';
+import type { User } from '@/backend/interfaces/user';
+import type { Notification } from '@/backend/interfaces/notification';
+// import { JWTResult, handleUserJWTPayload } from '@/backend/helpers/user';
+import { BadRequestResponse } from '@/backend/interfaces/request';
+import prisma from '@/backend/clients/prisma/client';
 import { Prisma } from '@prisma/client';
-import { GetNotificationsQueryParams, GetNotificationsResponse, UpdateNotificationReadStatus, UpdateNotificationReadStatusResponse } from '@/backend/app/interfaces/notification/request';
-import { getAllNotificationAbout, getAllNotificationTypes } from '@/backend/app/interfaces/notification';
+import { GetNotificationsQueryParams, GetNotificationsResponse, UpdateNotificationReadStatus, UpdateNotificationReadStatusResponse } from '@/backend/interfaces/notification/request';
+import { getAllNotificationAbout, getAllNotificationTypes } from '@/backend/interfaces/notification';
 import logger from '../logger';
-import { isAuthenticated } from '@/backend/app/helpers/auth';
+import { isAuthenticated } from '@/backend/helpers/auth';
 
 const notificationsRouter = Router();
 
@@ -149,16 +149,14 @@ const NOTIFICATION_MAX_TAKE = 100
 
             const notification: Notification[] = await prisma.notification.findMany(query)
             console.log('projects:', notification)
+            const response: GetNotificationsResponse = {
+                success: true,
+                notifications: notification
+            }
             if (notification.length > 0) {
-
-                const response: GetNotificationsResponse = {
-                    success: true,
-                    notifications: notification
-                }
-
                 return res.status(200).json(response);
             } else {
-                return res.status(404).json({success:false, message: 'No Projects made by any user were able to be found. Please specify the proper params.' });
+                return res.status(204).json(response);
             }
 
 

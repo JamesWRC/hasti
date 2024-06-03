@@ -32,10 +32,10 @@ const navigation = [
     { name: 'Themes', href: '/themes', icon: SwatchIcon},
     { name: 'Integrations', href: '/integrations', icon: SquaresPlusIcon},
     { name: 'adfag', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
+    { name: 'vdsv', href: '/integrations', icon: SquaresPlusIcon},
+    { name: 'bbb', href: '/integrations', icon: SquaresPlusIcon},
+    { name: 'hdshdddsd', href: '/integrations', icon: SquaresPlusIcon},
+    { name: 'aaa', href: '/integrations', icon: SquaresPlusIcon},
     
   ]
 

@@ -1,0 +1,65 @@
+
+
+.center {
+  text-align: center;
+  background-color: black;
+}
+
+/* Begin CSS for <summary> tag */
+details {
+  /* background-color: #f7fafc; Background color for the entire details container */
+  /* border: 1px solid #e2e8f0; Light grey border similar to Tailwind's colors */
+  border-radius: 0.375rem; /* Rounded corners */
+  margin-top: 8px; /* Space above the details element */
+  /* padding: 8px 16px; Padding inside the details element */
+  /* box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); Subtle shadow for depth */
+}
+
+summary {
+  padding: 8px 16px; /* Padding for clickable summary */
+  font-size: 0.875rem; /* Small text size */
+  font-weight: 600; /* Semi-bold font weight */
+  color: #4a5568; /* Dark grey text color */
+  background-color: #e7e4e4; /* Light grey background */
+  border-radius: 0.375rem; /* Rounded corners */
+  cursor: pointer;
+  transition: background-color 0.2s; /* Smooth background color transition on hover */
+}
+
+summary:hover {
+  background-color: #e2e8f0; /* Darker grey background on hover */
+}
+
+summary:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(203, 213, 225, 0.75); /* Focus ring */
+}
+
+details[open] summary {
+  border-bottom: 2px solid #cbd5e0; /* Border to distinguish the summary from content when open */
+  margin-bottom: -20px;
+}
+
+details > *:not(summary) {
+  border-radius: 0.375rem; /* Rounded corners */
+  padding: 16px; /* Padding for content inside the details, not applying to summary */
+  border-top: 1px solid #e2e8f0; /* Light grey border at the top of the content area */
+  color: #2d3748; /* Slightly darker text color for content */
+  background-color: #edf2f7; /* Lighter background for the content area */
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+/* End CSS for <summary> tags */
+
+.inline-code {
+  display: inline-block; /* Makes the div inline but allows block properties */
+  color: #ffffff; /* Darker text for better readability */
+  padding: 0px 6px; /* Padding around the text */
+  border-radius: 8px; /* Rounded corners for aesthetics */
+  font-family: monospace; /* Font that gives the look of code */
+  font-size: 0.875rem; /* Smaller font size, similar to inline code */
+  border: 1px solid #ddd; /* Light border to highlight the code block */
+  --tw-bg-opacity: 1;
+  background-color: rgb(1, 22, 39); /* Dark background color for the code block */
+}

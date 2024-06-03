@@ -1,19 +1,19 @@
 import { Router } from 'express';
-import { UserNotificationCountResponse } from '@/backend/app/interfaces/user/request';
-import type { User } from '@/backend/app/interfaces/user';
-import type { Notification } from '@/backend/app/interfaces/notification';
-// import { JWTResult, handleUserJWTPayload } from '@/backend/app/helpers/user';
-import { BadRequestResponse, OkResponse } from '@/backend/app/interfaces/request';
-import prisma from '@/backend/app/clients/prisma/client';
+import { UserNotificationCountResponse } from '@/backend/interfaces/user/request';
+import type { User } from '@/backend/interfaces/user';
+import type { Notification } from '@/backend/interfaces/notification';
+// import { JWTResult, handleUserJWTPayload } from '@/backend/helpers/user';
+import { BadRequestResponse, OkResponse } from '@/backend/interfaces/request';
+import prisma from '@/backend/clients/prisma/client';
 import { Prisma } from '@prisma/client';
-import { GetNotificationsQueryParams, GetNotificationsResponse, UpdateNotificationReadStatus, UpdateNotificationReadStatusResponse } from '@/backend/app/interfaces/notification/request';
-import { getAllNotificationAbout, getAllNotificationTypes } from '@/backend/app/interfaces/notification';
+import { GetNotificationsQueryParams, GetNotificationsResponse, UpdateNotificationReadStatus, UpdateNotificationReadStatusResponse } from '@/backend/interfaces/notification/request';
+import { getAllNotificationAbout, getAllNotificationTypes } from '@/backend/interfaces/notification';
 import logger from '../logger';
-import type { SearchResponse } from '@/backend/app/interfaces/search';
-import tsClient from '@/backend/app/clients/typesense';
-import { GHAppInstallation, GHAppSenderWHSender, GitHubRepoRequest, RepositoryData } from '@/backend/app/interfaces/repo';
-import verifySignature from '@/backend/app/helpers/webhook';
-import addOrUpdateRepo, { removeRepo, setGitAppHasAccess } from '@/backend/app/helpers/repo';
+import type { SearchResponse } from '@/backend/interfaces/search';
+import tsClient from '@/backend/clients/typesense';
+import { GHAppInstallation, GHAppSenderWHSender, GitHubRepoRequest, RepositoryData, Repo } from '@/backend/interfaces/repo';
+import verifySignature from '@/backend/helpers/webhook';
+import addOrUpdateRepo, { removeRepo, setGitAppHasAccess } from '@/backend/helpers/repo';
 import { getGitHubUserToken } from '../helpers/user';
 import { getGitHubUserAuth } from '../helpers/auth/github';
 
@@ -95,7 +95,7 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
                     console.log('event', event)
                     console.log('action', action)
                     // Add repos
-                    const dbPromises: Promise<boolean>[] = []
+                    const dbPromises: Promise<Repo | boolean | null>[] = []
 
                     
                       // Remove repos 
@@ -130,7 +130,7 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
                             }
                             console.log('add repo', addedRepo)     
                             
-                           const dbActions = addOrUpdateRepo(addedRepo, user, sender, installation)
+                           const dbActions = addOrUpdateRepo(addedRepo, user, sender.id, installation.account.id, installation.account.type)
                            dbPromises.push(dbActions)
                         }
                     }

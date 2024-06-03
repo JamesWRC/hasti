@@ -1,5 +1,5 @@
 import { Project } from "@prisma/client";
-import type { ProjectWithUser, ProjectType } from '@/backend/app/interfaces/project';
+import type { ProjectWithUser, ProjectType, ProjectAllInfo } from '@/backend/interfaces/project';
 
 export const MAX_FILE_SIZE:number = 10 * 1024 * 1024 // 10MB. this is actually 10.48576MB... but let's just call it 10MB :)
 
@@ -42,12 +42,13 @@ export interface AddProjectResponse {
 
 export interface GetProjectsResponse {
     success: boolean;
-    userProjects: ProjectWithUser[] | null;
+    userProjects: ProjectWithUser[] | ProjectAllInfo[] | null;
 }
 
 
-export interface GetProjectsQueryParams {
+export interface GetProjectsQueryParams{
     limit?: number;
+    projectID?: string;
     type?: ProjectType;
     cursor?: string;
     userID?: string;
@@ -55,12 +56,34 @@ export interface GetProjectsQueryParams {
     githubUserID?: number;
     checkImported?: boolean;
     ownedOrImported?: boolean;
+    projectTitle?: string;
     orderBy?: 'createdAt' | 'updatedAt' | 'title' | 'author';
     orderDirection?: 'asc' | 'desc';
+    allContent?: boolean;
 
 }
 
-export interface GetProjectContentResponse {
+export interface DeleteProjectResponse {
     success: boolean;
+    projectID: string;
+}
+
+export interface ChangeProjectOwnershipResponse {
+    success: boolean;
+    projectID: string;
+    newOwnerID: string;
+}
+
+export interface RefreshContentResponse {
+    success: boolean;
+    message: string;
+    prevSHA: string;
+    newSHA: string;
+}
+
+export interface GetContentResponse {
+    success: boolean;
+    sha: string;
     content: string;
 }
+

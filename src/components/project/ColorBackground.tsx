@@ -21,13 +21,13 @@ export default function ColorBackground({ projectID }: { projectID: string }) {
         let x1, y1, x2, y2, x3, y3, rngCount = 100;
         do {
             x1 = Math.floor(rand.intBetween(0, canvas.width));
-            y1 = Math.floor(rand.intBetween(1, canvas.height));
+            y1 = Math.floor(rand.intBetween(1, canvas.height*2));
 
             x2 = Math.floor(rand.intBetween(2, canvas.width));
-            y2 = Math.floor(rand.intBetween(3, canvas.height));
+            y2 = Math.floor(rand.intBetween(3, canvas.height*5));
 
-            x3 = Math.floor(rand.intBetween(1, canvas.width));
-            y3 = Math.floor(rand.intBetween(1, canvas.height));
+            x3 = Math.floor(rand.intBetween(1, canvas.width/7));
+            y3 = Math.floor(rand.intBetween(1, canvas.height*2));
 
             rngCount--;
             console.log(rngCount)

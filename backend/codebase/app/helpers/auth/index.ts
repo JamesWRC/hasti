@@ -1,7 +1,7 @@
-import { User, UserJWT } from '@/backend/app/interfaces/user';
+import { User, UserJWT } from '@/backend/interfaces/user';
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 import { jwtVerify } from "jose";
-import prisma from "@/backend/app/clients/prisma/client";
+import prisma from "@/backend/clients/prisma/client";
 import { Request, Response, NextFunction } from 'express';
 import { CorsOptions } from 'cors';
     

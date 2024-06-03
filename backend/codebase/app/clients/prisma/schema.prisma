@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["omitApi"]
 }
 
 datasource db {
@@ -26,7 +27,9 @@ model Tag {
 model Project {
   id                String        @id @default(uuid())
   title             String        @db.VarChar(255)
-  content           String        @db.Text
+
+  contentSHA        String        @db.VarChar(255) @default("") // SHA of the content for caching/version control purposes
+
   description       String        @default("") @db.Text 
 
   tags              Tag[]         // IMPLICIT many to many relationship to Tag
@@ -38,14 +41,49 @@ model Project {
   repoID            String
   repo              Repo          @relation(fields: [repoID], references: [id])
   
-  haInstallType     String        @default("core") @db.VarChar(255)
+  worksWithOS               Boolean       @default(false)
+  worksWithContainer        Boolean       @default(false)
+  worksWithCore             Boolean       @default(false)
+  worksWithSupervised       Boolean       @default(false)
+  
   projectType       String        @default("integration") @db.VarChar(255)
 
-  profileImage      String?       @default("") @db.VarChar(255)
+  iconImage         String?       @default("") @db.VarChar(255)
   backgroundImage   String?       @default("") @db.VarChar(255)
 
   contentImages     String[]      @default([]) @db.VarChar(255) // Array of image URLs
+  claimed           Boolean       @default(false)
+  usingHastiMD      Boolean       @default(false) // If the project is using HastiMD markdown for content
 
+  popularityRating  Int           @default(0)
+  activityRating    Int           @default(0)
+  overallRating     Int           @default(0)
+
+  createdAt         DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime      @updatedAt
+}
+
+//  RepoAnalytics is a record of the analytics for a repo.
+model RepoAnalytics {
+  id                String        @id @default(uuid())
+  
+  repoID            String
+  repo              Repo          @relation(fields: [repoID], references: [id])
+  
+  stars             Int           @default(0)
+  forks             Int           @default(0)
+  watchers          Int           @default(0)
+  contributors      Int           @default(0)
+  commits           Int           @default(0)
+  releases          Int           @default(0)
+  license           String        @default("") @db.VarChar(255)
+  openIssues        Int           @default(0)
+  closedIssues      Int           @default(0)
+  pullRequests      Int           @default(0)
+  lastCommit        DateTime?     @default(now())
+
+
+  
   createdAt         DateTime      @default(now()) @db.Timestamp(6)
   updatedAt         DateTime      @updatedAt
 }
@@ -61,6 +99,8 @@ model Collaborator {
   userID            String
   user              User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
+  githubID          Int
+
   // Permissions for the collaborator to a projects AND/OR repo.
   type              String        @default("user") @db.VarChar(255) // Lowercase "user" or "admin"
   admin             Boolean       @default(false)
@@ -71,6 +111,9 @@ model Collaborator {
 
   createdAt         DateTime      @default(now()) @db.Timestamp(6)
   updatedAt         DateTime      @updatedAt
+
+  @@index([githubID], name: "collaborator_githubID_index")
+  @@index([repoID], name: "repoID_index")
 
 }
  
@@ -84,22 +127,32 @@ model Repo {
   fullName          String        @db.VarChar(255)
   private           Boolean       @default(false)
   
-  ownerGithubID     Int           @default(0)
+  ownerGithubID     Int           
   ownerType         String        @default("user") @db.VarChar(255) // Lowercase "user" or "organization"
-  addedByGithubID   Int           @default(0)
- 
+  addedByGithubID   Int           
+
   userID            String
   user              User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
   
   projects          Project[]
 
-  gitHubStars       Int           @default(0)
-  gitHubWatchers    Int           @default(0)
+  // Repo metadata
+  repoCreatedAt     DateTime      @default(now()) // Date the repo was created on GitHub
+  repoPushedAt      DateTime      @default(now()) // Date the repo was last pushed to on GitHub
+
+  forked            Boolean       @default(false) // If the repo is a fork
+  forks             Int           @default(0)
+  forkedGitHubRepoID    Int       @default(0) // If the repo is a fork, this is the original repo ID
+  forkedGitHubNodeID    String    @default("") // If the repo is a fork, this is the original repo nodeID
+  forkedRepoFullName    String    @default("") // If the repo is a fork, this is the original repo fullName
+  forkedGitHubOwnerID   Int       @default(0) // If the repo is a fork, this is the original repo owner ID
+
+  archived          Boolean       @default(false) // If the repo is archived
 
   gitAppHasAccess   Boolean       @default(false) // If the app has access to the repo
 
   collaborators     Collaborator[]
-
+  repoAnalytics     RepoAnalytics[]
 
   createdAt         DateTime      @default(now()) @db.Timestamp(6)
   updatedAt         DateTime      @updatedAt
@@ -111,6 +164,7 @@ model Repo {
 model User {
   id                String        @id @default(uuid())
   githubID          Int           @unique
+  githubNodeID      String        @unique
   username          String        @db.VarChar(255)
   image             String        @db.VarChar(255)
   type              String        @db.VarChar(255) @default("user")

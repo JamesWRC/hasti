@@ -90,7 +90,7 @@ body {
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
+  /* color: rgb(var(--foreground-rgb)); */
   background-color: #26282B;
   /* background: linear-gradient(
       to bottom,
@@ -105,11 +105,11 @@ a {
   text-decoration: none;
 }
 
-@media (prefers-color-scheme: dark) {
+/* @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;
   }
-}
+} */
 
 
 /* Customize scroll bar */
@@ -142,3 +142,8 @@ content background: #323232 OR #393E46
 accents / highlights: #00ADB5
 text: #EEEEEE
 */
+
+/* Hide the underline in the content table of contents */
+.no-underline-table-of-contents a {
+  text-decoration: none !important;
+}

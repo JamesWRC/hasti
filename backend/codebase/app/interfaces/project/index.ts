@@ -1,6 +1,6 @@
 import { Project, User } from '@prisma/client';
 export type {Project} from "@prisma/client";
-export type {ProjectWithUser} from '@/backend/app/clients/prisma/client';
+export type {ProjectWithUser, ProjectAllInfo} from '@/backend/clients/prisma/client';
 
 // Used for differentiating between theme and integration projects and other projects in the future
 export enum ProjectType {
@@ -30,12 +30,15 @@ export function getAllProjectTypes(caseSensitive:Boolean=true): string[] {
     return ret;
   }
 
-export function getAllHaInstallTypes(): string[] {
+export function getAllHaInstallTypes(caseSensitive:Boolean=true): string[] {
     const ret: string[] = [];
     const tprojValues = Object.values(HAInstallType);
     for(const t in tprojValues){
-        const upperType = tprojValues[t][0].toUpperCase() + tprojValues[t].slice(1)
-        ret.push(upperType);
+      if(caseSensitive){
+        ret.push(tprojValues[t][0].toUpperCase() + tprojValues[t].slice(1)) 
+      }else{
+        ret.push(tprojValues[t]);
+      }
     }
     return ret;
   }
@@ -62,3 +65,12 @@ export function getHaInstallType(installType: string): HAInstallType {
     return HAInstallType.ANY;
   }
 
+
+// Allowed HTML in content
+export const allowedContentHTMLTags:string[] = [
+  'div', 'span', 'img', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+  'b', 'i', 'em', 'strong', 'small', 'strike', 'del', 'ins',
+  'ul', 'ol', 'li', 'a', 'img', 'code', 'pre',
+  'table', 'tr', 'td', 'th', 'tbody', 'thead', 'tfoot',
+  'p', 'br', 'hr', 'blockquote', 'sub', 'sup', 'details'
+];

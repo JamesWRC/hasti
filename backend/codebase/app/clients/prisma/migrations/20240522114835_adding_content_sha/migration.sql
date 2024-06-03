@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Project" ADD COLUMN     "contentSHA" VARCHAR(255) NOT NULL DEFAULT '',
+ALTER COLUMN "contentImages" SET DEFAULT ARRAY[]::VARCHAR(255)[];

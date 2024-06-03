@@ -1,6 +1,8 @@
 import { Callout } from '@/frontend/components/markdoc/Callout'
 import { QuickLink, QuickLinks } from '@/frontend/components/markdoc/QuickLinks'
 import { group } from '@/frontend/components/markdoc/Loop'
+import { SafeHTML } from '@/frontend/components/markdoc/SafeHTML'
+
 const tags = {
   callout: {
     attributes: {
@@ -44,6 +46,10 @@ const tags = {
       icon: { type: String },
       href: { type: String },
     },
+  },
+  'safeHTML': {
+    render: SafeHTML,
+    selfClosing: true,
   },
 }
 

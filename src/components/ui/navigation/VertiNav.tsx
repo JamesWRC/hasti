@@ -29,10 +29,10 @@ const navigation = [
     { name: 'Themes', href: '/themes', icon: SwatchIcon},
     { name: 'Integrations', href: '/integrations', icon: SquaresPlusIcon},
     { name: 'adfag', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
+    { name: 'hdsasashsd', href: '/integrations', icon: SquaresPlusIcon},
+    { name: 'fds', href: '/integrations', icon: SquaresPlusIcon},
+    { name: 'dddd', href: '/integrations', icon: SquaresPlusIcon},
+    { name: 'bbbb', href: '/integrations', icon: SquaresPlusIcon},
     
   ]
 
