@@ -193,7 +193,8 @@ export default function Page({ params }: { params: { developer: string, name: st
   }, []);
 
 
-  function renderDetails(loadProjects: LoadProjects | undefined) {
+
+  function RenderDetails({ loadProjects }: {loadProjects: LoadProjects | undefined}) {
     // const repoAnalytics: RepoAnalytics | null = projectInfo?.repo?.repoAnalytics?.at(0) || null;
 
     const projectData: ProjectAllInfo | null = loadProjects ? loadProjects.projects?.at(0) as ProjectAllInfo : null
@@ -255,61 +256,60 @@ export default function Page({ params }: { params: { developer: string, name: st
     // activityRating = 80
     // popularityRating = 100
     return (
-      <aside className="transition-all duration-700 sticky top-8 xl:w-96 shrink-0">
-        <div className="bg-gray-900 rounded-3xl mb-4">
-          <div className="mx-auto max-w-7xl">
-            <div className="bg-gray-900 py-10 rounded-3xl min-w-full divide-y divide-gray-700">
-              <div className="px-4 pb-8">
-              <Stack spacing={1} sx={{ flexGrow: 1 }} className='px-4'>
-                  <div className="flex justify-between">
-                    <div className='text-white font-bold'>Rating</div>
-                    {
-                      projectContentRendered ? 
-                        <div className='text-white font-bold flex'>{overallRating}<div className='text-white font-thin pl-1'>/100</div></div>
-                      : 
-                      <Skeleton height={10} mt={6} radius="xl" width={30} className="mr-1.5 opacity-75"/>
-                    }
-                    </div>
-                  <OverallRatingBar variant="determinate" value={overallRating} />
-                </Stack>
-
-                <Stack spacing={1} sx={{ flexGrow: 1 }} className='pt-6 px-8'>
-                  <div className="flex justify-between">
-                    <div className='text-white font'>Activity</div>
-                    { 
-                      projectContentRendered ? 
-                        <div className='text-white font'>{activityRating}</div>
-                      :
-                        <Skeleton height={10} mt={6} radius="xl" width={20} className="mr-1.5 opacity-75"/>
-                    }
-                  </div>
-
-                  <ActivityBar variant="determinate" value={activityRating} />
-                </Stack>
-
-                <Stack spacing={1} sx={{ flexGrow: 1 }} className='pt-2 px-8'>
-                  <div className="flex justify-between">
-                    <div className='text-white'>Popularity</div>
-                    {
-                      projectContentRendered ? 
-                        <div className='text-white font'>{popularityRating}</div>
-                      :
-                        <Skeleton height={10} mt={6} radius="xl" width={20} className="mr-1.5 opacity-75"/>
-                    }
-                  </div>
-                  <PopularityBar variant="determinate" value={popularityRating}/>
-                </Stack>
-              </div>
-              <div className='py-2'>
-              graphs
+<aside className="transition-all duration-700 xl:w-72">
+  <div className="bg-gray-900 rounded-3xl mb-4 top-0 z-10 ">
+    <div className="mx-auto max-w-7xl">
+      <div className="bg-gray-900 py-10 rounded-3xl min-w-full">
+        <div className="px-2">
+          <Stack spacing={1} sx={{ flexGrow: 1 }} className='px-4'>
+            <div className="flex justify-between">
+              <div className='text-white font-bold'>Rating</div>
+              {
+                projectContentRendered ? 
+                  <div className='text-white font-bold flex'>{overallRating}<div className='text-white font-thin pl-1'>/100</div></div>
+                : 
+                <Skeleton height={10} mt={6} radius="xl" width={30} className="mr-1.5 opacity-75"/>
+              }
             </div>
+            <OverallRatingBar variant="determinate" value={overallRating} />
+          </Stack>
+
+          <Stack spacing={1} sx={{ flexGrow: 1 }} className='pt-6 px-8'>
+            <div className="flex justify-between">
+              <div className='text-white font'>Activity</div>
+              { 
+                projectContentRendered ? 
+                  <div className='text-white font'>{activityRating}</div>
+                :
+                  <Skeleton height={10} mt={6} radius="xl" width={20} className="mr-1.5 opacity-75"/>
+              }
             </div>
 
-          </div>
+            <ActivityBar variant="determinate" value={activityRating} />
+          </Stack>
+
+          <Stack spacing={1} sx={{ flexGrow: 1 }} className='pt-2 px-8'>
+            <div className="flex justify-between">
+              <div className='text-white'>Popularity</div>
+              {
+                projectContentRendered ? 
+                  <div className='text-white font'>{popularityRating}</div>
+                :
+                  <Skeleton height={10} mt={6} radius="xl" width={20} className="mr-1.5 opacity-75"/>
+              }
+            </div>
+            <PopularityBar variant="determinate" value={popularityRating}/>
+          </Stack>
         </div>
 
-        <Details loadedProject={loadedProject} reqStatus={reqStatus} />
-      </aside>
+      </div>
+
+    </div>
+  </div>
+  <div className="bg-gray-900 rounded-3xl mb-4 sticky z-20">
+    <Details loadedProject={loadedProject} reqStatus={reqStatus} />
+  </div>
+</aside>
 
     )
   }
@@ -456,13 +456,11 @@ export default function Page({ params }: { params: { developer: string, name: st
             }
           </Prose>
           <div className='block xl:hidden'>
-              {renderDetails(loadedProject)}
+              <RenderDetails loadProjects={loadedProject}/>
             </div>
         </main>
-        <div className='hidden xl:block sticky top-0 pt-5'>
-          <div className=''>
-            {renderDetails(loadedProject)}
-          </div>
+        <div className='hidden xl:block top-8 sticky'>
+          <RenderDetails loadProjects={loadedProject}/>
         </div>
 
       </div>

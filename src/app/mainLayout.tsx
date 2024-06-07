@@ -30,6 +30,7 @@ import UserNavi from '@/frontend/components/ui/navigation/UserNavi'
 import Navigation from '@/frontend/components/ui/navigation/Navigation'
 import { auth } from './auth'
 import { SignIn } from '@/frontend/components/authComp'
+import Search from '@/frontend/components/ui/search/Search';
 
 
 
@@ -287,6 +288,7 @@ export default function  MainLayout({
 
         <main className="md:pl-72 bg-dark h-full md:h-screen p-2">
           <div className="pr-0 pl-0 bg-white rounded-2xl w-full h-full md:h-full overflow-y-scroll scrollbar overflow-x-hidden">
+            <Search/>
             {children}
 
           </div>

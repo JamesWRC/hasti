@@ -1,3 +1,4 @@
+'use Client'
 import { Project, ProjectAllInfo } from '@/backend/interfaces/project'
 import { Tag } from '@/backend/interfaces/tag'
 import SidePanelTagsContent from '@/frontend/components/store/content/SidePanelContent'
@@ -8,6 +9,7 @@ import { get } from 'lodash';
 import { getProjectActivity, getProjectStars, getProjectWorksWithList } from '@/frontend/helpers/project';
 import { RepoAnalytics } from '@/backend/interfaces/repoAnalytics';
 import moment from 'moment';
+import { useState } from 'react';
 
 const people = [
   { title: 'Developer', description: 'INSERT DEVELOPER NAME HERE' },
@@ -23,6 +25,7 @@ export default function Details({ loadedProject, reqStatus }: { loadedProject: L
   const isError = reqStatus === 'error'
   console.log('isLoading side', loaded)
   const tags: Tag[] = projectData?.tags || []
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <div className="bg-gray-900 rounded-3xl">
@@ -31,13 +34,13 @@ export default function Details({ loadedProject, reqStatus }: { loadedProject: L
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="sm:flex sm:items-center">
               <div className="sm:flex-auto">
-                <h1 className="text-base font-semibold leading-6 text-white font-bold">
+                <h1 className="text-base leading-6 text-white font-bold">
                   {loaded ? projectData?.title : DynamicSkeletonText({ max: 3, min: 1 })}
                 </h1>
                 {/* Project Description */}
                 <hr className="mt-2 mb-2 border-gray-700" />
                 <span className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0'>Description</span>
-                <div className="mt-2 text-sm text-gray-300 text-ellipsis overflow-hidden">
+                <div className={`mt-2 text-sm text-gray-300 overflow-hidden cursor-pointer ${isExpanded ? '' : 'line-clamp-3'}`} onClick={() => setIsExpanded(!isExpanded)}>
                   {loaded ? projectData?.description : DynamicSkeletonText({ max: 30, min: 10 })}
                 </div>
                 {/* Project Type */}
@@ -78,7 +81,7 @@ export default function Details({ loadedProject, reqStatus }: { loadedProject: L
 
                 <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
                   
-                  <div className="min-w-full divide-y divide-gray-700">
+                  <div className="min-w-full divide-y divide-gray-700 px-4">
 
                     <div className="divide-gray-800 divide-y-4">
 
