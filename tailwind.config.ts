@@ -62,6 +62,9 @@ module.exports = {
         },
         boxShadow: {
           'inv-md': 'inset -400px 0 #03214f,inset 9in 0 #fff',
+          '3xl': '0 35px 60px -15px rgba(0, 0, 0, 0.3)',
+          '4xl': '0 45px 40px -15px rgba(0, 0, 0, 0.3)',
+
         }, 
         maxWidth: {
           '8xl': '1600px',

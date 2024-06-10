@@ -29,7 +29,7 @@ export default function SearchComboBox({
         tags: string[], 
         setTags: (tags: string[]) => void,
         searchParams?: SearchParams,
-        inputProps: GetInputProps<any>
+        inputProps?: GetInputProps<any>
     }) {
     // Holds what the user has entered in the search box
     const [search, setSearch] = useState('');
@@ -40,12 +40,18 @@ export default function SearchComboBox({
 
     const [cachedTags, setCachedTags] = useState(existingTags);
 
+    const [message, setMessage] = useState("Start typing to search for tags.");
+    // let message = 'searching...'
     
+    useEffect(() => {
+        setCachedTags(existingTags)
+    }, [existingTags]);
+
     // Function to handle the search input]
     useEffect(() => {
         if (searchParams && debounceValue != '') {
             const searchTags = async () => {
-
+                
                 // Set the search query
                 searchParams.q = debounceValue
                 const params = new URLSearchParams(searchParams as Record<string, any>)
@@ -72,6 +78,8 @@ export default function SearchComboBox({
                 }
             }
             searchTags()
+            setMessage(nothingFoundMessage)
+
         }
     }, [debounceValue]);
 
@@ -106,6 +114,8 @@ export default function SearchComboBox({
             setSearch('')
         } else {
             setDebounceValue(search)
+            setMessage('searching...')
+
         }
     }
 
@@ -125,11 +135,11 @@ export default function SearchComboBox({
             onSearchChange={setSearch}
             value={tags.filter((tag) => tag.length > 0)}
             onChange={handleSearches}
-            nothingFoundMessage={nothingFoundMessage}
+            nothingFoundMessage={message}
             onKeyUp={(e) => { handleSearch(e) }}
             limit={6}
             maxValues={maxSelectedValues}
-            error={inputProps('tags').error}
+            error={inputProps ? inputProps('tags').error : null}
         />
     )
 }

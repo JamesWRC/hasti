@@ -361,7 +361,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
       const searchParams = new URLSearchParams({
         q: '*', // Get most popular tags
         query_by: 'name',
-        filter_by: 'type:integration',
+        filter_by: `type:${projectType?.toLowerCase()}`,
         include_fields: 'name,type',
         highlight_fields: 'name', // Hacky way to get API to not send highlight fields in response to save response size
 
@@ -384,8 +384,9 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
 
       if (res.status === 200 && tagSearchResponse.hits && tagSearchResponse.hits.length > 0) {
-        const popularTags = tagSearchResponse.hits.map((hit) => hit.document.name)
-        setExistingTags(popularTags)
+        const currPopularTags = tagSearchResponse.hits.map((hit) => hit.document.name)
+        console.log('popularTags:', currPopularTags)
+        setExistingTags(currPopularTags)
       }
     }
 
@@ -393,13 +394,13 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
       fetchPopularTags()
     }
 
-  }, [opened]);
+  }, [opened, projectType]);
 
 
   const searchParams: SearchParams = {
-    q: 'placeholder',
+    q: '*',
     query_by: 'name',
-    filter_by: 'type:integration',
+    filter_by: `type:${projectType?.toLowerCase()}`,
     include_fields: 'name,type',
     highlight_fields: 'name', // Hacky way to get API to not send highlight fields in response to save response size
     // sort_by: 'projectsUsing:desc',

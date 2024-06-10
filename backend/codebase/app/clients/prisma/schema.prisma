@@ -16,7 +16,7 @@ model Tag {
   id                String        @id @default(uuid())
   name              String        @unique @db.VarChar(255)
   type              String        @db.VarChar(255)
-  project           Project[]     // IMPLICIT many to many relationship to Project
+  projects          Project[]     // IMPLICIT many to many relationship to Project
 
   createdAt         DateTime      @default(now()) @db.Timestamp(6)
   updatedAt         DateTime      @updatedAt

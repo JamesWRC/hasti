@@ -39,3 +39,18 @@ export interface RequestParams {
     per_page:        number;
     q:               string;
 }
+
+export interface GetPopularTagsQueryParams {
+    type?: string; // ProjectType as string
+    limit?: string;
+}
+
+export interface TagWithCount {
+    name: string;
+    count: number;
+}
+
+export interface PopularTagResponse {
+    success: boolean;
+    tags: TagWithCount[];
+}

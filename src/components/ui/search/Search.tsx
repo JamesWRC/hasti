@@ -1,40 +1,286 @@
 'use client'
 
-import { ChevronDoubleDownIcon } from '@heroicons/react/24/solid';
+import { getAllProjectTypes } from '@/backend/interfaces/project';
+import { GetPopularTagsQueryParams, PopularTagResponse, TagSearchResponse, TagWithCount } from '@/backend/interfaces/tag/request';
+import { AdjustmentsVerticalIcon, ChevronDoubleDownIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid';
 // Make a search Bar component
 
-import { Box, Button, Collapse, Group, Text } from '@mantine/core';
-import { useDisclosure } from "@mantine/hooks";
+import { Box, Button, CloseButton, Collapse, Group, Input, Radio, RadioGroup, Text } from '@mantine/core';
+import { useDebouncedState, useDisclosure } from "@mantine/hooks";
+import { useEffect, useState } from 'react';
+import useTags from '@/frontend/components/tag';
+import { PopularTags } from '@/frontend/interfaces/tag';
+import { DynamicSkeletonTitle } from '@/frontend/components/ui/skeleton';
+import SearchTagComboBox from '@/frontend/components/ui/SearchComboBox';
+import axios from 'axios';
+import { SearchParams } from '@/backend/interfaces/tag';
+
+
 
 export default function Search() {
-    const [opened, { toggle }] = useDisclosure(false);
+  const initParams = new URLSearchParams(new URL(window.location.href).searchParams);
 
-    return (
-        <>
-        <form className="max-w-md mx-auto pt-3">
-            <label htmlFor="default-search" className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white">Search</label>
-            <div className="relative">
-                <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                    <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-                    </svg>
-                </div>
-                <input type="search" id="default-search" className="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-2xl bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search Integrations, Themes etc..." required />
-                {/* <button type="submit" className="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Search</button> */}
+  //Search
+  const [search, setSearch] = useState('');
+  const [debounceValue, setDebounceValue] = useDebouncedState('', 750);
+
+
+  const [opened, { toggle }] = useDisclosure(true);
+  const [projectTypeSelected, setProjectTypeSelected] = useState(initParams.get('type') || 'Any');
+
+  // Tags
+  const { tags, reqStatus, setSearchProps } = useTags({ limit: '50' });
+  // Results has tags
+  const [hasTags, setHasTags] = useState<string[]>(initParams.get('hasTags')?.split(',') || []);
+  // Must not have tags
+  const [notTags, setNotTags] = useState<string[]>(initParams.get('notTags')?.split(',') || []);
+
+
+  const searchParams: SearchParams = {
+    q: '*',
+    query_by: 'name',
+    include_fields: 'name,type',
+    highlight_fields: 'name', // Hacky way to get API to not send highlight fields in response to save response size
+    // sort_by: 'projectsUsing:desc',
+    typo_tokens_threshold: 3,
+  }
+
+  if(projectTypeSelected && projectTypeSelected !== 'Any'){
+    searchParams.filter_by = `type:${projectTypeSelected?.toLowerCase()}`
+  }
+
+
+  function handleSearch(value: string) {
+    setSearch(value)
+    setDebounceValue(value)
+  }
+  
+
+  // Handle advanced search toggle
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    console.log('hasTags', hasTags)
+    console.log('notTags', notTags)
+  }, [opened])
+
+
+  // Handle Project type selection
+  function handleProjectTypeSelection(value: string) {
+
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+    
+    // Handle 'Any' selection
+    if (value === 'Any') {
+      params.delete('type');
+      setProjectTypeSelected('Any');
+      setSearchProps({ limit: '50' })
+    } else if (projectTypeSelected !== value) {
+      // Set the url params for the project type
+
+      params.set('type', value);
+      setProjectTypeSelected(value);
+      setSearchProps({ limit: '50', type: value })
+
+    } else if (projectTypeSelected === value) {
+      params.delete('type');
+      setProjectTypeSelected('');
+
+    }
+
+    url.search = params.toString();
+    window.history.pushState({}, '', url.toString());
+  }
+
+  // Handle Tags selection
+  function handleSelectedTags(value: string) {
+    let newHasTags: string[] = []
+    let newNotTags: string[] = []
+    if (hasTags.includes(value) && !notTags.includes(value)) {
+      // Remove the tag from the hasTags array
+      newHasTags = hasTags.filter(tag => tag !== value);
+      // Add the tag to the notTags array
+      newNotTags = [...notTags, value];
+
+    } else if (notTags.includes(value)) {
+      // Remove the tag from the notTags array
+      newNotTags = notTags.filter(tag => tag !== value);
+
+    } else {
+      // Create a new array instead of mutating the existing one
+      newHasTags = [...hasTags, value];
+
+    }
+    setHasTags(newHasTags);
+    setNotTags(newNotTags);
+
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+    // Set the url params for the hasTags
+    if (newHasTags.length > 0) {
+      params.set('hasTags', newHasTags.join(','));
+    } else {
+      params.delete('hasTags');
+    }
+
+    // Set the url params for the notTags
+    if (newNotTags.length > 0) {
+      params.set('notTags', newNotTags.join(','));
+    } else {
+      params.delete('notTags');
+    }
+
+    url.search = params.toString();
+    window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
+  }
+
+
+
+
+  function classNames(...classes: String[]) {
+    return classes.filter(Boolean).join(' ')
+  }
+  return (
+    <>
+
+      <div className='grid grid-cols-1 max-w-lg mx-auto pt-4 sticky top-0 z-30 pl-2 pr-1 -mt-24'>
+        <Input
+          placeholder="Search Integrations, Themes etc..."
+          value={search}
+          onChange={(event) => handleSearch(event.currentTarget.value)}
+          rightSectionPointerEvents="all"
+          className='z-20 shadow-lg block w-full p-2 ps-10 text-sm text-white rounded-2xl bg-dark focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+          leftSection={<MagnifyingGlassIcon className='h-5 w-5 ml-1 font-bold text-white' />}
+          styles={{ input: { paddingLeft: '0px', border: '0px', backgroundColor: 'rgb(38 40 43 / var(--tw-bg-opacity))', color: 'white' } }}
+          rightSection={
+            <div className='flex -ml-5'>
+              <CloseButton
+                className='text-white -ml-5'
+                aria-label="Clear input"
+                onClick={() => handleSearch('')}
+                style={{ display: search ? undefined : 'none' }}
+              />
+              <div className={search ? 'hidden' : 'px-1'}></div>
+              <AdjustmentsVerticalIcon onClick={toggle} className={'h-5 w-5 text-white cursor-pointer my-1 '} />
+
             </div>
-        </form>
-            <Box className='w-full mr-16'>
-            <Group justify="center" mb={5}>
-              <Button onClick={toggle} className='text-dark'><ChevronDoubleDownIcon className='text-dark h-4 w-4'/></Button>
-            </Group>
-      
-            <Collapse in={opened}>
-              <div className='mx-16'>
-                content
-              </div>
-            </Collapse>
-          </Box>
-          </>
 
-    )
+          }
+        />
+        <div className={search || opened ? 'max-w-lg w-full grid grid-cols-1 z-10 pt-14 rounded-2xl absolute overscroll-none' : 'hidden'}>
+          <div className='rounded-2xl bg-white shadow-4xl -mt-10 pt-12 px-4 mx-3'>
+          <div className={opened ? 'mx-4 rounded-b-2xl bg-gray-50 pt-4' : 'hidden'}>
+            <div className='grid grid-cols-3 gap-4'>
+              {/* Get Types */}
+              <div className='text-md font-bold col-span-2 my-auto'>Project Types</div>
+              <div key={`Any-select`} className='py-2'>
+                      <Button
+
+                        onClick={() => handleProjectTypeSelection('Any')}
+                        className={`min-w-full transition duration-200 ${projectTypeSelected === 'Any' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'} hover:bg-blue-400 hover:text-white rounded-lg py-2 px-4`}
+                      >
+                        Any
+                      </Button>
+                      <br />
+                    </div>
+              {/* <div className='mx-auto'> */}
+                {
+                  [...getAllProjectTypes(true)].map((type: string) => {
+                    return <div key={`${type}-select`} className='py-2'>
+                      <Button
+
+                        onClick={() => handleProjectTypeSelection(type)}
+                        className={`min-w-full transition duration-200 ${projectTypeSelected === type ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-800'} hover:bg-blue-400 hover:text-white rounded-lg py-2 px-4`}
+                      >
+                        {type}
+                      </Button>
+                      <br />
+                    </div>
+                  })
+                }
+              {/* </div> */}
+              {/* Popular tags - scroll box  */}
+              <div className='mx-auto col-span-3 '>
+                <div className='text-md font-bold'>Popular {projectTypeSelected !== 'Any' ? projectTypeSelected : null} Tags</div>
+                <div className='overflow-y-auto h-40 mt-2'>
+                  <div className='flex flex-wrap'>
+                    {reqStatus === 'success' && tags ?
+                      tags.tags.map((tag: TagWithCount) => {
+                        return <button key={tag.name} onClick={(e) => { handleSelectedTags(tag.name) }} className={
+                          classNames('border border-gray-700 bg-gray-100 text-gray-800 hover:bg-blue-400 hover:text-white rounded-lg m-1 px-2 text-xs font-semibold p-1 cursor-pointer', hasTags.includes(tag.name) ? 'bg-purple-400' : notTags.includes(tag.name) ? 'bg-red-400' : '')}>{`${tag.name}`}<span className='text-xs pl-1 font-light'>{`(${tag.count})`}</span></button>
+                      })
+                      : tags && tags.tags.map((tag: TagWithCount) => {
+                        return <button key={tag.name} className='border border-gray-700 bg-gray-100 text-gray-800 hover:bg-blue-400 hover:text-white rounded-lg m-1 px-2 text-xs font-semibold p-1'><DynamicSkeletonTitle min={1} max={1} maxWidth={75} /></button>
+                      })
+                    }
+                  </div>
+                </div>
+              </div>
+              <div className='col-span-3'>
+                Has these tags:
+              {/* Results must include these tags */}
+              <SearchTagComboBox
+                placeholder="Results must include..."
+                searchable={true}
+                nothingFoundMessage='Nothing found...'
+                existingTags={hasTags}
+                tags={hasTags} setTags={setHasTags}
+                maxSelectedValues={10}
+                searchParams={searchParams}
+
+              />
+              </div>
+              <div className='col-span-3'>
+                Doesn&apos;t have these tags:
+              {/* Results must include these tags */}
+              <SearchTagComboBox
+                placeholder="Results won't include..."
+                searchable={true}
+                nothingFoundMessage='Nothing found...'
+                existingTags={notTags}
+                tags={notTags} setTags={setNotTags}
+                maxSelectedValues={10}
+                searchParams={searchParams}
+              />
+              </div>
+            </div>
+          </div>
+          {/* Show the results from the search */}
+            <Text className='text-white text-sm font-semibold '>Results</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
+          </div>
+        </div>
+      </div>
+
+    </>
+  )
 }
