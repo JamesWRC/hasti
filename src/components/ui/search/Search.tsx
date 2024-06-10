@@ -1,6 +1,6 @@
 'use client'
 
-import { getAllProjectTypes } from '@/backend/interfaces/project';
+import { Project, getAllProjectTypes } from '@/backend/interfaces/project';
 import { GetPopularTagsQueryParams, PopularTagResponse, TagSearchResponse, TagWithCount } from '@/backend/interfaces/tag/request';
 import { AdjustmentsVerticalIcon, ChevronDoubleDownIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid';
 // Make a search Bar component
@@ -36,7 +36,7 @@ export default function Search() {
   const [notTags, setNotTags] = useState<string[]>(initParams.get('notTags')?.split(',') || []);
 
 
-  const searchParams: SearchParams = {
+  const tagSearchParams: SearchParams = {
     q: '*',
     query_by: 'name',
     include_fields: 'name,type',
@@ -45,8 +45,17 @@ export default function Search() {
     typo_tokens_threshold: 3,
   }
 
+  const projectSearchParams: SearchParams = {
+    q: '*',
+    query_by: 'title,description,tagNames',
+    include_fields: '*',
+    filter_by: "(tagNames:='test' || tagNames:='test1') && tagNames:!='3' && popularityRating:>=0 && popularityRating:<=95",
+    // sort_by: 'projectsUsing:desc',
+    typo_tokens_threshold: 3,
+  }
+
   if(projectTypeSelected && projectTypeSelected !== 'Any'){
-    searchParams.filter_by = `type:${projectTypeSelected?.toLowerCase()}`
+    tagSearchParams.filter_by = `type:${projectTypeSelected?.toLowerCase()}`
   }
 
 
@@ -56,12 +65,35 @@ export default function Search() {
   }
   
 
-  // Handle advanced search toggle
   useEffect(() => {
-    window.scrollTo(0, 0)
-    console.log('hasTags', hasTags)
-    console.log('notTags', notTags)
-  }, [opened])
+    if (projectSearchParams && debounceValue != '') {
+        const searchProjects = async () => {
+            
+            // Set the search query
+            projectSearchParams.q = debounceValue
+            const params = new URLSearchParams(projectSearchParams as Record<string, any>)
+
+            const res = await axios({
+                url: `${process.env.API_URL}/api/v1/projects/search?` + params,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                timeout: 30000,
+                timeoutErrorMessage: 'Request timed out. Please try again.',
+              })
+
+            const tagSearchResponse: TagSearchResponse = res.data;
+            const projects:Project[] = tagSearchResponse.hits.map((hit) => hit.document as unknown as Project)
+            console.log("tagSearchResponse: ", tagSearchResponse)
+            console.log("projects: ", projects.map((project) => project.popularityRating))
+            const tags = tagSearchResponse.hits.map((hit) => hit.document.name)
+
+        }
+        searchProjects()
+
+    }
+}, [debounceValue]);
 
 
   // Handle Project type selection
@@ -109,7 +141,7 @@ export default function Search() {
     } else {
       // Create a new array instead of mutating the existing one
       newHasTags = [...hasTags, value];
-
+      newNotTags = notTags
     }
     setHasTags(newHasTags);
     setNotTags(newNotTags);
@@ -226,7 +258,7 @@ export default function Search() {
                 existingTags={hasTags}
                 tags={hasTags} setTags={setHasTags}
                 maxSelectedValues={10}
-                searchParams={searchParams}
+                searchParams={tagSearchParams}
 
               />
               </div>
@@ -240,7 +272,7 @@ export default function Search() {
                 existingTags={notTags}
                 tags={notTags} setTags={setNotTags}
                 maxSelectedValues={10}
-                searchParams={searchParams}
+                searchParams={tagSearchParams}
               />
               </div>
             </div>

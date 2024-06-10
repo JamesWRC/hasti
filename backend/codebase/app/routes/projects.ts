@@ -67,7 +67,40 @@ projectsRouter.get<Record<string, string>, UserProjectCountResponse | BadRequest
         }
     });
 
+projectsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestResponse, any>(
+    '/search',
+    async (req, res) => {
+        try {
+            // Extract the search query from the request query parameters
+            const query = req.query;
+            console.log('query', query);
 
+            let searchParameters = {
+                'q': query.q as string,
+                'query_by': query.query_by as string,
+                ...query
+            }
+
+            console.log('searchParameters', searchParameters);
+
+
+            const searchOptions = {
+                cacheSearchResultsForSeconds: 60
+
+            }
+
+            // Perform the search using the Typesense client
+            const searchResults = await tsClient.collections('Project').documents().search(searchParameters, searchOptions);
+
+            // Return the search results as the API response
+            res.status(200).json(searchResults);
+        } catch (error) {
+            logger.warn(`Request threw an exception: ${error}`, {
+                label: 'GET: /api/v1/Project/search: ',
+            });
+            return res.status(500).json({ success: false, message: 'Error getting token' });
+        }
+    });
     
 projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestResponse>(
     '/',
@@ -629,6 +662,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                             };
                                         }),
                                     },
+                                    tagNames: tagArray,
                                     published: false, // Hard code false, as the repo needs to be cloned and processed.
                                     userID: projectOwnerUser.id,
                                     repoID: repositoryID,
@@ -892,6 +926,7 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
                                                 };
                                             }),
                                         },
+                                        tagNames: tagArray,
                                         // Set the 'Works With' types
                                         worksWithOS: worksWithOS,
                                         worksWithContainer: worksWithContainer,

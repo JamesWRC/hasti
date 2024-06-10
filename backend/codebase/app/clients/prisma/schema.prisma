@@ -33,6 +33,7 @@ model Project {
   description       String        @default("") @db.Text 
 
   tags              Tag[]         // IMPLICIT many to many relationship to Tag
+  tagNames          String[]      @default([]) @db.VarChar(255) // Array of tag names. ONLY used for search purposes.
 
   published         Boolean       @default(false)
   userID            String
