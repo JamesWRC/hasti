@@ -1,9 +1,14 @@
 'use client'
 import {
+  ArrowDownOnSquareIcon,
   ArrowLeftOnRectangleIcon,
   ArrowPathIcon,
+  ArrowUpOnSquareIcon,
+  CloudArrowDownIcon,
+  CloudArrowUpIcon,
   FolderPlusIcon,
   PhotoIcon,
+  QuestionMarkCircleIcon,
   TrashIcon,
   UserPlusIcon,
 
@@ -19,7 +24,7 @@ import { Repo } from '@/backend/interfaces/repo'
 
 
 import { useForm } from '@mantine/form';
-import { TextInput, Textarea, } from '@mantine/core';
+import { TextInput, Textarea } from '@mantine/core';
 import { useSession } from 'next-auth/react'
 import { TagSearchResponse } from '@/backend/interfaces/tag/request'
 import SearchTagComboBox from '@/frontend/components/ui/SearchComboBox'
@@ -48,11 +53,13 @@ import { RefreshRepoDataRequest } from '@/backend/interfaces/repo/request';
 import { CheckAuthResponse, AuthCheckType } from '@/backend/interfaces/auth';
 import { ContentSwitchHelp, DescriptionHelp, ImageUploadHelp, ProjectNameHelp, ProjectTypeHelp, TagsHelp } from '../ui/HelpDialogs';
 import { downloadHASTIData } from '@/frontend/helpers/project';
+import { StyledComboBox } from '@/frontend/components/ui/StyledComboBox';
+import type {StyledComboBoxItems} from '@/frontend/components/ui/StyledComboBox';
+import { getIoTClassificationComboBoxItems } from '../ui/project/index';
 
 
 const GIT_APP_NAME = process.env.NODE_ENV === 'production' ? 'hasti-bot' : 'hasti-bot-dev';
-
-
+ 
 
 export default function AddorEditProject({ opened, open, close, projectID }: { opened: boolean, open: any, close: any, projectID?: string }) {
   const [selectRepo, setSelectedRepo] = useState<Repo | null>(null)
@@ -103,7 +110,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
     return classes.filter(Boolean).join(' ')
   }
 
-
+  console.log('got here 1')
   const handleIconChange = (file: File | null) => {
     if (file) {
       setIconImage(file);
@@ -178,7 +185,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
 
   }, [opened])
-
+  console.log('got here 2')
   useEffect(() => {
 
     setProjectLoadedState({ projects, reqStatus, setSearchProps })
@@ -264,7 +271,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
   }, [projects])
 
-
+  console.log('got here 3')
   // This regex is used to validate the importRepoURL field has a valid GitHub repository URL format.
   const importRepoURLRegex = /^(https?:\/\/)?(www\.)?github\.com\/[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+?$/
 
@@ -384,7 +391,8 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
 
       if (res.status === 200 && tagSearchResponse.hits && tagSearchResponse.hits.length > 0) {
-        const currPopularTags = tagSearchResponse.hits.map((hit) => hit.document.name)
+        // Get the tags from the response and make sure they are unique
+        const currPopularTags = tagSearchResponse.hits.map((hit) => hit.document.name).filter((value, index, self) => self.indexOf(value) === index)
         console.log('popularTags:', currPopularTags)
         setExistingTags(currPopularTags)
       }
@@ -562,7 +570,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
 
   }
-
+  console.log('got here 4')
   useEffect(() => {
     form.values.importRepoURL = '';
 
@@ -756,6 +764,12 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
       setExportHastiMDDialogOpen(true)   
     }
   }
+
+
+  // SetUp IoTClassification combo
+  const [iotClassification, setIotClassification] = useState<StyledComboBoxItems[]>([])
+  const [iotClassificationSelected, setIotClassificationSelected] = useState<StyledComboBoxItems | null>(null)
+
 
   return (
     <>
@@ -1002,6 +1016,10 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                           maxSelectedValues={10}
                           inputProps={getInputProps}
                         />
+                      </div>
+                      <div className="pt-1.5">
+                        <TagsHelp/>
+                        <StyledComboBox items={getIoTClassificationComboBoxItems()}/>
                       </div>
                     </div>
 

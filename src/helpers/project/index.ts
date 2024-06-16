@@ -1,4 +1,4 @@
-import { Project, ProjectAllInfo, getAllHaInstallTypes } from "@/backend/interfaces/project";
+import { IoTClassifications, Project, ProjectAllInfo, getAllHaInstallTypes } from "@/backend/interfaces/project";
 import { GetContentResponse } from "@/backend/interfaces/project/request";
 import { RepoAnalytics } from "@/backend/interfaces/repoAnalytics";
 import axios from "axios";
@@ -146,3 +146,5 @@ export function getProjectStars(repoAnalytics: RepoAnalytics | null): number {
     }
     return projStars
 }
+
+

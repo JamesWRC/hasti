@@ -17,6 +17,16 @@ export enum HAInstallType {
     ANY = "any",
   }
 
+
+export enum IoTClassifications {
+    CLOUD_POLLING = "cloud_polling",
+    LOCAL_POLLING = "local_polling",
+    CLOUD_PUSH = "cloud_push",
+    LOCAL_PUSH = "local_push",
+    UNKNOWN = "unknown", // this is the default, Home Assistant calls this 'Assumed State'
+
+}
+
 export function getAllProjectTypes(caseSensitive:Boolean=true): string[] {
     const ret: string[] = [];
     const tprojValues = Object.values(ProjectType);
@@ -33,6 +43,19 @@ export function getAllProjectTypes(caseSensitive:Boolean=true): string[] {
 export function getAllHaInstallTypes(caseSensitive:Boolean=true): string[] {
     const ret: string[] = [];
     const tprojValues = Object.values(HAInstallType);
+    for(const t in tprojValues){
+      if(caseSensitive){
+        ret.push(tprojValues[t][0].toUpperCase() + tprojValues[t].slice(1)) 
+      }else{
+        ret.push(tprojValues[t]);
+      }
+    }
+    return ret;
+  }
+
+export function getAllIoTClassificationTypes(caseSensitive:Boolean=true): string[] {
+    const ret: string[] = [];
+    const tprojValues = Object.values(IoTClassifications);
     for(const t in tprojValues){
       if(caseSensitive){
         ret.push(tprojValues[t][0].toUpperCase() + tprojValues[t].slice(1)) 
@@ -63,6 +86,17 @@ export function getHaInstallType(installType: string): HAInstallType {
     }
     // If the install type is not found, return any
     return HAInstallType.ANY;
+  }
+
+export function getIoTClassificationType(classification: string): IoTClassifications {
+    const values = Object.values(IoTClassifications);
+    for(const t in values){
+        if(values[t] === classification.toLowerCase()){
+            return values[t];
+        }
+    }
+    // If the classification is not found, return unknown
+    return IoTClassifications.UNKNOWN;
   }
 
 

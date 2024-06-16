@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Project" ADD COLUMN     "IoTClassification" VARCHAR(255) NOT NULL DEFAULT 'Assumed State',
+ADD COLUMN     "worksWithHAVersion" VARCHAR(255) NOT NULL DEFAULT '',
+ALTER COLUMN "contentImages" SET DEFAULT ARRAY[]::VARCHAR(255)[],
+ALTER COLUMN "tagNames" SET DEFAULT ARRAY[]::VARCHAR(255)[];
