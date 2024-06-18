@@ -7,9 +7,6 @@ export interface StyledComboBoxItems {
   text: string;
 }
 
-
-const groceries = ['🍎 Apples', '🍌 Bananas', '🥦 Broccoli', '🥕 Carrots', '🍫 Chocolate'];
-
 export function StyledComboBox({ items }: {items: StyledComboBoxItems[]}) {
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption(),

@@ -56,6 +56,8 @@ import { downloadHASTIData } from '@/frontend/helpers/project';
 import { StyledComboBox } from '@/frontend/components/ui/StyledComboBox';
 import type {StyledComboBoxItems} from '@/frontend/components/ui/StyledComboBox';
 import { getIoTClassificationComboBoxItems } from '../ui/project/index';
+import { ComboBoxWithHeader } from '@/frontend/components/ui/ComboBoxWithHeader';
+import { HACoreVersions } from '@/backend/helpers/homeassistant';
 
 
 const GIT_APP_NAME = process.env.NODE_ENV === 'production' ? 'hasti-bot' : 'hasti-bot-dev';
@@ -1017,10 +1019,17 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                           inputProps={getInputProps}
                         />
                       </div>
+                      {/* IoT classification */}
                       <div className="pt-1.5">
                         <TagsHelp/>
                         <StyledComboBox items={getIoTClassificationComboBoxItems()}/>
                       </div>
+                      {/* HA Core Version supported */}
+                      <div className="pt-1.5">
+                        <TagsHelp/>
+                        <ComboBoxWithHeader items={HACoreVersions.map((version) => ({ text: version.version, altText: version.date }))} headerText={`Note: ${HACoreVersions[0].version} is the latest.`}/>
+                      </div>
+                      
                     </div>
 
                     <div className="col-span-2 md:pl-5 grid place-items-center">
