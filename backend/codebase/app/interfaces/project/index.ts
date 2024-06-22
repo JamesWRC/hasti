@@ -89,9 +89,12 @@ export function getHaInstallType(installType: string): HAInstallType {
   }
 
 export function getIoTClassificationType(classification: string): IoTClassifications {
-    const values = Object.values(IoTClassifications);
+  console.log("classification: ", classification)  
+  console.log("classification: ", classification.toLowerCase().trim().replace(' ', '_'))  
+  const values = Object.values(IoTClassifications);
     for(const t in values){
-        if(values[t] === classification.toLowerCase()){
+        console.log("values[t]: ", values[t])
+        if(values[t] === classification.toLowerCase() || values[t] === classification.trim().toLowerCase().replace(' ', '_')){
             return values[t];
         }
     }

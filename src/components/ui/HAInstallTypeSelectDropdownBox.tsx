@@ -9,7 +9,7 @@ import { InstallTypeHelp } from './HelpDialogs';
 
 
 const allHAInstallTypes = getAllHaInstallTypes()
-export function HAInstallTypeSelectDropdownBox({ haInstallTypes, setHaInstallTypes, inputProps }: { haInstallTypes: HAInstallType[], setHaInstallTypes: (haInstallTypes: HAInstallType[]) => void, inputProps: GetInputProps<any> }) {
+export function HAInstallTypeSelectDropdownBox({ haInstallTypes, setHaInstallTypes, inputProps }: { haInstallTypes: HAInstallType[], setHaInstallTypes: (haInstallTypes: HAInstallType[]) => void, inputProps?: GetInputProps<any> }) {
     const [tempInstallTypes, setTempInstallTypes] = useState<HAInstallType[] | undefined>(haInstallTypes)
 
     useEffect(() => {
@@ -118,7 +118,7 @@ export function HAInstallTypeSelectDropdownBox({ haInstallTypes, setHaInstallTyp
             filter={optionsFilter}
             value={tempInstallTypes?.map((v) => upperFirst(v.toLowerCase()))}
             clearable
-            error={inputProps('haInstallTypes').error}
+            error={inputProps ? inputProps('haInstallTypes').error : false}
             className='text-black'
 
         />

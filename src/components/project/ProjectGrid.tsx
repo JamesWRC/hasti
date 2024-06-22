@@ -35,7 +35,7 @@ export default function ProjectGrid({projectParams, setProjectState}: {projectPa
 
     return (
         <div className="bg-white w-full">
-          <div className="mx-auto max-w-[150%] px-6 lg:px-2">
+          <div className="mx-auto max-w-[150%] px-2">
             <Grid>
             <div className={!projects || projects.length <= 0 ? "mx-auto max-w-2xl text-center" : "m-auto w-full h-full"}>
                 {reqStatus === 'loading' ? 

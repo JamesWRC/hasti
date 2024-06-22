@@ -9,7 +9,7 @@ import logger from '@/backend/logger';
 import { IncomingForm, Fields, Files, Options } from 'formidable';
 import { AddProjectResponse, ChangeProjectOwnershipResponse, DeleteProjectResponse, GetContentResponse, GetProjectsQueryParams, GetProjectsResponse, MAX_FILE_SIZE, ProjectAddMethod, RefreshContentResponse, getProjectAddMethod } from '@/backend/interfaces/project/request';
 import { NotificationAbout, NotificationType } from '@/backend/interfaces/notification';
-import { Project, getAllProjectTypes, ProjectWithUser, HAInstallType } from '@/backend/interfaces/project';
+import { Project, getAllProjectTypes, ProjectWithUser, HAInstallType, IoTClassifications } from '@/backend/interfaces/project';
 import AWS from 'aws-sdk';
 import isValidProjectName, { updateContent, deleteProject, getGitHubRepoData, handleInvalidFiles, handleProjectImages, readFileIfExists, stringToBase64, updateRepoAnalytics } from '@/backend/helpers/project';
 import tsClient from '@/backend/clients/typesense';
@@ -20,6 +20,7 @@ import { deleteRepo } from '@/backend/helpers/repo';
 import { createTempUser, getTrustworthinessRating } from '@/backend/helpers/user';
 import { GHAppSenderWHSender, RepositoryData } from '@/backend/interfaces/repo';
 import addOrUpdateRepo from '@/backend/helpers/repo';
+import { HACoreVersions } from '@/backend/helpers/homeassistant';
 
 const projectsRouter = Router();
 export const config = {
@@ -420,7 +421,10 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                             && fields.haInstallType instanceof Array
                             && fields.name instanceof Array
                             && fields.description instanceof Array
-                            && fields.tags instanceof Array)) {
+                            && fields.tags instanceof Array
+                            && fields.HAVersion instanceof Array
+                            && fields.IoTClassification instanceof Array
+                        )) {
 
                             return resolve({ code: 402, json: badFormResponse });
                         } else if (addMethod === ProjectAddMethod.REPO_SELECT.toString() && !(fields.repositoryID instanceof Array)) {
@@ -479,25 +483,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                 console.log('projectOwnerUser', projectOwnerUser)
                                 // If the repo doesn't exist, AND the user owns it, create it
                                 if (!createdRepo && projectOwnerUser) {
-                                    // Create new repo
-                                    // createdRepo = await prisma.repo.create({
-                                    //     data:{
-                                    //         gitHubRepoID: repoID,
-                                    //         name: repoData.data.name,
-                                    //         fullName: repoData.data.full_name,
-                                    //         private: repoData.data.private,
 
-                                    //         userID: projectOwnerUser.id,    
-
-                                    //         gitHubNodeID: repoData.data.node_id,
-                                    //         gitHubStars: repoData.data.stargazers_count,
-                                    //         gitHubWatchers: repoData.data.watchers_count,
-                                    //         gitAppHasAccess: true,
-                                    //         ownerGithubID: repoData.data.owner.id,
-                                    //         ownerType: ownerType,
-                                    //         addedByGithubID: user.githubID, // User ID of the importer
-                                    //     }
-                                    // })
                                     const addedByGitHubID: number = user.githubID
                                     const repoOwnerType: string = ownerType
                                     const newRepoData: RepositoryData = {
@@ -586,9 +572,10 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                         const title: string = fields.name[0]; // The name becomes the title
                         const description: string = fields.description[0];
                         const tags: string = fields.tags[0];
+                        const HAVersion: string = fields.HAVersion[0];
+                        const IoTClassification: string = fields.IoTClassification[0];
 
-
-                        if (repositoryID && projectOwnerUser && projectType && haInstallType && title && description && tags) {
+                        if (repositoryID && projectOwnerUser && projectType && haInstallType && title && description && tags && HAVersion && IoTClassification) {
 
                             // Validate the project name
                             if (!isValidProjectName(title)) {
@@ -648,6 +635,29 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                             }
 
                             const claimed: boolean = user.githubID === repoData?.data.owner.id
+
+                            // Handle the HAVersion, make sure it exists in the known versions
+                            if( HACoreVersions.filter((version) => version.version === HAVersion).length === 0){
+                                const response: AddProjectResponse = {
+                                    success: false,
+                                    message: 'Invalid Home Assistant version. Please choose a valid version.',
+                                }
+                                createdProject ? await deleteProject(createdProject.id) : null
+                                createdRepo ? await deleteRepo(createdRepo.id) : null
+                                return resolve({ code: 400, json: response });
+                            }
+
+                            // Handle iotClassification, make sure it exists in the known classifications
+                            if( Object.values(IoTClassifications).filter((classification) => classification === IoTClassification).length === 0){
+                                const response: AddProjectResponse = {
+                                    success: false,
+                                    message: 'Invalid IoT classification. Please choose a valid classification.',
+                                }
+                                createdProject ? await deleteProject(createdProject.id) : null
+                                createdRepo ? await deleteRepo(createdRepo.id) : null
+                                return resolve({ code: 400, json: response });
+                            }
+
                             // Create the project
                             createdProject = await prisma.project.create({
                                 data: {
@@ -673,9 +683,12 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                     worksWithSupervised: worksWithSupervised,
 
                                     // Github data
-
                                     claimed: claimed,
                                     projectType: projectType,
+
+                                    // HA data
+                                    worksWithHAVersion: HAVersion,
+                                    IoTClassification: IoTClassification,
                                 },
                                 include: {
                                     tags: {
@@ -755,6 +768,8 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                             if (!title) missingFields.push('name');
                             if (!description) missingFields.push('description');
                             if (!tags) missingFields.push('tags');
+                            if (!HAVersion) missingFields.push('HAVersion');
+                            if (!IoTClassification) missingFields.push('IoTClassification');
 
                             const response: AddProjectResponse = {
                                 success: false,
@@ -841,7 +856,10 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
                             && fields.projectType instanceof Array
                             && fields.description instanceof Array
                             && fields.haInstallType instanceof Array
-                            && fields.tags instanceof Array) {
+                            && fields.tags instanceof Array
+                            && fields.HAVersion instanceof Array
+                            && fields.IoTClassification instanceof Array
+                        ) {
 
                             const repositoryID: string = fields.repositoryID[0];
                             const projectID: string = fields.projectID[0];
@@ -850,6 +868,8 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
                             const haInstallType: string = fields.haInstallType[0];
                             const tags: string = fields.tags[0];
                             const contentFile:string = fields.usinghastiMd && fields.usinghastiMd[0] === 'true' ? 'HASTI' : 'README';
+                            const HAVersion: string = fields.HAVersion[0];
+                            const IoTClassification: string = fields.IoTClassification[0];
 
                             console.log('fields', fields)
                             console.log('contentFile', contentFile)
@@ -914,6 +934,27 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
                                         worksWithSupervised = true
                                     }
 
+                                    // Handle the HAVersion, make sure it exists in the known versions
+                                    if( HACoreVersions.filter((version) => version.version === HAVersion).length === 0){
+                                        const response: AddProjectResponse = {
+                                            success: false,
+                                            message: 'Invalid Home Assistant version. Please choose a valid version.',
+                                        }
+
+                                        return resolve({ code: 400, json: response });
+                                    }
+
+                                    // Handle iotClassification, make sure it exists in the known classifications
+                                    if( Object.values(IoTClassifications).filter((classification) => classification === IoTClassification).length === 0){
+                                        const response: AddProjectResponse = {
+                                            success: false,
+                                            message: 'Invalid IoT classification. Please choose a valid classification.',
+                                        }
+
+                                        return resolve({ code: 400, json: response });
+                                    }
+
+
                                     let update: Prisma.ProjectUpdateInput = {
                                         description: description,
                                         // Set the tags
@@ -932,6 +973,10 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
                                         worksWithContainer: worksWithContainer,
                                         worksWithCore: worksWithCore,
                                         worksWithSupervised: worksWithSupervised,
+
+                                        // HA data
+                                        worksWithHAVersion: HAVersion,
+                                        IoTClassification: IoTClassification,
                                     }
 
                                     // Update the project images

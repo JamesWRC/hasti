@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { PillsInput, Pill, Combobox, CheckIcon, Group, useCombobox } from '@mantine/core';
+import { useEffect, useState } from 'react';
+import { PillsInput, Pill, Combobox, CheckIcon, Group, useCombobox, InputBase, Input, CloseButton } from '@mantine/core';
+import { IoTClassifications, getIoTClassificationType } from '@/backend/interfaces/project';
 
 // interface of heroIcon and text
 export interface StyledComboBoxItems {
@@ -7,77 +8,71 @@ export interface StyledComboBoxItems {
   text: string;
 }
 
-export function StyledComboBox({ items }: {items: StyledComboBoxItems[]}) {
+export function StyledComboBox({ items, value, setValue }: {items: StyledComboBoxItems[], value: IoTClassifications|undefined, setValue: (value: IoTClassifications|undefined) => void}) {
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption(),
     onDropdownOpen: () => combobox.updateSelectedOptionIndex('active'),
   });
 
-  const [search, setSearch] = useState('');
-  const [value, setValue] = useState<string[]>([]);
+  useEffect(() => {
+    console.log("value: ", value)
+  }, [value]);
+  const transformedValue = value ? value.split('_').map((word) => (word.charAt(0).toUpperCase() + word.slice(1))).join(' ') : '';
 
-  const handleValueSelect = (val: string) =>
-    setValue((current) =>
-      current.includes(val) ? current.filter((v) => v !== val) : [...current, val]
-    );
-
-  const handleValueRemove = (val: string) =>
-    setValue((current) => current.filter((v) => v !== val));
-
-  const values = value.map((item) => (
-    <Pill key={item} withRemoveButton onRemove={() => handleValueRemove(item)}>
-      {item}
-    </Pill>
+  const options = items.map((item) => (
+    <Combobox.Option value={item.text} key={item.text}>
+      <div className='flex'>
+      <span className=''>{item.icon}</span>
+      <span className='ml-2'>{item.text}</span>
+      </div>
+    </Combobox.Option>
   ));
 
-  const options = items
-    .filter((props) => props.text.toLowerCase().includes(search.trim().toLowerCase()))
-    .map((props) => (
-      <Combobox.Option value={props.text} key={props.text} active={value.includes(props.text)}>
-        <Group gap="md">
-          {value.includes(props.text) ? <CheckIcon size={12} /> : null}
-          <span className='flex justify-evenly'>
-            <span>{props.icon}</span>
-            <span className='ml-2'>{props.text}</span>
-            </span>
-        </Group>
-      </Combobox.Option>
-    ));
-
   return (
-    <Combobox store={combobox} onOptionSubmit={handleValueSelect}>
-      <Combobox.DropdownTarget>
-        <PillsInput onClick={() => combobox.openDropdown()}>
-          <Pill.Group>
-            {values}
-
-            <Combobox.EventsTarget>
-              <PillsInput.Field
-                onFocus={() => combobox.openDropdown()}
-                onBlur={() => combobox.closeDropdown()}
-                value={search}
-                placeholder="Search values"
-                onChange={(event) => {
-                  combobox.updateSelectedOptionIndex();
-                  setSearch(event.currentTarget.value);
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === 'Backspace' && search.length === 0) {
-                    event.preventDefault();
-                    handleValueRemove(value[value.length - 1]);
-                  }
-                }}
+    <div className='bg-white text-ellipsis overflow-hidden'>
+    <Combobox
+      store={combobox}
+      withinPortal={false}
+      onOptionSubmit={(val) => {
+        setValue(getIoTClassificationType(val));
+        combobox.closeDropdown();
+      }}
+    >
+      <Combobox.Target>
+        <InputBase
+          component="button"
+          type="button"
+          pointer
+          rightSectionPointerEvents={value === undefined ? 'none' : 'all'}
+          onClick={() => combobox.toggleDropdown()}
+          rightSection={
+            value !== undefined ? (
+              <CloseButton
+                size="sm"
+                onMouseDown={(event) => event.preventDefault()}
+                onClick={() => setValue(undefined)}
+                aria-label="Clear value"
               />
-            </Combobox.EventsTarget>
-          </Pill.Group>
-        </PillsInput>
-      </Combobox.DropdownTarget>
+            ) : (
+              <Combobox.Chevron />
+            )
+          }
+        >
+          {/* {items.filter(item => item.text.toString() == "Cloud Polling").map((item) => (item.text ))} */}
+          {items.filter(item => item.text.toString() === transformedValue).map((item, index) => (
+            
+              <div className='flex' key={item.text} id={value}>
+                <span className='mt-2'>{item.icon}</span>
+                <span className='ml-2'>{item.text}</span>
+              </div>
+          )) || <Input.Placeholder>Pick value</Input.Placeholder>}
+        </InputBase>
+      </Combobox.Target>
 
       <Combobox.Dropdown>
-        <Combobox.Options>
-          {options.length > 0 ? options : <Combobox.Empty>Nothing found...</Combobox.Empty>}
-        </Combobox.Options>
+        <Combobox.Options>{options}</Combobox.Options>
       </Combobox.Dropdown>
     </Combobox>
+    </div>
   );
 }

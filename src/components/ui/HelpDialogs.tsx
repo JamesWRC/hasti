@@ -4,6 +4,7 @@ import DialogPanel from "./DialogPanel";
 import { QuestionIcon } from "@primer/octicons-react";
 import { IconQuestionMark } from "@tabler/icons-react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
+import { IoTClassifications } from '../../../backend/codebase/app/interfaces/project/index';
 
 
 export function RepoSelectHelp() {
@@ -293,11 +294,12 @@ export function InstallTypeHelp() {
                 // Or import a developers repository. This cannot be changed later."
                 // message="Select the type of project you are creating. This will help people find your project by categorizing it."
                 message={<div className="text-left py-3">
-                   The Home Assistant installation type(s) the project is compatible with. 
+                   The Home Assistant installation type(s) the project is compatible with or designed for.<br/>
+                   Select &apos;Any&apos; if the project is compatible with any/all installation types. <br/>
                     <hr className="mt-2" />
 
                     <p className="font-bold ">Note:</p>
-                    <li>You cant find all installation types and what is supported <a href="https://www.home-assistant.io/installation/#advanced-installation-methods" target="_blank" className="underline underline-offset-1">here </a>
+                    <li>You can find all installation types and what is supported <a href="https://www.home-assistant.io/installation/#advanced-installation-methods" target="_blank" className="underline underline-offset-1">here </a>
                     </li>
                 </div>
                 }
@@ -412,6 +414,96 @@ export function ContentSwitchHelp() {
 
             <div className="flex items-center pb-1">
                 <span className="mr-2 block text-sm font-medium leading-6 text-gray-900">Markdown file to use</span>
+                <button
+                    type="button"
+                    className="mt-0.5 rounded-full bg-gray-400 p-0.5 text-white shadow-sm font-bold hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-100"
+                    onClick={(e) => openDialog(e)}
+                >
+                    <IconQuestionMark className="h-3 w-3" aria-hidden="true" />
+                </button>
+            </div>
+
+        </>
+    )
+}
+
+
+export function IoTClassificationHelp() {
+    const [open, setOpen] = useState(false);
+
+    function openDialog(e: React.MouseEvent) { e.preventDefault(); setOpen(true); }
+
+    return (
+        <>
+            <DialogPanel
+                setOpen={setOpen}
+                open={open}
+                stateType="info"
+                title="IoT Classification"
+                // message="Select a repository that you want to use with HASTI. 
+                // Or import a developers repository. This cannot be changed later."
+                // message="Select the type of project you are creating. This will help people find your project by categorizing it."
+                message={<div className="text-left py-3">
+                    This Classification is used to categorize the type of IoT project, and how it interacts with Home Assistant / 3rd party services.
+                </div>
+                }
+                confirmBtnText="Ok"
+                cancelBtnText=""
+                onConfirm={() => setOpen(false)}
+                customBtnText=""
+                customAction={() => { }}
+                onCancel={() => { }}
+            />
+
+            <div className="flex items-center pb-1">
+                <span className="mr-2 block text-sm font-medium leading-6 text-gray-900">IoT Classification</span>
+                <button
+                    type="button"
+                    className="mt-0.5 rounded-full bg-gray-400 p-0.5 text-white shadow-sm font-bold hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-100"
+                    onClick={(e) => openDialog(e)}
+                >
+                    <IconQuestionMark className="h-3 w-3" aria-hidden="true" />
+                </button>
+            </div>
+
+        </>
+    )
+}
+
+export function HAVersionHelp() {
+    const [open, setOpen] = useState(false);
+
+    function openDialog(e: React.MouseEvent) { e.preventDefault(); setOpen(true); }
+
+    return (
+        <>
+            <DialogPanel
+                setOpen={setOpen}
+                open={open}
+                stateType="info"
+                title="Home Assistant Version"
+                // message="Select a repository that you want to use with HASTI. 
+                // Or import a developers repository. This cannot be changed later."
+                // message="Select the type of project you are creating. This will help people find your project by categorizing it."
+                message={<div className="text-left py-3">
+                    The version of Home Assistant that the project is compatible with. 
+                    Use the version that the project was last tested with. <br/><br/>
+                    <b>Use &apos;Any&apos; if:</b>
+                    <li>It is compatible with all versions of Home Assistant.</li>
+                    <li>This project does not rely on a version. </li>
+                    <li>This project is a Theme, tutorial, basic script etc</li>
+                </div>
+                }
+                confirmBtnText="Ok"
+                cancelBtnText=""
+                onConfirm={() => setOpen(false)}
+                customBtnText=""
+                customAction={() => { }}
+                onCancel={() => { }}
+            />
+
+            <div className="flex items-center pb-1">
+                <span className="mr-2 block text-sm font-medium leading-6 text-gray-900">Home Assistant Version</span>
                 <button
                     type="button"
                     className="mt-0.5 rounded-full bg-gray-400 p-0.5 text-white shadow-sm font-bold hover:bg-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 focus:ring-offset-gray-100"

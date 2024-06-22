@@ -73,7 +73,7 @@ export default function SearchComboBox({
 
                 if (res.status === 200) {
                     // Concat and de duplicate the tags
-                    setCachedTags(tags.concat(cachedTags.filter((cachedTag:string) => tags.indexOf(cachedTag) < 0)))
+                    setCachedTags(tags.concat(cachedTags).filter((tag, index, self) => self.indexOf(tag) === index))
                     // setExistingTags(tags)
                 }
             }

@@ -5,6 +5,7 @@ export interface HAVersionDate {
 
 export const HACoreVersions: HAVersionDate[] = [
         // Versions are in descending order
+        {version: "Any", date: ""},
 
         // 2024
         {version: "2024.6", date: "2024-06-05"},

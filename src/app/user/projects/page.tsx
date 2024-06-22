@@ -45,7 +45,7 @@ export default function Page() {
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl py-4">Your Projects</h2>
         </div>
         <div className=" w-full h-full">
-          <div key={`create-new-project`} className="mx-auto col-span-1 relative isolate flex flex-col justify-end overflow-hidden rounded-2xl px-8 py-8 my-4 min-w-[10.5rem] sm:max-h-none max-h-[15rem]">
+          <div key={`create-new-project`} className="mx-auto col-span-1 relative isolate flex flex-col justify-end overflow-hidden rounded-2xl py-8 my-4 min-w-[10.5rem] sm:max-h-none max-h-[15rem]">
             <button
               type="button"
               className="relative block w-full h-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"

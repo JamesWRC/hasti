@@ -17,7 +17,7 @@ import {
 import { useDisclosure } from '@mantine/hooks';
 import { Modal, Button, Title, Group, Box, LoadingOverlay, Switch } from '@mantine/core';
 import SelectRepo from '@/frontend/components/repo/SelectRepo';
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react';
 
 import { Repo } from '@/backend/interfaces/repo'
 
@@ -29,7 +29,7 @@ import { useSession } from 'next-auth/react'
 import { TagSearchResponse } from '@/backend/interfaces/tag/request'
 import SearchTagComboBox from '@/frontend/components/ui/SearchComboBox'
 import { SearchParams } from '@/backend/interfaces/tag';
-import { ProjectType, HAInstallType, getAllHaInstallTypes, ProjectAllInfo, Project, getProjectType } from '@/backend/interfaces/project'
+import { ProjectType, HAInstallType, getAllHaInstallTypes, ProjectAllInfo, Project, getProjectType, getIoTClassificationType } from '@/backend/interfaces/project'
 import { ProjectTypeSelectDropdownBox } from '@/frontend/components/ui/ProjectTypeSelectDropdownBox'
 
 import { FileInput } from '@mantine/core';
@@ -51,19 +51,22 @@ import DialogPanel from '@/frontend/components/ui/DialogPanel';
 import axios from 'axios';
 import { RefreshRepoDataRequest } from '@/backend/interfaces/repo/request';
 import { CheckAuthResponse, AuthCheckType } from '@/backend/interfaces/auth';
-import { ContentSwitchHelp, DescriptionHelp, ImageUploadHelp, ProjectNameHelp, ProjectTypeHelp, TagsHelp } from '../ui/HelpDialogs';
+import { ContentSwitchHelp, DescriptionHelp, HAVersionHelp, ImageUploadHelp, IoTClassificationHelp, ProjectNameHelp, ProjectTypeHelp, TagsHelp } from '../ui/HelpDialogs';
 import { downloadHASTIData } from '@/frontend/helpers/project';
 import { StyledComboBox } from '@/frontend/components/ui/StyledComboBox';
 import type {StyledComboBoxItems} from '@/frontend/components/ui/StyledComboBox';
-import { getIoTClassificationComboBoxItems } from '../ui/project/index';
+import { getIoTClassificationComboBoxItems } from '@/frontend/components/ui/project/index';
 import { ComboBoxWithHeader } from '@/frontend/components/ui/ComboBoxWithHeader';
 import { HACoreVersions } from '@/backend/helpers/homeassistant';
+import { IoTClassifications } from '@/backend/interfaces/project/index';
 
 
 const GIT_APP_NAME = process.env.NODE_ENV === 'production' ? 'hasti-bot' : 'hasti-bot-dev';
  
 
 export default function AddorEditProject({ opened, open, close, projectID }: { opened: boolean, open: any, close: any, projectID?: string }) {
+  const formRef = useRef(null)
+
   const [selectRepo, setSelectedRepo] = useState<Repo | null>(null)
   const [projectType, setProjectType] = useState<ProjectType>();
   const [haInstallTypes, setHaInstallTypes] = useState<HAInstallType[]>([HAInstallType.ANY]);
@@ -107,6 +110,13 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
   const [hastiMdAvailable, setHastiMdAvailable] = useState<boolean>(false);
   const [usinghastiMd, setUsinghastiMd] = useState<boolean>(false);
 
+  const [worksWithHAVersion, setWorksWithHAVersion] = useState<string>('');
+
+
+  // SetUp IoTClassification combo
+  const [IoTClassification, setIotClassification] = useState<IoTClassifications|undefined>(undefined)
+
+  
 
   function classNames(...classes: String[]) {
     return classes.filter(Boolean).join(' ')
@@ -239,6 +249,12 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
         setUsinghastiMd(loadedProject.usingHastiMD)
 
+        // Set HAVersion
+        setWorksWithHAVersion(loadedProject.worksWithHAVersion)
+
+        // Set IoTClassification
+        setIotClassification(getIoTClassificationType(loadedProject.IoTClassification))
+
         if(opened){
             const repoID = loadedProject?.repoID
 
@@ -345,6 +361,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
       tags: [''],
       iconImage: null,
       backgroundImage: null,
+      HAVersion: worksWithHAVersion,
     },
     validate: {
       // Handle repo and project name validation
@@ -358,6 +375,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
       tags: (value: string[]) => (tags.length < 3 ? 'Please select at least 3 tags, but less than 50.' : tags.length > 50 ? 'Must have less than 50 tags' : null),
       iconImage: (value: File | null) => (iconImage !== null && iconImage.size > MAX_FILE_SIZE ? 'File too big. Max size is 10MB' : null),
       backgroundImage: (value: File | null) => (backgroundImage !== null && backgroundImage.size > MAX_FILE_SIZE ? 'File too big. Max size is 10MB' : null),
+      HAVersion: (value: string | undefined) => (worksWithHAVersion === undefined || worksWithHAVersion.length <= 0 ? 'Please select a Home Assistant version.' : null),
     },
 
   });
@@ -422,9 +440,8 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
 
 
-  async function createProject(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-
+  async function createProject() {
+  
     const newProjectRequest: any = {
       repository: selectRepo,
       name: form.values.projectName,
@@ -468,7 +485,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
     }
 
     // Error missing fields
-    if (!validImportRepoURL || !projectType || !haInstallTypes || !form.values.description || tags.length < 3 || !form.values.projectName) {
+    if (!validImportRepoURL || !projectType || !haInstallTypes || !form.values.description || tags.length < 3 || !form.values.projectName || !IoTClassification) {
       setLoading(false)
       let missingFields: string = ''
       !projectType ? missingFields += 'Project type, ' : null
@@ -476,7 +493,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
       !form.values.description ? missingFields += 'Description, ' : null
       tags.length < 3 ? missingFields += 'Need to have 3 or more tags, ' : null
       !form.values.projectName ? missingFields += 'Project name, ' : null
-
+      !IoTClassification ? missingFields += 'IoT Classification, ' : null
       setProjectResponse({ success: false, message: `Please fill out all required fields. Missing fields: ${missingFields}` })
       return
     }
@@ -499,6 +516,9 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
     iconImage ? formData.append('iconImage', iconImage) : null
     backgroundImage ? formData.append('backgroundImage', backgroundImage) : null
+
+    formData.append('HAVersion', worksWithHAVersion)
+    formData.append('IoTClassification', IoTClassification)
 
     // If the projectID exists (meaning we want to update an existing project), then we are updating the project
     const METHOD = projectID ? 'PUT' : 'POST'
@@ -767,12 +787,6 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
     }
   }
 
-
-  // SetUp IoTClassification combo
-  const [iotClassification, setIotClassification] = useState<StyledComboBoxItems[]>([])
-  const [iotClassificationSelected, setIotClassificationSelected] = useState<StyledComboBoxItems | null>(null)
-
-
   return (
     <>
       {/* GitHub App issue dialog */}
@@ -823,15 +837,36 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
           size={'75vw'}
           opened={opened}
           onClose={close}
-          title={projectID ? "Project Settings" : "Create new Project"}
+          title={<>
+            Project Settings
+            <div className={isOwnerAndNotClaimed() ? 'hidden' : 'mt-6 flex justify-around bg-white absolute right-12 -top-2'}>
+              <div className="justify-end gap-x-6">
+
+                <Button type="button" className="text-sm font-semibold leading-6 text-gray-900" onClick={e => close()}>
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  tabIndex={1}
+                  className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                  loading={loading}
+                  onClick={() => createProject()}
+                  >
+                  Save
+                </Button>
+              </div>
+            </div>
+          
+          </>}
           overlayProps={{
             backgroundOpacity: 0.55,
             blur: 3,
             zIndex: 100,
+            
           }}>
 
-          <form onSubmit={createProject}>
-
+          <form>
+          
             <div className="space-y-12 z-10">
               <LoadingOverlay visible={!projectID || (projectLoadedState
                 && projectLoadedState.reqStatus === "success"
@@ -998,13 +1033,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                             {...form.getInputProps('description')}
                           />
                         </div>
-                        <p className="mt-3 text-sm leading-6 text-gray-600">Write a short description. Recommended ~20 words. Min 30 characters.</p>
-                      </div>
-                    </div>
-                    <div className="md:pl-5 col-span-2">
-
-                      <div className="mt-2 text-black">
-                        <HAInstallTypeSelectDropdownBox haInstallTypes={haInstallTypes} setHaInstallTypes={setHaInstallTypes} inputProps={getInputProps} />
+                        <p className="text-sm leading-6 text-gray-600">Write a short description. Recommended ~20 words. Min 30 characters.</p>
                       </div>
                       <div className="pt-1.5">
                         <TagsHelp/>
@@ -1019,15 +1048,21 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                           inputProps={getInputProps}
                         />
                       </div>
+                    </div>
+                    <div className="md:pl-5 col-span-2">
+
+                      <div className="mt-2 text-black">
+                        <HAInstallTypeSelectDropdownBox haInstallTypes={haInstallTypes} setHaInstallTypes={setHaInstallTypes} inputProps={getInputProps} />
+                      </div>
                       {/* IoT classification */}
                       <div className="pt-1.5">
-                        <TagsHelp/>
-                        <StyledComboBox items={getIoTClassificationComboBoxItems()}/>
+                        <IoTClassificationHelp/>
+                        <StyledComboBox items={getIoTClassificationComboBoxItems()} value={IoTClassification} setValue={setIotClassification}/>
                       </div>
                       {/* HA Core Version supported */}
                       <div className="pt-1.5">
-                        <TagsHelp/>
-                        <ComboBoxWithHeader items={HACoreVersions.map((version) => ({ text: version.version, altText: version.date }))} headerText={`Note: ${HACoreVersions[0].version} is the latest.`}/>
+                        <HAVersionHelp/>
+                        <ComboBoxWithHeader items={HACoreVersions.map((version) => ({ text: version.version, altText: version.date }))} headerText={`Note: Select 'Any' if this isnt version dependant.`} value={worksWithHAVersion} setValue={setWorksWithHAVersion}/>
                       </div>
                       
                     </div>
@@ -1192,22 +1227,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
 
 
             </div>
-            <div className={isOwnerAndNotClaimed() ? 'hidden' : 'mt-6 flex justify-end'}>
-              <div className="items-center justify-end gap-x-6">
-
-                <Button type="button" className="text-sm font-semibold leading-6 text-gray-900" onClick={e => close()}>
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  tabIndex={1}
-                  className="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                  loading={loading}
-                >
-                  Save
-                </Button>
-              </div>
-            </div>
+            
           </form>
         </Modal>
       </Box>

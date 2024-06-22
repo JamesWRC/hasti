@@ -8,12 +8,12 @@ export interface OptionType {
     altText?: string,
 }
 
-export function ComboBoxWithHeader({items, headerText}: {items: OptionType[], headerText: string}) {
+export function ComboBoxWithHeader({items, headerText, label, placeholder, value, setValue}: {items: OptionType[], headerText: string, label?: string, placeholder?: string, value: string, setValue: (value: string) => void}) {
   const combobox = useCombobox({
     onDropdownClose: () => combobox.resetSelectedOption(),
   });
 
-  const [value, setValue] = useState('');
+  // const [value, setValue] = useState('');
   const shouldFilterOptions = !items.some((item) => item.text === value);
   const filteredOptions = shouldFilterOptions
     ? items.filter((item) => item.text.toLowerCase().includes(value.toLowerCase().trim()))
@@ -23,7 +23,6 @@ export function ComboBoxWithHeader({items, headerText}: {items: OptionType[], he
     <Combobox.Option 
         value={item.text} 
         key={item.text} 
-        // disabled={item === '🥕 Carrots'}
         >
       {item.text} <span className="text-xs text-gray-400 ml-2">{item.altText}</span>
     </Combobox.Option>
@@ -40,8 +39,8 @@ export function ComboBoxWithHeader({items, headerText}: {items: OptionType[], he
     >
       <Combobox.Target>
         <TextInput
-          label="Pick value or type anything"
-          placeholder="Pick value or type anything"
+          label={label}
+          placeholder={placeholder}
           value={value}
           onChange={(event) => {
             setValue(event.currentTarget.value);
