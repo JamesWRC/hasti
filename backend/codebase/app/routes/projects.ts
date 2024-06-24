@@ -394,6 +394,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                 success: false,
                                 message: 'Something went wrong during the file upload.',
                             }
+                            console.error('err', err)
                             return resolve({ code: 500, json: response });
                         }
 
@@ -740,13 +741,17 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
 
                             // Update content and images
                             const updateResponse = await updateContent(repositoryID, createdProject.id, user.id, contentFile)
-
+                            if (createdProject && createdRepo){
+                                await updateRepoAnalytics(projectOwnerUser, createdRepo?.name, createdProject.id, createdProject.repoID)
+                            }
                             if (!updateResponse.success) {
                                 const response: AddProjectResponse = {
                                     success: false,
                                     message: `Failed to add project content. ${updateResponse.message}`,
                                 }
                                 // Clean up any created project or repo
+                                console.log('issue deleting project', createdProject)
+                                console.log('issue deleting repo', createdRepo)
                                 createdProject ? await deleteProject(createdProject.id) : null
                                 createdRepo ? await deleteRepo(createdRepo.id) : null
                                 return resolve({ code: 500, json: response });
@@ -760,6 +765,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                 return resolve({ code: 200, json: response });
 
                             }
+                            
                         } else {
                             const missingFields = [];
                             if (!repositoryID) missingFields.push('repositoryID');
@@ -785,11 +791,12 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                     console.log(e)
                     const response: AddProjectResponse = {
                         success: false,
-                        message: 'Something went wrong during the file upload.',
+                        message: 'Something went wrong during the file upload. catch all.',
                     }
                     return resolve({ code: 500, json: response });
                 }
             });
+
 
             return res.status(code).json(json)
 

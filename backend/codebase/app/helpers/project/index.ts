@@ -287,12 +287,23 @@ function extractImageUrls(markdownContent: string): string[] {
             const gitHubUserImagesMatches = line.match(/\bhttps?:\/\/user-images.githubusercontent.com\S+\.(jpg|jpeg|png|gif|svg|mp4|webm|mov)\b/gi);
             const githubAssetMatches = line.match(/https:\/\/github\.com\/[^\/]+\/[^\/]+\/(assets\/\d+\/[^\/]+)/gi);
             if (gitHubUserImagesMatches) {
-                mediaUrls.push(...gitHubUserImagesMatches);
+                for (const gitHubUserImageMatch of gitHubUserImagesMatches) {
+                    let safeImgeUrl = gitHubUserImageMatch.replace('>', '');
+                    safeImgeUrl = safeImgeUrl.replace('\n', '');
+                    if(safeImgeUrl.includes('http://')){
+                        mediaUrls.push(safeImgeUrl)
+                    }
+                }
             }
 
             if (githubAssetMatches) {
                 for (const githubAssetMatch of githubAssetMatches) {
-                    mediaUrls.push(githubAssetMatch.replace(')', ''));
+                    let safeImgeUrl = githubAssetMatch.replace(')', '');
+                    safeImgeUrl = safeImgeUrl.replace('>', '');
+                    safeImgeUrl = safeImgeUrl.replace('\n', '');
+                    if(safeImgeUrl.includes('http://')){
+                        mediaUrls.push(safeImgeUrl)
+                    }
                 }
             }
         }

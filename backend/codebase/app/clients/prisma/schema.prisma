@@ -48,7 +48,7 @@ model Project {
   worksWithSupervised       Boolean       @default(false)
 
   worksWithHAVersion        String        @default("") @db.VarChar(255)
-  IoTClassification         String        @default("Assumed State") @db.VarChar(255) // https://www.home-assistant.io/blog/2016/02/12/classifying-the-internet-of-things/#classifiers
+  IoTClassification         String        @default("unknown") @db.VarChar(255) // https://www.home-assistant.io/blog/2016/02/12/classifying-the-internet-of-things/#classifiers
   
   projectType       String        @default("integration") @db.VarChar(255)
 

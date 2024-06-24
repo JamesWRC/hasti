@@ -77,7 +77,7 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
           // Only fetch data if there are search parameters.
           
           // sleep for 2 seconds to simulate a slow network
-          await new Promise((resolve) => setTimeout(resolve, 4000));
+          // await new Promise((resolve) => setTimeout(resolve, 4000));
 
           const response = await axios({
             url: `${process.env.API_URL}/api/v1/projects` + queryStr,

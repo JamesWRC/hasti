@@ -115,12 +115,12 @@ export default function Search() {
       // Type
       let filterByType = ''
       if (projectTypeSelected && projectTypeSelected !== undefined) {
-        filterByType = `type:${projectTypeSelected?.toLowerCase()}`
+        filterByType = `projectType:${projectTypeSelected?.toLowerCase()}`
       }
 
       // Tags
-      const hasTagsFilter = hasTags.map((tag) => `tagNames:='${tag}'`).join(' || ')
-      const notTagsFilter = notTags.map((tag) => `tagNames!='${tag}'`).join(' && ')
+      const hasTagsFilter = hasTags.map((tag) => `tagNames:='${tag}'`).join(' && ')
+      const notTagsFilter = notTags.map((tag) => `tagNames:!='${tag}'`).join(' && ')
       let tagsFilter = ''
 
       if (hasTagsFilter) tagsFilter += `(${hasTagsFilter})`
@@ -130,10 +130,10 @@ export default function Search() {
 
 
       // HA Version
-      const haVersionFilter = `worksWithHAVersion:=${worksWithHAVersion}`
+      const haVersionFilter = worksWithHAVersion ? `worksWithHAVersion:=${worksWithHAVersion}` : ''
 
       // IoT Classification
-      const iotClassificationFilter = `IoTClassification:=${IoTClassification}`
+      const iotClassificationFilter = IoTClassification ? `IoTClassification:=${IoTClassification}` : ''
 
       // HA Install Types
       let haInstallTypesFilter = ''
@@ -156,18 +156,18 @@ export default function Search() {
 
       // Popularity, Rating, Activity filters
       const popularityFilter = `popularityRating:>=${popularity[0]} && popularityRating:<=${popularity[1]}`
-      const ratingFilter = `rating:>=${rating[0]} && rating:<=${rating[1]}`
+      const ratingFilter = `overallRating:>=${rating[0]} && overallRating:<=${rating[1]}`
       const activityFilter = `activityRating:>=${activity[0]} && activityRating:<=${activity[1]}`
       const p_r_a_string = `${popularityFilter} && ${ratingFilter} && ${activityFilter}`
 
 
       // Combine all filters
       let allFilters = filterByType
-      allFilters == '' ? allFilters += tagsFilter : allFilters += ' && ' + tagsFilter
-      allFilters == '' ? allFilters += haVersionFilter : allFilters += ' && ' + haVersionFilter
-      allFilters == '' ? allFilters += iotClassificationFilter : allFilters += ' && ' + iotClassificationFilter
-      allFilters == '' ? allFilters += haInstallTypesFilter : allFilters += ' && ' + haInstallTypesFilter
       allFilters == '' ? allFilters += p_r_a_string : allFilters += ' && ' + p_r_a_string
+      allFilters == '' ? allFilters += tagsFilter : allFilters += ' && ' + tagsFilter
+      haVersionFilter ? allFilters == '' ? allFilters += haVersionFilter : allFilters += ' && ' + haVersionFilter : ''
+      iotClassificationFilter ? allFilters == '' ? allFilters += iotClassificationFilter : allFilters += ' && ' + iotClassificationFilter : ''
+      allFilters == '' ? allFilters += haInstallTypesFilter : allFilters += ' && ' + haInstallTypesFilter
 
       console.log("allFilters: ", allFilters)
       // Set the filter by
