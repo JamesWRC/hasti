@@ -117,11 +117,11 @@ export default function  MainLayout({
 
 
         {/* Static sidebar for desktop */}
-        <div className="md:fixed md:inset-y-0 md:z-50 md:flex md:w-72 md:flex-col hidden">
+        <div className="md:fixed md:inset-y-0 md:z-50 md:flex md:w-72 md:flex-col hidden ">
 
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex flex-col gap-y-5 overflow-y-auto bg-dark pr-6 pl-7">
-            <div className="grid grid-cols-1 gap-4 place-content-between h-screen">
+          <div className="flex flex-col gap-y-5 overflow-y-auto bg-dark pr-6 pl-7 scrollbar">
+            <div className="grid grid-cols-1 gap-4 place-content-between h-screen ">
               <div>
 
                 <div className="my-10 -ml-4 flex h-16 shrink-0 items-center">
@@ -286,8 +286,8 @@ export default function  MainLayout({
 
 
 
-        <main className="md:pl-72 bg-dark h-full md:h-screen p-2">
-          <div className="pr-0 pl-0 bg-white rounded-2xl w-full h-full md:h-full overflow-y-scroll scrollbar overflow-x-hidden">
+        <main className="md:pl-72 bg-dark h-full md:h-screen p-2 ">
+          <div className="pr-0 pl-0 bg-white rounded-2xl w-full h-full md:h-full overflow-y-scroll overflow-x-hidden scrollbar">
             <Search/>
             {children}
 
@@ -295,7 +295,7 @@ export default function  MainLayout({
         </main>
 
       </div>
-      <Footer />
+      {/* <Footer /> */}
 
     </>
 

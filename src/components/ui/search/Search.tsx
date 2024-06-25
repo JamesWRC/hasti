@@ -631,22 +631,26 @@ export default function Search() {
                           }
 
                         </div>
-                        <a className="ml-4 flex-auto w-full z-40 overflow-hidden" >
+                        <a className="ml-4 flex-auto w-full z-40 overflow-hidden py-1" >
                           <p className={classNames('text-sm font-medium w-full line-clamp-1 overflow-ellipsis', 'text-gray-700')}>
                             <HighlightText text={project.title} type={"title"}/>
                           </p>
                           <p className={classNames('text-sm w-full line-clamp-5 overflow-ellipsis','text-gray-500')}>
                             <HighlightText text={project.description} type={"title"}/>
                           </p>
-                          <p className={classNames('text-sm w-full line-clamp-2 relative flex overflow-auto scrollbar','text-gray-500')}>
+                          <p className={classNames('text-sm w-full line-clamp-2 relative flex overflow-auto scrollbar pt-2','text-gray-500')}>
                             {project.tagNames.map((tag) => (
                               <span key={tag} className='border border-gray-400 text-gray-800 hover:bg-blue-400 hover:text-white rounded-lg m-0.5 px-1.5 text-xs font-semibold p-0.5 cursor-pointer'>
+
                               <HighlightText text={tag} type={"tags"}/>
                               </span>
                             ))}
                             {/* <HighlightText text={project.tagNames.slice(0, 10).join(', ')} type={"tags"}/> */}
+
                           </p>
+
                         </a>
+                        
                     </div>
                 )) : <div className='text-center'>No results found...</div>}
                     
