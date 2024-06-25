@@ -69,6 +69,12 @@ module.exports = {
         maxWidth: {
           '8xl': '1600px',
         },
+        text:{
+          '2xs': '.625rem',
+          '3xs': '.5rem',
+          '4xs': '.375rem',
+          '5xs': '.25rem',
+          },
       },
   },
   plugins: [

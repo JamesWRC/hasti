@@ -25,6 +25,9 @@ import { IoTClassificationHelp, HAVersionHelp, ProjectTypeHelp } from '../HelpDi
 import { getIoTClassificationType } from '../../../../backend/codebase/app/interfaces/project/index';
 import { ProjectTypeSelectDropdownBox } from '@/frontend/components/ui/ProjectTypeSelectDropdownBox';
 
+import { rngAvatarBackground } from "@/frontend/components/ui/project";
+import React from 'react';
+
 
 export default function Search() {
   const initParams = new URLSearchParams(new URL(window.location.href).searchParams);
@@ -34,7 +37,7 @@ export default function Search() {
   const [debounceValue, setDebounceValue] = useDebouncedState('', 750);
 
 
-  const [opened, { toggle }] = useDisclosure(true);
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [projectTypeSelected, setProjectTypeSelected] = useState(initParams.get('type') ? getProjectType(initParams.get('type') as string) : undefined);
 
   // Tags
@@ -59,6 +62,8 @@ export default function Search() {
   const [activity, setActivity] = useState<[number, number]>([parseInt(initParams.get('aMin') || "10"), parseInt(initParams.get('aMax') || "100")]);
   const [popularity, setPopularity] = useState<[number, number]>([parseInt(initParams.get('pMin') || "10"), parseInt(initParams.get('pMax') || "100")]);
 
+  // The returned projects that were yielded from the search
+  const [searchResults, setSearchResults] = useState<Project[]>([]);
 
   const tagSearchParams: SearchParams = {
     q: '*',
@@ -164,7 +169,7 @@ export default function Search() {
       // Combine all filters
       let allFilters = filterByType
       allFilters == '' ? allFilters += p_r_a_string : allFilters += ' && ' + p_r_a_string
-      allFilters == '' ? allFilters += tagsFilter : allFilters += ' && ' + tagsFilter
+      tagsFilter ? allFilters == '' ? allFilters += tagsFilter : allFilters += ' && ' + tagsFilter : ''
       haVersionFilter ? allFilters == '' ? allFilters += haVersionFilter : allFilters += ' && ' + haVersionFilter : ''
       iotClassificationFilter ? allFilters == '' ? allFilters += iotClassificationFilter : allFilters += ' && ' + iotClassificationFilter : ''
       allFilters == '' ? allFilters += haInstallTypesFilter : allFilters += ' && ' + haInstallTypesFilter
@@ -190,20 +195,59 @@ export default function Search() {
         })
 
         const tagSearchResponse: TagSearchResponse = res.data;
-        const projects: Project[] = tagSearchResponse.hits.map((hit) => hit.document as unknown as Project)
-        console.log("tagSearchResponse: ", tagSearchResponse)
-        console.log("projects: ", projects.map((project) => project.popularityRating))
-        const tags = tagSearchResponse.hits.map((hit) => hit.document.name)
+        const retProjects: Project[] = []
+        for (const hit of tagSearchResponse.hits) {
+          const project: Project = hit.document as unknown as Project
+          const highlights = hit.highlights
+          if (highlights) {
+            for (const highlight of highlights) {
+
+              // Handle multiple snippets (tags)
+              if (highlight.field === 'tagNames') {
+                /**
+                 * This will iterate over the project tags and replace the any tags with a highlight, with the highlight
+                 */
+                const tempTags:string[] = []
+                for (const tag of project.tagNames) {
+                  for (const hitTag of highlight.snippets) {
+                    if (tag === hitTag.replaceAll(/<mark>/g, '').replaceAll(/<\/mark>/g, '')) {
+                      tempTags.push(hitTag)
+                    }else{
+                      tempTags.push(tag)
+                    }
+                  }
+                }
+                project.tagNames = tempTags
+              }
+
+              // Handle single snippet
+              if(highlight.snippet === undefined) continue
+              const replacedSnipped:string = highlight.snippet.replaceAll(/<mark>/g, '').replaceAll(/<\/mark>/g, '')
+              if (highlight.field === 'description') {
+                project.description = project.description.replace(replacedSnipped, highlight.snippet)
+              }
+              if (highlight.field === 'title') {
+                project.title = project.title.replace(replacedSnipped, highlight.snippet)
+              }
+            }
+          }
+          retProjects.push(project)
+        }
+        setSearchResults(retProjects)
+        console.log("tagSearchResponse: ", retProjects)
 
       }
+      
       // add search to url
       const url = new URL(window.location.href);
       const params = new URLSearchParams(url.search);
       params.set('search', debounceValue);
       url.search = params.toString();
       window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
-
+      
       searchProjects()
+      // hide advanced search
+      setShowAdvancedSearch(false)
 
     }
   }
@@ -406,183 +450,210 @@ export default function Search() {
     setPopularity(value);
 
     url.search = params.toString();
-    window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
-  }
+        window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
+      }
 
 
-  function classNames(...classes: String[]) {
-    return classes.filter(Boolean).join(' ')
-  }
-  return (
-    <>
+      const HighlightText = ({ text, type }: {text:string, type:string}) => {
+        // Split the text by <mark> and </mark> tags
+        const parts = text.split(/<mark>|<\/mark>/);
 
-      <div className='grid grid-cols-1 max-w-lg mx-auto pt-4 sticky top-0 z-30 pl-2 pr-1 -mt-24'>
-        <Input
-          placeholder="Search Integrations, Themes etc..."
-          value={search}
-          onChange={(event) => handleSearch(event.currentTarget.value)}
-          rightSectionPointerEvents="all"
-          className='z-20 shadow-lg block w-full p-2 ps-10 text-sm text-white rounded-2xl bg-dark focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
-          leftSection={<MagnifyingGlassIcon className='h-5 w-5 ml-1 font-bold text-white' />}
-          styles={{ input: { paddingLeft: '0px', border: '0px', backgroundColor: 'rgb(38 40 43 / var(--tw-bg-opacity))', color: 'white' } }}
-          rightSection={
-            <div className='flex -ml-5'>
-              <CloseButton
-                className='text-white -ml-5'
-                aria-label="Clear input"
-                onClick={() => handleSearch('')}
-                style={{ display: search ? undefined : 'none' }}
-              />
-              <div className={search ? 'hidden' : 'px-1'}></div>
-              <AdjustmentsVerticalIcon onClick={toggle} className={'h-5 w-5 cursor-pointer my-1 text-white'} />
+        return (
+          <>
+          <p>
+            {parts.map((part, index) =>
+              // Apply styling to every second part (the ones that were inside <mark>)
+              index % 2 === 1 ? <span key={part + index} style={{ backgroundColor: 'yellow' }}>{part}</span> : part
+            )}
+          </p>
+          </>
+        );
+      };
+      
 
-            </div>
+      function classNames(...classes: String[]) {
+        return classes.filter(Boolean).join(' ')
+      }
+      return (
+        <>
 
-          }
-        />
-        <div className={search || opened ? 'max-w-lg w-full grid grid-cols-1 z-10 pt-14 rounded-2xl absolute' : 'hidden'}>
-          <div className='rounded-2xl bg-white shadow-4xl -mt-10 pt-12 px-4 mx-3 overflow-y-scroll h-[90vh] scrollbar'>
-            <div className={opened ? 'px-4 rounded-b-2xl bg-gray-50 pt-4' : 'hidden'}>
-              <div className='grid grid-cols-3 gap-4'>
-                {/* Get Types */}
-                <div className='col-span-3 grid grid-cols-1'>
-
-                  <ProjectTypeHelp />
-                  <ProjectTypeSelectDropdownBox projectType={projectTypeSelected} setProjectType={handleProjectTypeSelection} disabled={false} />
+          <div className='grid grid-cols-1 max-w-lg mx-auto pt-4 sticky top-0 z-30 pl-2 pr-1 -mt-24'>
+            <Input
+              placeholder="Search Integrations, Themes etc..."
+              value={search}
+              onChange={(event) => handleSearch(event.currentTarget.value)}
+              rightSectionPointerEvents="all"
+              leftSectionPointerEvents="all"
+              className='z-20 shadow-lg block w-full p-2 ps-10 text-sm text-white rounded-2xl bg-dark focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+              styles={{ input: { paddingLeft: '0px', border: '0px', backgroundColor: 'rgb(38 40 43 / var(--tw-bg-opacity))', color: 'white' } }}
+              rightSection={
+                <div className='flex -ml-6'>
+                <CloseButton
+                  className='text-white -ml-5'
+                  aria-label="Clear input"
+                  onClick={() => handleSearch('')}
+                  style={{ display: search ? undefined : 'none' }}
+                />
+                <div className={search ? 'hidden' : 'px-1'}></div>
+                <MagnifyingGlassIcon className={classNames('h-5 w-5 ml-1 my-1 cursor-pointer font-bold', search ? 'text-cyan-400' : 'text-white')} />
                 </div>
 
-                {/* </div> */}
-                {/* Popular tags - scroll box  */}
-                <div className='mx-auto col-span-3 '>
-                  <div className='text-md font-semibold'>Popular {projectTypeSelected !== undefined ? projectTypeSelected : null} Tags</div>
-                  <div className='overflow-y-auto h-40 mt-2 scrollbar'>
-                    <div className='flex flex-wrap'>
-                      {reqStatus === 'success' && tags ?
-                        tags.tags.map((tag: TagWithCount) => {
-                          return <button key={tag.name} onClick={(e) => { handleSelectedTags(tag.name) }} className={
-                            classNames('border border-gray-700 bg-gray-100 text-gray-800 hover:bg-blue-400 hover:text-white rounded-lg m-1 px-2 text-xs font-semibold p-1 cursor-pointer', hasTags.includes(tag.name) ? 'bg-cyan-400' : notTags.includes(tag.name) ? 'bg-red-400' : '')}>{`${tag.name}`}<span className='text-xs pl-1 font-light'>{`(${tag.count})`}</span></button>
-                        })
-                        : tags && tags.tags.map((tag: TagWithCount) => {
-                          return <button key={tag.name} className='border border-gray-700 bg-gray-100 text-gray-800 hover:bg-blue-400 hover:text-white rounded-lg m-1 px-2 text-xs font-semibold p-1'><DynamicSkeletonTitle min={1} max={1} maxWidth={75} /></button>
-                        })
-                      }
+                }
+              leftSection={<AdjustmentsVerticalIcon onClick={() => setShowAdvancedSearch(!showAdvancedSearch)} className={'h-5 w-5 cursor-pointer my-1 ml-2 text-white'} />}
+            />
+            <div className={search || showAdvancedSearch ? 'max-w-lg w-full grid grid-cols-1 z-10 pt-14 rounded-2xl absolute' : 'hidden'}>
+              <div className='rounded-2xl bg-white shadow-4xl -mt-10 pt-12 px-4 mx-3 overflow-y-scroll max-h-[90vh] scrollbar'>
+                <div className={showAdvancedSearch ? 'px-4 rounded-b-2xl bg-gray-50 pt-4' : 'hidden'}>
+                  <div className='grid grid-cols-3 gap-4'>
+                    {/* Get Types */}
+                    <div className='col-span-3 grid grid-cols-1'>
+
+                      <ProjectTypeHelp />
+                      <div className='bg-white'>
+                      <ProjectTypeSelectDropdownBox projectType={projectTypeSelected} setProjectType={handleProjectTypeSelection} disabled={false} />
+                      </div>
+                    </div>
+
+                    {/* </div> */}
+                    {/* Popular tags - scroll box  */}
+                    <div className='mx-auto col-span-3 '>
+                      <div className='text-md mr-2 block text-sm font-medium leading-6 text-gray-900'>Popular {projectTypeSelected !== undefined ? projectTypeSelected : null} Tags</div>
+                      <div className='overflow-y-auto h-40 mt-2 scrollbar'>
+                        <div className='flex flex-wrap'>
+                          {reqStatus === 'success' && tags ?
+                            tags.tags.map((tag: TagWithCount) => {
+                              return <button key={tag.name} onClick={(e) => { handleSelectedTags(tag.name) }} className={
+                                classNames('border border-gray-700 text-gray-800 hover:bg-blue-400 hover:text-white rounded-lg m-0.5 px-2 text-xs font-semibold p-0.5 cursor-pointer ', hasTags.includes(tag.name) ? 'bg-cyan-400' : notTags.includes(tag.name) ? 'bg-red-400' : '')}>{`${tag.name}`}<span className='text-4xs pl-1 font-thin'>{`(${tag.count})`}</span></button>
+                            })
+                            : tags && tags.tags.map((tag: TagWithCount) => {
+                              return <button key={tag.name} className='border border-gray-700 bg-gray-100 text-gray-800 hover:bg-blue-400 hover:text-white rounded-lg m-1 px-2 text-xs font-semibold p-1'><DynamicSkeletonTitle min={1} max={1} maxWidth={75} /></button>
+                            })
+                          }
+                        </div>
+                      </div>
+                    </div>
+                    <div className='col-span-3 mr-2 block text-sm font-medium leading-6 text-gray-900'>
+                      Has these tags:
+                      {/* Results must include these tags */}
+                      <SearchTagComboBox
+                        placeholder="Results must include..."
+                        searchable={true}
+                        nothingFoundMessage='Nothing found...'
+                        existingTags={hasTags}
+                        tags={hasTags} setTags={setHasTags}
+                        maxSelectedValues={10}
+                        searchParams={tagSearchParams}
+
+                      />
+                    </div>
+                    <div className='col-span-3 mr-2 block text-sm font-medium leading-6 text-gray-900'>
+                      Doesn&apos;t have these tags:
+                      {/* Results must include these tags */}
+                      <SearchTagComboBox
+                        placeholder="Results won't include..."
+                        searchable={true}
+                        nothingFoundMessage='Nothing found...'
+                        existingTags={notTags}
+                        tags={notTags} setTags={setNotTags}
+                        maxSelectedValues={10}
+                        searchParams={tagSearchParams}
+                      />
+                    </div>
+                    <div className="col-span-3 grid grid-cols-4">
+                      {/* HA Install Types */}
+                      <div className="text-black col-span-2 mr-1.5">
+                        <HAVersionHelp />
+                        <ComboBoxWithHeader items={HACoreVersions.map((version) => ({ text: version.version, altText: version.date }))} headerText={`Note: Select 'Any' if this isnt version dependant.`} value={worksWithHAVersion} setValue={setWorksWithHAVersion} />
+                      </div>
+                      {/* IoT classification */}
+                      <div className="col-span-2 ml-1.5">
+                        <IoTClassificationHelp />
+                        <StyledComboBox items={getIoTClassificationComboBoxItems()} value={IoTClassification} setValue={setIotClassification} />
+                      </div>
+                      {/* HA Core Version supported */}
+                      <div className="pt-1.5 col-span-4">
+                        <HAInstallTypeSelectDropdownBox haInstallTypes={haInstallTypes} setHaInstallTypes={setHaInstallTypes} />
+
+                      </div>
+
+                    </div>
+                    <div className='col-span-3 grid grid-cols-10 pt-3 text-center'>
+                      <span className='font-semibold'>Rating</span>
+                      <RangeSlider minRange={10} min={0} max={100} step={1} defaultValue={[5, 100]} className=' col-span-10 col-start-3' color="cyan"
+                        value={rating} onChange={setRating} onChangeEnd={handleRating} marks={marks} />
+                    </div>
+                    <div className='col-span-3 grid grid-cols-10 pt-3 text-center'>
+                      <span className='font-semibold'>Activity</span>
+                      <RangeSlider minRange={10} min={0} max={100} step={1} defaultValue={[5, 100]} className=' col-span-10 col-start-3 ' color="cyan"
+                        value={activity} onChange={setActivity} onChangeEnd={handleActivity} marks={marks} />
+                    </div>
+                    <div className='col-span-3 grid grid-cols-10 pt-3 text-center'>
+                      <span className='font-semibold'>Popularity</span>
+                      <RangeSlider minRange={10} min={0} max={100} step={1} defaultValue={[5, 100]} className=' col-span-10 col-start-3' color="cyan"
+                        value={popularity} onChange={setPopularity} onChangeEnd={handlePopularity} marks={marks} />
                     </div>
                   </div>
-                </div>
-                <div className='col-span-3 font-semibold'>
-                  Has these tags:
-                  {/* Results must include these tags */}
-                  <SearchTagComboBox
-                    placeholder="Results must include..."
-                    searchable={true}
-                    nothingFoundMessage='Nothing found...'
-                    existingTags={hasTags}
-                    tags={hasTags} setTags={setHasTags}
-                    maxSelectedValues={10}
-                    searchParams={tagSearchParams}
+                  <div className='col-span-3 grid grid-cols-2 pt-5 gap-x-3'>
+                    <Button
 
-                  />
-                </div>
-                <div className='col-span-3 font-semibold'>
-                  Doesn&apos;t have these tags:
-                  {/* Results must include these tags */}
-                  <SearchTagComboBox
-                    placeholder="Results won't include..."
-                    searchable={true}
-                    nothingFoundMessage='Nothing found...'
-                    existingTags={notTags}
-                    tags={notTags} setTags={setNotTags}
-                    maxSelectedValues={10}
-                    searchParams={tagSearchParams}
-                  />
-                </div>
-                <div className="col-span-3 grid grid-cols-4">
-                  {/* HA Install Types */}
-                  <div className="text-black col-span-2 mr-1.5">
-                    <HAVersionHelp />
-                    <ComboBoxWithHeader items={HACoreVersions.map((version) => ({ text: version.version, altText: version.date }))} headerText={`Note: Select 'Any' if this isnt version dependant.`} value={worksWithHAVersion} setValue={setWorksWithHAVersion} />
+                      onClick={() => clearFilters()}
+                      className={`min-w-full transition duration-200 bg-gray-200 text-gray-800 hover:bg-red-400 hover:text-white rounded-lg py-2 px-4`}
+                    >
+                      Clear filters
+                    </Button>
+                    <Button
+
+                      onClick={() => searchProjects()}
+                      className={`min-w-full transition duration-200  text-gray-800 bg-cyan-400 hover:text-white rounded-lg py-2 px-4`}
+                    >
+                      Search
+                    </Button>
                   </div>
-                  {/* IoT classification */}
-                  <div className="col-span-2 ml-1.5">
-                    <IoTClassificationHelp />
-                    <StyledComboBox items={getIoTClassificationComboBoxItems()} value={IoTClassification} setValue={setIotClassification} />
-                  </div>
-                  {/* HA Core Version supported */}
-                  <div className="pt-1.5 col-span-4">
-                    <HAInstallTypeSelectDropdownBox haInstallTypes={haInstallTypes} setHaInstallTypes={setHaInstallTypes} />
-
-                  </div>
-
                 </div>
-                <div className='col-span-3 grid grid-cols-10 pt-3 text-center'>
-                  <span className='font-semibold'>Rating</span>
-                  <RangeSlider minRange={10} min={0} max={100} step={1} defaultValue={[5, 100]} className=' col-span-10 col-start-3' color="cyan"
-                    value={rating} onChange={setRating} onChangeEnd={handleRating} marks={marks} />
-                </div>
-                <div className='col-span-3 grid grid-cols-10 pt-3 text-center'>
-                  <span className='font-semibold'>Activity</span>
-                  <RangeSlider minRange={10} min={0} max={100} step={1} defaultValue={[5, 100]} className=' col-span-10 col-start-3 ' color="cyan"
-                    value={activity} onChange={setActivity} onChangeEnd={handleActivity} marks={marks} />
-                </div>
-                <div className='col-span-3 grid grid-cols-10 pt-3 text-center'>
-                  <span className='font-semibold'>Popularity</span>
-                  <RangeSlider minRange={10} min={0} max={100} step={1} defaultValue={[5, 100]} className=' col-span-10 col-start-3' color="cyan"
-                    value={popularity} onChange={setPopularity} onChangeEnd={handlePopularity} marks={marks} />
-                </div>
-              </div>
-              <div className='col-span-3 grid grid-cols-2 pt-5 gap-x-3'>
-                <Button
+                
+                {searchResults.length > 0 ? searchResults.map((project) => (
+                  <div key={project.id} className='flex cursor-default select-none rounded-xl p-3 items-center'>
+                        <div
+                          className={classNames(
+                            'flex h-14 w-14 flex-none items-center justify-center rounded-lg',
+                          )}
+                        >
+                          {!project?.backgroundImage ? 
+                          <>
+                            <img src={project?.backgroundImage && project?.backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL  + '/' + project?.backgroundImage : rngAvatarBackground(project?.id)} alt="" className={classNames("flex h-full w-full items-center justify-center rounded-lg object-cover -mr-28", !project?.backgroundImage ? `blur-[5px]` : "" )} />
 
-                  onClick={() => clearFilters()}
-                  className={`min-w-full transition duration-200 bg-gray-200 text-gray-800 hover:bg-red-400 hover:text-white rounded-lg py-2 px-4`}
-                >
-                  Clear filters
-                </Button>
-                <Button
+                            <img src={project?.backgroundImage && project?.backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL  + '/' + project?.backgroundImage : rngAvatarBackground(project?.id)} alt="" className={classNames("flex h-full w-full items-center justify-center rounded-lg object-cover", !project?.backgroundImage ? `blur-[50px]` : "" )} />
+                            <img src={project?.backgroundImage && project?.backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL  + '/' + project?.backgroundImage : rngAvatarBackground(project?.id)} alt="" className={classNames("flex h-full w-full items-center justify-center rounded-lg object-cover", !project?.backgroundImage ? `blur-[50px]` : "" )} />
 
-                  onClick={() => searchProjects()}
-                  className={`min-w-full transition duration-200  text-gray-800 bg-cyan-400 hover:text-white rounded-lg py-2 px-4`}
-                >
-                  Search
-                </Button>
+                          </>
+                          :
+                          <img src={project?.backgroundImage && project?.backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL  + '/' + project?.backgroundImage : rngAvatarBackground(project?.id)} alt="" className={classNames("flex h-full w-full items-center justify-center rounded-lg object-cover", !project?.backgroundImage ? `blur-[50px]` : "" )} />
+                          }
+
+                        </div>
+                        <a className="ml-4 flex-auto w-full z-40 overflow-hidden" >
+                          <p className={classNames('text-sm font-medium w-full line-clamp-1 overflow-ellipsis', 'text-gray-700')}>
+                            <HighlightText text={project.title} type={"title"}/>
+                          </p>
+                          <p className={classNames('text-sm w-full line-clamp-5 overflow-ellipsis','text-gray-500')}>
+                            <HighlightText text={project.description} type={"title"}/>
+                          </p>
+                          <p className={classNames('text-sm w-full line-clamp-2 relative flex overflow-auto scrollbar','text-gray-500')}>
+                            {project.tagNames.map((tag) => (
+                              <span key={tag} className='border border-gray-400 text-gray-800 hover:bg-blue-400 hover:text-white rounded-lg m-0.5 px-1.5 text-xs font-semibold p-0.5 cursor-pointer'>
+                              <HighlightText text={tag} type={"tags"}/>
+                              </span>
+                            ))}
+                            {/* <HighlightText text={project.tagNames.slice(0, 10).join(', ')} type={"tags"}/> */}
+                          </p>
+                        </a>
+                    </div>
+                )) : <div className='text-center'>No results found...</div>}
+                    
               </div>
             </div>
-            {/* Show the results from the search */}
-            <Text className='text-black text-lg font-semibold pt-3'>Results</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-            <Text className='text-white text-sm font-semibold ml-1'>0</Text>
-          </div>
-        </div>
-      </div >
+          </div >
 
-    </>
-  )
-}
+        </>
+      )
+    }
