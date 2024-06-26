@@ -123,7 +123,6 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
       reqStatus,
       setSearchProps
     }
-    console.log("retVal12: ", retVal)
     return retVal;
 
 

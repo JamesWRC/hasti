@@ -87,7 +87,8 @@ export default function Page() {
           : <h4 className="text-sm font-bold tracking-tight text-gray-900 sm:text-sm py-4 px-3 mx-auto text-center">
             Your projects will be shown below when you create a project.
           </h4>}
-        <ProjectGrid projectParams={{ githubUserID: session?.user.githubID, ownedOrImported: true }} setProjectState={setProjectsLoadedState} />
+        <ProjectGrid projectParams={{ githubUserID: session?.user.githubID, ownedOrImported: true }} setProjectState={setProjectsLoadedState} allowLoadMore={true}/>
+        
       </div>
     </div>
 

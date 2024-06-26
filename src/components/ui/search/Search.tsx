@@ -34,7 +34,7 @@ export default function Search() {
 
   //Search
   const [search, setSearch] = useState(initParams.get('search') || '');
-  const [debounceValue, setDebounceValue] = useDebouncedState('', 750);
+  const [debounceValue, setDebounceValue] = useDebouncedState(search, 750);
 
 
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
@@ -100,6 +100,26 @@ export default function Search() {
     { value: 90, label: '90' },
     { value: 100, label: '100' },
   ];
+
+  function usingAdvancedSearch(){
+    let retValue:boolean = false
+
+    if(projectTypeSelected) retValue = true
+
+    if(hasTags.length > 0) retValue = true
+    if(notTags.length > 0) retValue = true
+
+    if(worksWithHAVersion) retValue = true
+    if(IoTClassification) retValue = true
+    
+    if(haInstallTypes.length > 0 && haInstallTypes[0] !== HAInstallType.ANY) retValue = true
+    if(rating[0] != 10 || rating[1] != 100) retValue = true
+    
+    if(activity[0] != 10 || activity[1] != 100) retValue = true
+    if(popularity[0] != 10 || popularity[1] != 100) retValue = true
+    
+    return retValue
+  }
 
   function handleSearch(value: string) {
     setSearch(value)
@@ -220,8 +240,11 @@ export default function Search() {
                 project.tagNames = tempTags
               }
 
+              // make project.tagNames unique
+              project.tagNames = Array.from(new Set(project.tagNames));
+
               // Handle single snippet
-              if(highlight.snippet === undefined) continue
+              if (highlight.snippet === undefined) continue;
               const replacedSnipped:string = highlight.snippet.replaceAll(/<mark>/g, '').replaceAll(/<\/mark>/g, '')
               if (highlight.field === 'description') {
                 project.description = project.description.replace(replacedSnipped, highlight.snippet)
@@ -370,7 +393,12 @@ export default function Search() {
   }
 
   // Handle Tags selection
-  function handleSelectedTags(value: string) {
+  function handleSelectedTags(value: string, updateSearch: boolean) {
+
+    // strip any <mark> tags
+    value = value.replaceAll(/<mark>/g, '').replaceAll(/<\/mark>/g, '')
+
+
     let newHasTags: string[] = []
     let newNotTags: string[] = []
     if (hasTags.includes(value) && !notTags.includes(value)) {
@@ -409,6 +437,11 @@ export default function Search() {
 
     url.search = params.toString();
     window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
+
+    if (updateSearch) {
+      searchProjects()
+    }
+
   }
 
   function handleRating(value: [number, number]) {
@@ -502,7 +535,7 @@ export default function Search() {
               leftSection={<AdjustmentsVerticalIcon onClick={() => setShowAdvancedSearch(!showAdvancedSearch)} className={'h-5 w-5 cursor-pointer my-1 ml-2 text-white'} />}
             />
             <div className={search || showAdvancedSearch ? 'max-w-lg w-full grid grid-cols-1 z-10 pt-14 rounded-2xl absolute' : 'hidden'}>
-              <div className='rounded-2xl bg-white shadow-4xl -mt-10 pt-12 px-4 mx-3 overflow-y-scroll max-h-[90vh] scrollbar'>
+              <div className='rounded-2xl bg-white shadow-4xl -mt-10 pt-12 px-4 mx-3 overflow-y-scroll max-h-[90vh] scrollbar overscroll-contain'>
                 <div className={showAdvancedSearch ? 'px-4 rounded-b-2xl bg-gray-50 pt-4' : 'hidden'}>
                   <div className='grid grid-cols-3 gap-4'>
                     {/* Get Types */}
@@ -522,7 +555,7 @@ export default function Search() {
                         <div className='flex flex-wrap'>
                           {reqStatus === 'success' && tags ?
                             tags.tags.map((tag: TagWithCount) => {
-                              return <button key={tag.name} onClick={(e) => { handleSelectedTags(tag.name) }} className={
+                              return <button key={tag.name} onClick={(e) => { handleSelectedTags(tag.name, false) }} className={
                                 classNames('border border-gray-700 text-gray-800 hover:bg-blue-400 hover:text-white rounded-lg m-0.5 px-2 text-xs font-semibold p-0.5 cursor-pointer ', hasTags.includes(tag.name) ? 'bg-cyan-400' : notTags.includes(tag.name) ? 'bg-red-400' : '')}>{`${tag.name}`}<span className='text-4xs pl-1 font-thin'>{`(${tag.count})`}</span></button>
                             })
                             : tags && tags.tags.map((tag: TagWithCount) => {
@@ -610,9 +643,13 @@ export default function Search() {
                     </Button>
                   </div>
                 </div>
-                
+                <div className={classNames(usingAdvancedSearch() ? 'flex center py-4' : 'hidden')}>
+                  <span className='font-bold text-center text-gray-500 text-sm'>Results filtered. Using&nbsp;</span>
+                  <span onClick={()=>setShowAdvancedSearch(!showAdvancedSearch)} className='font-bold text-center text-gray-500 text-sm underline hover:text-cyan-500 cursor-pointer'>advanced search</span>
+                  <MagnifyingGlassIcon className={classNames('text-dark h-4 w-4 text-center mt-0.5')} />
+                </div>
                 {searchResults.length > 0 ? searchResults.map((project) => (
-                  <div key={project.id} className='flex cursor-default select-none rounded-xl p-3 items-center'>
+                  <div key={project.id} className='flex cursor-default select-none rounded-xl p-3 pr-0 items-center hover:bg-gray-200'>
                         <div
                           className={classNames(
                             'flex h-14 w-14 flex-none items-center justify-center rounded-lg',
@@ -632,7 +669,7 @@ export default function Search() {
 
                         </div>
                         <a className="ml-4 flex-auto w-full z-40 overflow-hidden py-1" >
-                          <p className={classNames('text-sm font-medium w-full line-clamp-1 overflow-ellipsis', 'text-gray-700')}>
+                          <p className={classNames(project.title.length > 30 ? 'text-xs font-bold' : 'text-lg font-medium', ' w-full line-clamp-1 overflow-ellipsis', 'text-gray-700')}>
                             <HighlightText text={project.title} type={"title"}/>
                           </p>
                           <p className={classNames('text-sm w-full line-clamp-5 overflow-ellipsis','text-gray-500')}>
@@ -640,7 +677,11 @@ export default function Search() {
                           </p>
                           <p className={classNames('text-sm w-full line-clamp-2 relative flex overflow-auto scrollbar pt-2','text-gray-500')}>
                             {project.tagNames.map((tag) => (
-                              <span key={tag} className='border border-gray-400 text-gray-800 hover:bg-blue-400 hover:text-white rounded-lg m-0.5 px-1.5 text-xs font-semibold p-0.5 cursor-pointer'>
+                              <span key={tag} 
+                              onClick={(e) => { 
+                                handleSelectedTags(tag, true);
+                                searchProjects() }}
+                              className={classNames('border border-gray-400 text-gray-800 hover:bg-blue-400 hover:text-white rounded-lg m-0.5 px-1.5 text-xs font-semibold p-0.5', hasTags.includes(tag) ? 'bg-cyan-400' : notTags.includes(tag) ? 'bg-red-400' : '')}>
 
                               <HighlightText text={tag} type={"tags"}/>
                               </span>

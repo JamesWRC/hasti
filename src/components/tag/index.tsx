@@ -87,7 +87,6 @@ useEffect(() => {
       reqStatus,
       setSearchProps
     }
-    console.log("retVal12: ", retVal)
     return retVal;
 
 

@@ -6,7 +6,7 @@ export default function Page({ params }: { params: { developer: string } }) {
   const { data: session, status } = useSession()
   const developer:string = params.developer
   return(
-    <ProjectGrid projectParams={{username:developer, type:ProjectType.THEME}}/>
+    <ProjectGrid projectParams={{username:developer, type:ProjectType.THEME}} allowLoadMore={false}/>
 
   )
 }

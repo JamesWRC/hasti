@@ -37,7 +37,6 @@ import { HAInstallTypeSelectDropdownBox } from '@/frontend/components/ui/HAInsta
 import { AddProjectResponse, GetContentResponse, GetProjectsQueryParams, MAX_FILE_SIZE, RefreshContentResponse } from '@/backend/interfaces/project/request'
 
 
-import ProjectGrid from '@/frontend/components/project/ProjectGrid';
 import { v4 as uuidv4 } from 'uuid';
 import { ProjectAddMethod, getProjectAddMethod, getAllProjectAddMethods } from '@/backend/interfaces/project/request';
 import { LoadProjects } from '@/frontend/interfaces/project';
