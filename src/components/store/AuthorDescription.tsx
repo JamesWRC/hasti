@@ -21,7 +21,7 @@ export default function AuthorDescription({ name, link, imageUrl, loaded }: { na
                     <Avatar.Group spacing="md">
                         <Avatar src={imageUrl} radius="xl" size={"sm"} className={"flex-none rounded-full bg-white/10"}/>
                     </Avatar.Group>
-                    <div className="hover:underline underline-offset-4 line-clamp-1">{loaded ? name : DynamicSkeletonText({max:1, min:1})}</div>
+                    <div className="hover:underline underline-offset-4 line-clamp-1">{loaded ? name : < DynamicSkeletonText min={1} max={3}  />}</div>
                 </div>
             </a>
         </div>

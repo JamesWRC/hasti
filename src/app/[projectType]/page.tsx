@@ -1,11 +1,11 @@
 'use strict'
 'use client'
 import { ProjectType } from "@/backend/interfaces/project";
-import AuthorDescription from "@/frontend/components/store/AuthorDescription";
-import DescriptionItem from "@/frontend/components/store/DescriptionItem";
 import FeaturedGroup from "@/frontend/components/store/FeaturedGroup";
 import PaginationPanel from "@/frontend/components/store/PaginationPanel";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { getAllProjectTypes } from '../../../backend/codebase/app/interfaces/project/index';
+import Search from "@/frontend/components/ui/search/Search";
 
 // function renderThemesGrid(){
 //   return (<div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-12 px-8">
@@ -25,7 +25,8 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 //   )
 // }
 
-export default function Page() {
+export default function Page({ params }: { params: { projectType: string } }) {
+  const router = useRouter()
 
   const searchParams = useSearchParams()
   // If a page number is specified in the query string, then we are on a paginated page,
@@ -42,9 +43,19 @@ export default function Page() {
     isFrontPage = true
   }
 
+  console.log(params.projectType)
+  console.log('params.projectType.substring(0, params.projectType.length-1: ' + params.projectType.substring(0, params.projectType.length-1))
+
+  // check if the project type is valid and if not, redirect to 404. Will check if passed in type is valid or if it is a valid type without the last character
+  if (!(getAllProjectTypes(false).includes(params.projectType as ProjectType) || getAllProjectTypes(false).includes(params.projectType.substring(0, params.projectType.length-1) as ProjectType))) {
+    router.push('/404')
+    return null
+  }
 
     return (
-      <>
+      <div className="mt-24 2xl:mt-8">
+                    <Search/>
+
         {isFrontPage ? 
         <div className="pl-0">
           <FeaturedGroup groupTitle={"Popular Themes"} type={ProjectType.THEME} /> 
@@ -73,7 +84,7 @@ export default function Page() {
         </svg>
         <span className="mt-2 block text-sm font-semibold text-gray-900">WELCOME</span>
       </button> */}
-      </>
+      </div>
       
     )
   }

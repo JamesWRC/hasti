@@ -52,7 +52,7 @@ function Tags({ tags, searchParamKey, loaded }: { tags: Tag[], searchParamKey:st
   return (
     <Container className='w-fit' pr={0}>
       <SimpleGrid cols={{ base: 1 }} spacing="md">
-        <Grid gutter="">
+        <Grid gutter="" className='h-28 overflow-y-scroll 4xl:h-full 4xl:overflow-y-auto scrollbar'>
           {tagButtons}
         </Grid>
       </SimpleGrid>
@@ -78,8 +78,8 @@ export default function SidePanelTagsContent({ tags, loaded }: { tags: Tag[], lo
           <Table.Tr key="project-tags">
             <Table.Td>
               <div className='text-white mx-0'>Tags</div></Table.Td>
-            <Table.Td>
-              <Tags tags={tags} searchParamKey={'tags'} loaded={loaded} />
+            <Table.Td >
+                <Tags tags={tags} searchParamKey={'tags'} loaded={loaded} />
             </Table.Td>
           </Table.Tr>
         </Table.Tbody>

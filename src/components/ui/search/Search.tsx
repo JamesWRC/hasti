@@ -1,6 +1,6 @@
 'use client'
 
-import { IoTClassifications, Project, ProjectType, getAllProjectTypes, getProjectType } from '@/backend/interfaces/project';
+import { IoTClassifications, Project, ProjectType, ProjectWithUser, getAllProjectTypes, getProjectType } from '@/backend/interfaces/project';
 import { GetPopularTagsQueryParams, PopularTagResponse, TagSearchResponse, TagWithCount } from '@/backend/interfaces/tag/request';
 import { AdjustmentsVerticalIcon, ChevronDoubleDownIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid';
 // Make a search Bar component
@@ -27,6 +27,8 @@ import { ProjectTypeSelectDropdownBox } from '@/frontend/components/ui/ProjectTy
 
 import { rngAvatarBackground } from "@/frontend/components/ui/project";
 import React from 'react';
+import { FaceFrownIcon } from '@heroicons/react/24/outline';
+import Router from 'next/router';
 
 
 export default function Search() {
@@ -36,12 +38,14 @@ export default function Search() {
   const [search, setSearch] = useState(initParams.get('search') || '');
   const [debounceValue, setDebounceValue] = useDebouncedState(search, 750);
 
-
-  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
-  const [projectTypeSelected, setProjectTypeSelected] = useState(initParams.get('type') ? getProjectType(initParams.get('type') as string) : undefined);
-
   // Tags
   const { tags, reqStatus, setSearchProps } = useTags({ limit: '50' });
+
+  const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
+
+  // ****** Make sure the below search options are the same in /[projectType]/[developer]/[name] projects ****** //
+  const [projectTypeSelected, setProjectTypeSelected] = useState(initParams.get('type') ? getProjectType(initParams.get('type') as string) : undefined);
+
   // Results has tags
   const [hasTags, setHasTags] = useState<string[]>(initParams.get('hasTags')?.split(',') || []);
   // Must not have tags
@@ -63,16 +67,8 @@ export default function Search() {
   const [popularity, setPopularity] = useState<[number, number]>([parseInt(initParams.get('pMin') || "10"), parseInt(initParams.get('pMax') || "100")]);
 
   // The returned projects that were yielded from the search
-  const [searchResults, setSearchResults] = useState<Project[]>([]);
+  const [searchResults, setSearchResults] = useState<ProjectWithUser[]>([]); 
 
-  const tagSearchParams: SearchParams = {
-    q: '*',
-    query_by: 'name',
-    include_fields: 'name,type',
-    highlight_fields: 'name', // Hacky way to get API to not send highlight fields in response to save response size
-    // sort_by: 'projectsUsing:desc',
-    typo_tokens_threshold: 3,
-  }
 
   const projectSearchParams: SearchParams = {
     q: '*',
@@ -80,6 +76,16 @@ export default function Search() {
     include_fields: '*',
     filter_by: "",
     // filter_by: "(tagNames:='test' || tagNames:='test1') && tagNames:!='3' && popularityRating:>=0 && popularityRating:<=95",
+    // sort_by: 'projectsUsing:desc',
+    typo_tokens_threshold: 3,
+  }
+  // ****** END search params ****** //
+
+  const tagSearchParams: SearchParams = {
+    q: '*',
+    query_by: 'name',
+    include_fields: 'name,type',
+    highlight_fields: 'name', // Hacky way to get API to not send highlight fields in response to save response size
     // sort_by: 'projectsUsing:desc',
     typo_tokens_threshold: 3,
   }
@@ -126,7 +132,7 @@ export default function Search() {
     setDebounceValue(value)
   }
 
-  function searchProjects() {
+  function searchProjects(currHasTags: string[] = [], currNotTags: string[] = []) {
     if (projectSearchParams) {
       // query 
       if (debounceValue) {
@@ -143,9 +149,12 @@ export default function Search() {
         filterByType = `projectType:${projectTypeSelected?.toLowerCase()}`
       }
 
+      const searchHasTags = currHasTags.length > 0 ? currHasTags : hasTags
+      const searchNotTags = currNotTags.length > 0 ? currNotTags : notTags
+
       // Tags
-      const hasTagsFilter = hasTags.map((tag) => `tagNames:='${tag}'`).join(' && ')
-      const notTagsFilter = notTags.map((tag) => `tagNames:!='${tag}'`).join(' && ')
+      const hasTagsFilter = searchHasTags.map((tag) => `tagNames:='${tag}'`).join(' && ')
+      const notTagsFilter = searchNotTags.map((tag) => `tagNames:!='${tag}'`).join(' && ')
       let tagsFilter = ''
 
       if (hasTagsFilter) tagsFilter += `(${hasTagsFilter})`
@@ -215,46 +224,49 @@ export default function Search() {
         })
 
         const tagSearchResponse: TagSearchResponse = res.data;
-        const retProjects: Project[] = []
+        const retProjects: ProjectWithUser[] = []
         for (const hit of tagSearchResponse.hits) {
-          const project: Project = hit.document as unknown as Project
+          const project: ProjectWithUser|null = hit.document as unknown as ProjectWithUser | null
+          if (project){
+
           const highlights = hit.highlights
           if (highlights) {
-            for (const highlight of highlights) {
+              for (const highlight of highlights) {
 
-              // Handle multiple snippets (tags)
-              if (highlight.field === 'tagNames') {
-                /**
-                 * This will iterate over the project tags and replace the any tags with a highlight, with the highlight
-                 */
-                const tempTags:string[] = []
-                for (const tag of project.tagNames) {
-                  for (const hitTag of highlight.snippets) {
-                    if (tag === hitTag.replaceAll(/<mark>/g, '').replaceAll(/<\/mark>/g, '')) {
-                      tempTags.push(hitTag)
-                    }else{
-                      tempTags.push(tag)
+                // Handle multiple snippets (tags)
+                if (highlight.field === 'tagNames') {
+                  /**
+                   * This will iterate over the project tags and replace the any tags with a highlight, with the highlight
+                   */
+                  const tempTags:string[] = []
+                  for (const tag of project.tagNames) {
+                    for (const hitTag of highlight.snippets) {
+                      if (tag === hitTag.replaceAll(/<mark>/g, '').replaceAll(/<\/mark>/g, '')) {
+                        tempTags.push(hitTag)
+                      }else{
+                        tempTags.push(tag)
+                      }
                     }
                   }
+                  project.tagNames = tempTags
                 }
-                project.tagNames = tempTags
-              }
 
-              // make project.tagNames unique
-              project.tagNames = Array.from(new Set(project.tagNames));
+                // make project.tagNames unique
+                project.tagNames = Array.from(new Set(project.tagNames));
 
-              // Handle single snippet
-              if (highlight.snippet === undefined) continue;
-              const replacedSnipped:string = highlight.snippet.replaceAll(/<mark>/g, '').replaceAll(/<\/mark>/g, '')
-              if (highlight.field === 'description') {
-                project.description = project.description.replace(replacedSnipped, highlight.snippet)
-              }
-              if (highlight.field === 'title') {
-                project.title = project.title.replace(replacedSnipped, highlight.snippet)
+                // Handle single snippet
+                if (highlight.snippet === undefined) continue;
+                const replacedSnipped:string = highlight.snippet.replaceAll(/<mark>/g, '').replaceAll(/<\/mark>/g, '')
+                if (highlight.field === 'description') {
+                  project.description = project.description.replace(replacedSnipped, highlight.snippet)
+                }
+                if (highlight.field === 'title') {
+                  project.title = project.title.replace(replacedSnipped, highlight.snippet)
+                }
               }
             }
+            retProjects.push(project)
           }
-          retProjects.push(project)
         }
         setSearchResults(retProjects)
         console.log("tagSearchResponse: ", retProjects)
@@ -408,8 +420,11 @@ export default function Search() {
       newNotTags = [...notTags, value];
 
     } else if (notTags.includes(value)) {
+      newHasTags = hasTags
+      
       // Remove the tag from the notTags array
       newNotTags = notTags.filter(tag => tag !== value);
+
 
     } else {
       // Create a new array instead of mutating the existing one
@@ -439,7 +454,7 @@ export default function Search() {
     window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
 
     if (updateSearch) {
-      searchProjects()
+      searchProjects( newHasTags, newNotTags)
     }
 
   }
@@ -510,11 +525,12 @@ export default function Search() {
       return (
         <>
 
-          <div className='grid grid-cols-1 max-w-lg mx-auto pt-4 sticky top-0 z-30 pl-2 pr-1 -mt-24'>
+          <div className='grid grid-cols-1 max-w-lg 2xl:max-w-2xl mx-auto pt-4 sticky top-0 z-30 pl-2 pr-1 -mt-24'>
             <Input
               placeholder="Search Integrations, Themes etc..."
               value={search}
               onChange={(event) => handleSearch(event.currentTarget.value)}
+              onFocus={() => setShowAdvancedSearch(true)}
               rightSectionPointerEvents="all"
               leftSectionPointerEvents="all"
               className='z-20 shadow-lg block w-full p-2 ps-10 text-sm text-white rounded-2xl bg-dark focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
@@ -532,9 +548,9 @@ export default function Search() {
                 </div>
 
                 }
-              leftSection={<AdjustmentsVerticalIcon onClick={() => setShowAdvancedSearch(!showAdvancedSearch)} className={'h-5 w-5 cursor-pointer my-1 ml-2 text-white'} />}
+              leftSection={<AdjustmentsVerticalIcon onClick={() => setShowAdvancedSearch(!showAdvancedSearch)} className={classNames('h-5 w-5 cursor-pointer my-1 ml-2', usingAdvancedSearch() ? 'text-cyan-400': 'text-white')} />}
             />
-            <div className={search || showAdvancedSearch ? 'max-w-lg w-full grid grid-cols-1 z-10 pt-14 rounded-2xl absolute' : 'hidden'}>
+            <div className={search || showAdvancedSearch ? 'max-w-lg 2xl:max-w-2xl w-full grid grid-cols-1 z-10 pt-14 rounded-2xl absolute' : 'hidden'}>
               <div className='rounded-2xl bg-white shadow-4xl -mt-10 pt-12 px-4 mx-3 overflow-y-scroll max-h-[90vh] scrollbar overscroll-contain'>
                 <div className={showAdvancedSearch ? 'px-4 rounded-b-2xl bg-gray-50 pt-4' : 'hidden'}>
                   <div className='grid grid-cols-3 gap-4'>
@@ -626,7 +642,7 @@ export default function Search() {
                         value={popularity} onChange={setPopularity} onChangeEnd={handlePopularity} marks={marks} />
                     </div>
                   </div>
-                  <div className='col-span-3 grid grid-cols-2 pt-5 gap-x-3'>
+                  <div className='col-span-3 grid grid-cols-2 pt-5 gap-x-3 pb-4'>
                     <Button
 
                       onClick={() => clearFilters()}
@@ -649,38 +665,38 @@ export default function Search() {
                   <MagnifyingGlassIcon className={classNames('text-dark h-4 w-4 text-center mt-0.5')} />
                 </div>
                 {searchResults.length > 0 ? searchResults.map((project) => (
-                  <div key={project.id} className='flex cursor-default select-none rounded-xl p-3 pr-0 items-center hover:bg-gray-200'>
+                  <a key={project?.id} className='flex cursor-default select-none rounded-xl p-3 pr-0 items-center hover:bg-gray-200 cursor-pointer' href={`${project?.projectType}/${project?.user.username}/${project?.title}`}>
                         <div
                           className={classNames(
                             'flex h-14 w-14 flex-none items-center justify-center rounded-lg',
                           )}
                         >
                           {!project?.backgroundImage ? 
-                          <>
-                            <img src={project?.backgroundImage && project?.backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL  + '/' + project?.backgroundImage : rngAvatarBackground(project?.id)} alt="" className={classNames("flex h-full w-full items-center justify-center rounded-lg object-cover -mr-28", !project?.backgroundImage ? `blur-[5px]` : "" )} />
+                          <div className='border-dark rounded-lg border flex'>
+                            <img src={project?.backgroundImage && project?.backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL  + '/' + project?.backgroundImage : rngAvatarBackground(project?.id)} alt="" className={classNames("flex h-14 w-24 items-center justify-center rounded-lg object-cover -mr-28 ", !project?.backgroundImage ? `blur-[5px]` : "" )} />
 
-                            <img src={project?.backgroundImage && project?.backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL  + '/' + project?.backgroundImage : rngAvatarBackground(project?.id)} alt="" className={classNames("flex h-full w-full items-center justify-center rounded-lg object-cover", !project?.backgroundImage ? `blur-[50px]` : "" )} />
-                            <img src={project?.backgroundImage && project?.backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL  + '/' + project?.backgroundImage : rngAvatarBackground(project?.id)} alt="" className={classNames("flex h-full w-full items-center justify-center rounded-lg object-cover", !project?.backgroundImage ? `blur-[50px]` : "" )} />
+                            <img src={project?.backgroundImage && project?.backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL  + '/' + project?.backgroundImage : rngAvatarBackground(project?.id)} alt="" className={classNames("flex h-12 w-12 items-center justify-center rounded-lg object-cover", !project?.backgroundImage ? `blur-[50px]` : "" )} />
+                            <img src={project?.backgroundImage && project?.backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL  + '/' + project?.backgroundImage : rngAvatarBackground(project?.id)} alt="" className={classNames("flex h-12 w-12 items-center justify-center rounded-lg object-cover", !project?.backgroundImage ? `blur-[50px]` : "" )} />
 
-                          </>
+                          </div>
                           :
-                          <img src={project?.backgroundImage && project?.backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL  + '/' + project?.backgroundImage : rngAvatarBackground(project?.id)} alt="" className={classNames("flex h-full w-full items-center justify-center rounded-lg object-cover", !project?.backgroundImage ? `blur-[50px]` : "" )} />
+                          <img src={project?.backgroundImage && project?.backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL  + '/' + project?.backgroundImage : rngAvatarBackground(project?.id)} alt="" className={classNames("flex h-max w-max items-center justify-center rounded-lg object-cover", !project?.backgroundImage ? `blur-[50px]` : "" )} />
                           }
 
                         </div>
                         <a className="ml-4 flex-auto w-full z-40 overflow-hidden py-1" >
-                          <p className={classNames(project.title.length > 30 ? 'text-xs font-bold' : 'text-lg font-medium', ' w-full line-clamp-1 overflow-ellipsis', 'text-gray-700')}>
-                            <HighlightText text={project.title} type={"title"}/>
+                          <p className={classNames(project && project.title.length > 30 ? 'text-xs font-bold' : 'text-lg font-medium', ' w-full line-clamp-1 overflow-ellipsis', 'text-gray-700')}>
+                            <HighlightText text={project ? project.title : ""} type={"title"}/>
                           </p>
                           <p className={classNames('text-sm w-full line-clamp-5 overflow-ellipsis','text-gray-500')}>
-                            <HighlightText text={project.description} type={"title"}/>
+                            <HighlightText text={project ? project.description : ""} type={"title"}/>
                           </p>
                           <p className={classNames('text-sm w-full line-clamp-2 relative flex overflow-auto scrollbar pt-2','text-gray-500')}>
-                            {project.tagNames.map((tag) => (
+                            {project?.tagNames.map((tag) => (
                               <span key={tag} 
                               onClick={(e) => { 
                                 handleSelectedTags(tag, true);
-                                searchProjects() }}
+                                }}
                               className={classNames('border border-gray-400 text-gray-800 hover:bg-blue-400 hover:text-white rounded-lg m-0.5 px-1.5 text-xs font-semibold p-0.5', hasTags.includes(tag) ? 'bg-cyan-400' : notTags.includes(tag) ? 'bg-red-400' : '')}>
 
                               <HighlightText text={tag} type={"tags"}/>
@@ -692,8 +708,12 @@ export default function Search() {
 
                         </a>
                         
-                    </div>
-                )) : <div className='text-center'>No results found...</div>}
+                    </a>
+                )) : <div className='text-center py-5 flex place-content-center'>
+                  {/* Search icon */}
+                  <FaceFrownIcon className='h-8 w-8 text-gray-500 mx-2' />
+                  <p className='text-gray-500 text-lg py-0.5'>No results found</p>
+                  </div>}
                     
               </div>
             </div>

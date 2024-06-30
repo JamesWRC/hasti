@@ -21,6 +21,7 @@ import { createTempUser, getTrustworthinessRating } from '@/backend/helpers/user
 import { GHAppSenderWHSender, RepositoryData } from '@/backend/interfaces/repo';
 import addOrUpdateRepo from '@/backend/helpers/repo';
 import { HACoreVersions } from '@/backend/helpers/homeassistant';
+import { DocumentWithUser } from '@/backend/interfaces/project/search';
 
 const projectsRouter = Router();
 export const config = {
@@ -91,7 +92,23 @@ projectsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestRe
             }
 
             // Perform the search using the Typesense client
-            const searchResults = await tsClient.collections('Project').documents().search(searchParameters, searchOptions);
+            const searchResults: SearchResponse<object> = await tsClient.collections('Project').documents().search(searchParameters, searchOptions);
+
+            // Get Author of the projects and add to the search results
+            if (searchResults.hits) {
+                for (let i = 0; i < searchResults.hits.length; i++) {
+                    const document = searchResults.hits[i].document as DocumentWithUser;
+                    const user = await prisma.user.findFirst({
+                        where: {
+                            id: document.userID
+                        }
+                    })
+                    document.user = user
+
+                    searchResults.hits[i].document = document
+
+                }
+            }
 
             // Return the search results as the API response
             res.status(200).json(searchResults);

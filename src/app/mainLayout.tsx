@@ -287,8 +287,9 @@ export default function  MainLayout({
 
 
         <main className="md:pl-72 bg-dark h-full md:h-screen p-2 ">
+
           <div className="pr-0 pl-0 bg-white rounded-2xl w-full h-full md:h-full overflow-y-scroll overflow-x-hidden scrollbar">
-            <Search/>
+
             {children}
 
           </div>

@@ -16,8 +16,8 @@ export default function StorePage() {
               Explore popular Home Assistant Themes and Integrations
             </p>
           </div>
-          <FeaturedGroup groupTitle={"Featured Themes"} type={ProjectType.THEME} limit={10}/>
-          <FeaturedGroup groupTitle={"Featured Integrations"} type={ProjectType.INTEGRATION} limit={2}/>
+          <FeaturedGroup groupTitle={"Featured Themes"} type={ProjectType.THEME} limit={10} orderBy={'overallRating'} orderDirection={'desc'} />
+          <FeaturedGroup groupTitle={"Featured Integrations"} type={ProjectType.INTEGRATION} limit={10} orderBy={'overallRating'} orderDirection={'desc'}/>
         </div>
       </div>
     )

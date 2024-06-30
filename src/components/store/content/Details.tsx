@@ -30,7 +30,7 @@ export default function Details({ loadedProject, reqStatus }: { loadedProject: L
   return (
     <div className="bg-gray-900 rounded-3xl">
       <div className="mx-auto max-w-7xl">
-        <div className="bg-gray-900 pt-10 pb-4 rounded-3xl">
+        <div className="bg-gray-900 pt-10 rounded-3xl">
           <div className="px-4 sm:px-6 lg:px-8">
             <div className="sm:flex sm:items-center">
               <div className="sm:flex-auto">
@@ -62,8 +62,9 @@ export default function Details({ loadedProject, reqStatus }: { loadedProject: L
                   {loaded ? getProjectWorksWithList(projectData).join(', ') : DynamicSkeletonText({ max: 30, min: 10 })}
                 </div>
                 <hr className="mt-2 mb-2 border-gray-700" />
-
-                <SidePanelTagsContent tags={tags} loaded={loaded} />
+                <div className='line-clamp-1'>
+                  <SidePanelTagsContent tags={tags} loaded={loaded} />
+                </div>
               </div>
               {/* <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
                   <button
@@ -90,7 +91,7 @@ export default function Details({ loadedProject, reqStatus }: { loadedProject: L
 
                         <AuthorDescription
                           name={projectData?.user?.username}
-                          link={`https://github.com/${projectData?.user.username}`}
+                          link={`/users/${projectData?.user.username}`}
                           imageUrl={`https://avatars.githubusercontent.com/u/${projectData?.user.githubID}?v=4`} loaded={loaded} />
                           </div>
 

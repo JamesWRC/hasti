@@ -104,7 +104,7 @@ export default function ProjectCard({userProject, style, loaded}: {userProject: 
         <div className="absolute inset-0 -z-10 rounded-2xl ring-1 ring-inset ring-gray-900/0 cursor-pointer" onClick={() => location.href = getProjectLink(userProject) ?? ''}/>
         <div className='-mx-4 sm:-mx-2'>
           
-            <AuthorDescription name={userProject?.user.username} imageUrl={`https://avatars.githubusercontent.com/u/${userProject?.user.githubID}?v=4`} link={`https://github.com/${userProject?.user.username}`} loaded={loaded}/>
+            <AuthorDescription name={userProject?.user.username} imageUrl={`https://avatars.githubusercontent.com/u/${userProject?.user.githubID}?v=4`} link={`/users/${userProject?.user.username}`} loaded={loaded}/>
             <h3 className="mt-3 text-lg font-semibold leading-6 text-white">
                 <a href={getProjectLink(userProject)}>
                     {/* <span className="absolute inset-0" /> */}

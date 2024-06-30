@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "Project" ALTER COLUMN "contentImages" SET DEFAULT ARRAY[]::VARCHAR(255)[],
+ALTER COLUMN "tagNames" SET DEFAULT ARRAY[]::VARCHAR(255)[],
+ALTER COLUMN "IoTClassification" SET DEFAULT 'unknown';

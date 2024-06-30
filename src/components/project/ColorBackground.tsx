@@ -11,14 +11,9 @@ export default function ColorBackground({ projectID }: { projectID: string }) {
         const canvas = document.getElementById('myCanvas') as HTMLCanvasElement;
         const ctx = canvas.getContext('2d');
         const moreColor = true
-        console.log("projectID", projectID)
-        // var rand = require('random-seed').create(randPkgName);
         var rand = require('random-seed').create(projectID);
-        // const seed = rand.intBetween(0, 10);
-        console.log("rand", rand)
-        console.log("rand num", rand.intBetween(0, 100))
 
-        let x1, y1, x2, y2, x3, y3, rngCount = 100;
+        let x1, y1, x2, y2, x3, y3, x4, y4, rngCount = 100;
         do {
             x1 = Math.floor(rand.intBetween(0, canvas.width));
             y1 = Math.floor(rand.intBetween(1, canvas.height*2));
@@ -26,19 +21,20 @@ export default function ColorBackground({ projectID }: { projectID: string }) {
             x2 = Math.floor(rand.intBetween(2, canvas.width));
             y2 = Math.floor(rand.intBetween(3, canvas.height*5));
 
-            x3 = Math.floor(rand.intBetween(1, canvas.width/7));
-            y3 = Math.floor(rand.intBetween(1, canvas.height*2));
+            x3 = Math.floor(rand.intBetween(1, canvas.width));
+            y3 = Math.floor(rand.intBetween(1, canvas.height/2));
+
+            x4 = Math.floor(rand.intBetween(1, canvas.width/7));
+            y4 = Math.floor(rand.intBetween(1, canvas.height*2));
 
             rngCount--;
             console.log(rngCount)
-        } while (Math.hypot(x2 - x1, y2 - y1) <= 100 || rngCount <= 0); // ensure the circles never touch
+        } while (Math.hypot(x2 - x1, y2 - y1, x1-x3, y1-y3) <= 100 || rngCount <= 0); // ensure the circles never touch
 
         const rotation = rand.random() * 1 * 0.025; // random rotation in radians
 
         if (!ctx) return;
         const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-        // gradient.addColorStop(0, 'cyan');
-        // gradient.addColorStop(1, 'red');
 
         ctx.save(); // save the current state
         ctx.rotate(rotation); // rotate the canvas
@@ -70,6 +66,8 @@ export default function ColorBackground({ projectID }: { projectID: string }) {
         ctx.arc(0, y1 - 50, 7.5, 0, 2 * Math.PI, false);
         ctx.arc(100, 100, 15, 20, 2 * Math.PI, false);
 
+
+
         ctx.fillStyle = gradient;
         if (moreColor) {
             const hue2 = Math.floor(rand.random() * 360);
@@ -95,6 +93,6 @@ export default function ColorBackground({ projectID }: { projectID: string }) {
     }, []);
 
     return (
-        <canvas id="myCanvas" className="absolute top-0 left-0 w-full h-28 z-0 rounded-xl"></canvas>
+        <canvas id="myCanvas" className="absolute top-0 left-0 w-full h-48 z-0 bg-gray-800"></canvas>
     )
 }

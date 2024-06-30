@@ -57,7 +57,7 @@ export interface GetProjectsQueryParams{
     checkImported?: boolean;
     ownedOrImported?: boolean;
     projectTitle?: string;
-    orderBy?: 'createdAt' | 'updatedAt' | 'title' | 'author';
+    orderBy?: 'createdAt' | 'updatedAt' | 'title' | 'author' | 'overallRating';
     orderDirection?: 'asc' | 'desc';
     allContent?: boolean;
 
