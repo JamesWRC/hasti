@@ -8,7 +8,7 @@ import DescriptionItem from '@/frontend/components/store/DescriptionItem';
 
 import { useDebouncedState, useMediaQuery } from '@mantine/hooks';
 import Pagination from "@/frontend/components/store/Pagination";
-import { HAInstallType, IoTClassifications, ProjectWithUser, getIoTClassificationType, getProjectType } from "@/backend/interfaces/project";
+import { HAInstallType, IoTClassifications, ProjectType, ProjectWithUser, getIoTClassificationType, getProjectType } from "@/backend/interfaces/project";
 import { SearchParams } from "@/backend/interfaces/tag";
 import axios from "axios";
 import { set } from "lodash";
@@ -69,11 +69,9 @@ export default function PaginationPanel() {
     function searchProjects(currHasTags: string[] = [], currNotTags: string[] = []) {
         if (projectSearchParams) {
 
-            // query 
-            // const searchParams = new URLSearchParams(new URL(window.location.href).searchParams)
 
             // ****** Make sure the stays up to date with  components/ui/search****** //
-            const projectTypeSelected:string|undefined = initParams.get('type') ? getProjectType(initParams.get('type') as string) : undefined
+            const projectTypeSelected:ProjectType|undefined = initParams.get('type') ? getProjectType(initParams.get('type') as string) : undefined
 
             // Results has tags
             const hasTags:string[] = initParams.get('hasTags')?.split(',') || [];

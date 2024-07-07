@@ -32,40 +32,56 @@ import { FaceFrownIcon } from '@heroicons/react/24/outline';
 
 export default function Search() {
   const initParams = new URLSearchParams(new URL(window.location.href).searchParams);
-
+  // *** States for search bar*** //
   //Search
   const [search, setSearch] = useState(initParams.get('search') || '');
   const [debounceValue, setDebounceValue] = useDebouncedState(search, 750);
-
   // Tags
   const { tags, reqStatus, setSearchProps } = useTags({ limit: '50' });
-
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const searchRef = useRef(null);
   const [isSearchActive, setIsSearchActive] = useState(false);
 
+
   // ****** Make sure the below search options are the same in /[projectType]/[developer]/[name] projects ****** //
-  const [projectTypeSelected, setProjectTypeSelected] = useState(initParams.get('type') ? getProjectType(initParams.get('type') as string) : undefined);
+  // *** Params *** //
+  const _projectTypeSelected:ProjectType|undefined = initParams.get('type') ? getProjectType(initParams.get('type') as string) : undefined
 
   // Results has tags
-  const [hasTags, setHasTags] = useState<string[]>(initParams.get('hasTags')?.split(',') || []);
+  const _hasTags:string[] = initParams.get('hasTags')?.split(',') || [];
   // Must not have tags
-  const [notTags, setNotTags] = useState<string[]>(initParams.get('notTags')?.split(',') || []);
+  const _notTags:string[] = initParams.get('notTags')?.split(',') || [];
 
-  const stringHAInstallTypes = initParams.get('haInsTypes')?.split(',')?.filter((type) => Object.values(HAInstallType).includes(type as HAInstallType));
-  const [haInstallTypes, setHaInstallTypes] = useState<HAInstallType[]>(stringHAInstallTypes ? stringHAInstallTypes.map((type) => type as HAInstallType) || [HAInstallType.ANY] : [HAInstallType.ANY]);
+  const _stringHAInstallTypes:string[] | undefined = initParams.get('haInsTypes')?.split(',')?.filter((type) => Object.values(HAInstallType).includes(type as HAInstallType));
+  const _haInstallTypes:HAInstallType[] = _stringHAInstallTypes ? _stringHAInstallTypes.map((type) => type as HAInstallType) || [HAInstallType.ANY] : [HAInstallType.ANY];
 
 
   // Home Assistant Install Versions
-  const [worksWithHAVersion, setWorksWithHAVersion] = useState<string>(initParams.get('haVer') || '');
+  const _worksWithHAVersion:string = initParams.get('haVer') || '';
 
   // SetUp IoTClassification combo
-  const [IoTClassification, setIotClassification] = useState<IoTClassifications | undefined>(initParams.get('iotClass') ? getIoTClassificationType(initParams.get('iotClass') as string) : undefined);
+  const _IoTClassification:IoTClassifications | undefined = initParams.get('iotClass') ? getIoTClassificationType(initParams.get('iotClass') as string) : undefined;
 
   // sliders
-  const [rating, setRating] = useState<[number, number]>([parseInt(initParams.get('rMin') || "10"), parseInt(initParams.get('rMax') || "100")]);
-  const [activity, setActivity] = useState<[number, number]>([parseInt(initParams.get('aMin') || "10"), parseInt(initParams.get('aMax') || "100")]);
-  const [popularity, setPopularity] = useState<[number, number]>([parseInt(initParams.get('pMin') || "10"), parseInt(initParams.get('pMax') || "100")]);
+  const _rating:[number, number] = [parseInt(initParams.get('rMin') || "10"), parseInt(initParams.get('rMax') || "100")];
+  const _activity:[number, number] = [parseInt(initParams.get('aMin') || "10"), parseInt(initParams.get('aMax') || "100")];
+  const _popularity:[number, number] = [parseInt(initParams.get('pMin') || "10"), parseInt(initParams.get('pMax') || "100")];
+
+  // *** States *** //
+  const [projectTypeSelected, setProjectTypeSelected] = useState(_projectTypeSelected);
+  // Results has tags
+  const [hasTags, setHasTags] = useState<string[]>(_hasTags);
+  // Must not have tags
+  const [notTags, setNotTags] = useState<string[]>(_notTags);
+  const [haInstallTypes, setHaInstallTypes] = useState<HAInstallType[]>(_haInstallTypes);
+  // Home Assistant Install Versions
+  const [worksWithHAVersion, setWorksWithHAVersion] = useState<string>(_worksWithHAVersion);
+  // SetUp IoTClassification combo
+  const [IoTClassification, setIotClassification] = useState<IoTClassifications | undefined>(_IoTClassification);
+  // sliders
+  const [rating, setRating] = useState<[number, number]>(_rating);
+  const [activity, setActivity] = useState<[number, number]>(_activity);
+  const [popularity, setPopularity] = useState<[number, number]>(_popularity);
 
   // The returned projects that were yielded from the search
   const [searchResults, setSearchResults] = useState<ProjectWithUser[]>([]);
@@ -76,8 +92,6 @@ export default function Search() {
     query_by: 'title,description,tagNames',
     include_fields: '*',
     filter_by: "",
-    // filter_by: "(tagNames:='test' || tagNames:='test1') && tagNames:!='3' && popularityRating:>=0 && popularityRating:<=95",
-    // sort_by: 'projectsUsing:desc',
     typo_tokens_threshold: 3,
   }
   // ****** END search params ****** //
@@ -332,111 +346,76 @@ export default function Search() {
 
     // Set the url params for the hasTags
     if (hasTags.length > 0) {
-      // params.set('hasTags', hasTags.join(','));
       setURLParams('hasTags', hasTags.join(','), 'set')
     } else {
-      // params.delete('hasTags');
       setURLParams('hasTags', '', 'delete')
     }
 
     // Set the url params for the notTags
     if (notTags.length > 0) {
-      // params.set('notTags', notTags.join(','));
       setURLParams('notTags', notTags.join(','), 'set')
     } else {
-      // params.delete('notTags');
       setURLParams('notTags', '', 'delete')
     }
-
-    // url.search = params.toString();
-    // window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
 
   }, [hasTags, notTags]);
 
 
   // Update URL for HAVersion
   useEffect(() => {
-    // const url = new URL(window.location.href);
-    // const params = new URLSearchParams(url.search);
 
     if (worksWithHAVersion) {
-      // params.set('haVer', worksWithHAVersion);
       setURLParams('haVer', worksWithHAVersion, 'set')
     } else {
-      // params.delete('haVer');
       setURLParams('haVer', '', 'delete')
     }
-
-    // url.search = params.toString();
-    // window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
 
   }, [worksWithHAVersion]);
 
   // Update URl for IoTClassification
   useEffect(() => {
-    // const url = new URL(window.location.href);
-    // const params = new URLSearchParams(url.search);
+
 
     if (IoTClassification) {
-      // params.set('iotClass', IoTClassification);
       setURLParams('iotClass', IoTClassification, 'set')
     } else {
-      // params.delete('iotClass');
       setURLParams('iotClass', '', 'delete')
     }
-
-    // url.search = params.toString();
-    // window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
 
   }, [IoTClassification]);
 
 
   // Update URL for Install Types
   useEffect(() => {
-    // const url = new URL(window.location.href);
-    // const params = new URLSearchParams(url.search);
 
     if (haInstallTypes) {
-      // params.set('haInsTypes', haInstallTypes.join(','));
       setURLParams('haInsTypes', haInstallTypes.join(','), 'set')
     } else {
-      // params.delete('haInsTypes');
       setURLParams('haInsTypes', '', 'delete')
     }
-
-    // url.search = params.toString();
-    // window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
 
   }, [haInstallTypes]);
   // Handle Project type selection
   function handleProjectTypeSelection(value: ProjectType | undefined) {
 
-    // const url = new URL(window.location.href);
-    // const params = new URLSearchParams(url.search);
-
     // Handle 'Any' selection
     if (value === undefined) {
-      // params.delete('type');
       setURLParams('type', '', 'delete')
       setProjectTypeSelected(undefined);
       setSearchProps({ limit: '50' })
     } else if (projectTypeSelected !== value) {
       // Set the url params for the project type
 
-      // params.set('type', value);
       setURLParams('type', value, 'set')
       setProjectTypeSelected(value);
       setSearchProps({ limit: '50', type: value })
 
     } else if (projectTypeSelected === value) {
-      // params.delete('type');
       setURLParams('type', '', 'delete')
       setProjectTypeSelected(undefined);
 
     }
 
-    // url.search = params.toString();
-    // window.history.pushState({}, '', url.toString());
   }
 
 
@@ -472,28 +451,19 @@ export default function Search() {
     setHasTags(newHasTags);
     setNotTags(newNotTags);
 
-    // const url = new URL(window.location.href);
-    // const params = new URLSearchParams(url.search);
     // Set the url params for the hasTags
     if (newHasTags.length > 0) {
-      // params.set('hasTags', newHasTags.join(','));
       setURLParams('hasTags', newHasTags.join(','), 'set')
     } else {
-      // params.delete('hasTags');
       setURLParams('hasTags', '', 'delete')
     }
 
     // Set the url params for the notTags
     if (newNotTags.length > 0) {
-      // params.set('notTags', newNotTags.join(','));
       setURLParams('notTags', newNotTags.join(','), 'set')
     } else {
-      // params.delete('notTags');
       setURLParams('notTags', '', 'delete')
     }
-
-    // url.search = params.toString();
-    // window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
 
     if (updateSearch) {
       searchProjects(newHasTags, newNotTags)
@@ -503,49 +473,28 @@ export default function Search() {
 
   function handleRating(value: [number, number]) {
 
-    // const url = new URL(window.location.href);
-    // const params = new URLSearchParams(url.search);
     // Set the url params for the hasTags
-    // params.set('rMin', value[0].toString());
-    // params.set('rMax', value[1].toString());
     setURLParams('rMin', value[0].toString(), 'set')
     setURLParams('rMax', value[1].toString(), 'set')
     setRating(value);
-
-    // url.search = params.toString();
-    // window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
   }
 
   function handleActivity(value: [number, number]) {
 
-    // const url = new URL(window.location.href);
-    // const params = new URLSearchParams(url.search);
     // Set the url params for the hasTags
-    // params.set('aMin', value[0].toString());
-    // params.set('aMax', value[1].toString());
     setURLParams('aMin', value[0].toString(), 'set')
     setURLParams('aMax', value[1].toString(), 'set')
 
     setActivity(value);
 
-    // url.search = params.toString();
-    // window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
   }
 
   function handlePopularity(value: [number, number]) {
-
-    // const url = new URL(window.location.href);
-    // const params = new URLSearchParams(url.search);
     // Set the url params for the hasTags
-    // params.set('pMin', value[0].toString());
-    // params.set('pMax', value[1].toString());
     setURLParams('pMin', value[0].toString(), 'set')
     setURLParams('pMax', value[1].toString(), 'set')
 
     setPopularity(value);
-
-    // url.search = params.toString();
-    // window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
   }
 
 
