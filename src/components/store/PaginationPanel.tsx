@@ -1,16 +1,17 @@
 'use client'
 import { ArrowLongLeftIcon, ArrowLongRightIcon } from "@heroicons/react/24/outline";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { Grid } from '@mantine/core';
 
 import DescriptionItem from '@/frontend/components/store/DescriptionItem';
 
-import { useMediaQuery } from '@mantine/hooks';
+import { useDebouncedState, useMediaQuery } from '@mantine/hooks';
 import Pagination from "@/frontend/components/store/Pagination";
 import { HAInstallType, IoTClassifications, ProjectWithUser, getIoTClassificationType, getProjectType } from "@/backend/interfaces/project";
 import { SearchParams } from "@/backend/interfaces/tag";
 import axios from "axios";
+import { set } from "lodash";
 
 const arrayRange = (start: number, stop: number, step: number) =>
     Array.from({ length: (stop - start) / step + 1 },
@@ -32,9 +33,10 @@ export default function PaginationPanel() {
     // The number of pages to display either side of the selected page
     const PAGINATION_PAGE_NUMBERS_EITHER_SIDE = 6
     const searchParams = useSearchParams()
+
     const router = useRouter();
     const pathname = usePathname();
-
+    
     const paramPageNum = searchParams?.get('page')
     let initPageNumber = paramPageNum ? parseInt(paramPageNum) : 1;
 
@@ -48,8 +50,9 @@ export default function PaginationPanel() {
     });
     const matches = useMediaQuery('(min-width: 768px)');
 
-
     const initParams = new URLSearchParams(new URL(window.location.href).searchParams);
+    const [debounceValue, setDebounceValue] = useState(new URL(window.location.href).searchParams);
+
 
     // ****** Make sure the stays up to date with  components/ui/search****** //
     const [projectTypeSelected, setProjectTypeSelected] = useState(initParams.get('type') ? getProjectType(initParams.get('type') as string) : undefined);
@@ -92,8 +95,11 @@ export default function PaginationPanel() {
     function searchProjects(currHasTags: string[] = [], currNotTags: string[] = []) {
         if (projectSearchParams) {
 
-            // ########### FILTERS ###########
+            // query 
+            const searchParams = new URLSearchParams(new URL(window.location.href).searchParams)
+            projectSearchParams.q = searchParams.get('search') || '*'
 
+            // ########### FILTERS ###########
             // Type
             let filterByType = ''
             if (projectTypeSelected && projectTypeSelected !== undefined) {
@@ -159,7 +165,7 @@ export default function PaginationPanel() {
             projectSearchParams.filter_by = allFilters
 
             // projectSearchParams.filter_by = 
-            const searchProjects = async () => {
+            const requestSearch = async () => {
 
                 // Set the search query
                 const params = new URLSearchParams(projectSearchParams as Record<string, any>)
@@ -231,15 +237,42 @@ export default function PaginationPanel() {
             url.search = params.toString();
             window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
 
-            searchProjects()
+            requestSearch()
 
         }
     }
 
     useEffect(() => {
-        searchProjects()
-    }, [projectTypeSelected, hasTags, notTags, worksWithHAVersion, IoTClassification, haInstallTypes, rating, activity, popularity])
+        function handleURLChange() {
+            const url = new URL(window.location.href);
+            const params = new URLSearchParams(url.search);
+            if(params.get('s') === 't'){
+                console.log("searchProjects s: ", "truedsd")
 
+                // delete s key and reset url params   
+
+                params.delete('s')
+                url.search = params.toString();
+                window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
+    
+                
+    
+                searchProjects()
+            }
+            // Your function here
+        }
+        
+        // Run the function initially
+        handleURLChange();
+    
+        // Listen for changes in the URL
+        window.addEventListener('urlchange', handleURLChange);
+    
+        // Clean up the event listener when the component unmounts
+        return () => {
+            window.removeEventListener('urlchange', handleURLChange);
+        };
+    }, []);
 
     function handlePageChange(pageNumber: number) {
         setPageNumber(pageNumber);
@@ -323,36 +356,34 @@ export default function PaginationPanel() {
 
         }
 
-        async function sleep() {
-            console.log("sleep start");
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            console.log("sleep done");
-        }
-        sleep();
+        // async function sleep() {
+        //     console.log("sleep start");
+        //     await new Promise(resolve => setTimeout(resolve, 2000));
+        //     console.log("sleep done");
+        // }
+        // sleep();
         for (var i = 0; i < currNumItemsDisplayed; i++) {
-            tempPageContent.push(<DescriptionItem title={''} description={''} author={''} authorImageUrl={''} authorLink={''} loaded={false} animateDelayCount={0} />);
+            tempPageContent.push(<DescriptionItem title={''} description={''} author={''} authorImageUrl={''} authorLink={''} loaded={false} backgroundImage={""} id={""} animateDelayCount={0} />);
         }
 
         setPageContent(tempPageContent);
         tempPageContent = []
-        const timer = setTimeout(() => {
-            fetch('api/store/themes')
-                .then(response => response.json())
-                .then(data => {
-                    for (var i = 0; i < data.themes.length && i < currNumItemsDisplayed; i++) {
-                        const delay = 100 * i
-                        tempPageContent.push(<DescriptionItem title={data.themes[i].title} description={data.themes[i].description} author={data.themes[i].author.name} authorImageUrl={data.themes[i].author.imageUrl} authorLink={data.themes[i].author.link} loaded={true} animateDelayCount={delay} />);
-                    }
+        console.log("searchResults: ", searchResults)
+        for (var i = 0; i < searchResults.length && i < currNumItemsDisplayed; i++) {
+            const delay = 100 * i
+            const result: ProjectWithUser = searchResults[i]
+            if(result){
+                const authLink = result.user ? `/users/${result.user.username}` : ''
+                const authorImg = `https://avatars.githubusercontent.com/u/${result.user.githubID}?v=4`
+                const backgroundImage = result.backgroundImage
+                tempPageContent.push(<DescriptionItem title={result.title} description={result.description} author={result.user.username} authorImageUrl={authorImg} authorLink={authLink} loaded={true} backgroundImage={backgroundImage} id={result.id} animateDelayCount={delay} />);
+            }
+        }
+        setPageContent(tempPageContent);
 
-                    setPageContent(tempPageContent);
-                    skeletonSetPageContent([]);
 
-                    // setPageNumber(data.totalPages);
-                })
-                .catch(error => console.error(error));
-        });
 
-    }, [numItemsDisplayed, pageNumber, windowSize]);
+    }, [numItemsDisplayed, pageNumber, windowSize, searchResults]);
 
 
     return (

@@ -3,7 +3,7 @@ import { Project, ProjectAllInfo } from '@/backend/interfaces/project'
 import { Tag } from '@/backend/interfaces/tag'
 import SidePanelTagsContent from '@/frontend/components/store/content/SidePanelContent'
 import AuthorDescription from '@/frontend/components/store/AuthorDescription';
-import { LoadProjects } from '@/frontend/interfaces/project';
+import { LoadProjects, getProjectLink, getProjectTypeURL } from '@/frontend/interfaces/project';
 import { DynamicSkeletonText, DynamicSkeletonTitle } from "@/frontend/components/ui/skeleton/index";
 import { get } from 'lodash';
 import { getProjectActivity, getProjectStars, getProjectWorksWithList } from '@/frontend/helpers/project';
@@ -26,6 +26,8 @@ export default function Details({ loadedProject, reqStatus }: { loadedProject: L
   console.log('isLoading side', loaded)
   const tags: Tag[] = projectData?.tags || []
   const [isExpanded, setIsExpanded] = useState(false);
+
+  const tagBaseURL: string = getProjectTypeURL(projectData)
 
   return (
     <div className="bg-gray-900 rounded-3xl">
@@ -63,7 +65,7 @@ export default function Details({ loadedProject, reqStatus }: { loadedProject: L
                 </div>
                 <hr className="mt-2 mb-2 border-gray-700" />
                 <div className='line-clamp-1'>
-                  <SidePanelTagsContent tags={tags} loaded={loaded} />
+                  <SidePanelTagsContent tags={tags} loaded={loaded} tagBaseURL={tagBaseURL} />
                 </div>
               </div>
               {/* <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
@@ -81,38 +83,39 @@ export default function Details({ loadedProject, reqStatus }: { loadedProject: L
               <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
 
                 <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-                  
+
                   <div className="min-w-full divide-y divide-gray-700 px-4">
 
                     <div className="divide-gray-800 divide-y-4">
 
-                          <span className="text-white -my-4">Developer</span>
-                        </div>
-
-                        <AuthorDescription
-                          name={projectData?.user?.username}
-                          link={`/users/${projectData?.user.username}`}
-                          imageUrl={`https://avatars.githubusercontent.com/u/${projectData?.user.githubID}?v=4`} loaded={loaded} />
-                          </div>
-
+                      <span className="text-white -my-4">Developer</span>
                     </div>
+
+                    <AuthorDescription
+                      name={projectData?.user?.username}
+                      link={`/users/${projectData?.user.username}`}
+                      imageUrl={`https://avatars.githubusercontent.com/u/${projectData?.user.githubID}?v=4`} loaded={loaded}
+                    />
                   </div>
-                <div className="flex justify-end py-4 ">
+
+                </div>
+              </div>
+              <div className="flex justify-end py-4 ">
                 {/* Project Last Updated */}
                 <hr className="mt-2 mb-2 border-gray-700" />
                 <span className='whitespace-nowrap pl-4 pr-3 text-xs text-gray-500'>Content Updated: </span>
-                  {loaded && projectData ?
-                    <time dateTime={new Date(projectData.updatedAt).toISOString()} className="text-xs text-gray-500 ">
-                      {moment(projectData.updatedAt).fromNow()}
-                      </time> 
-                    : 
-                      DynamicSkeletonText({ max: 30, min: 10 })}
-                </div>
-                </div>
+                {loaded && projectData ?
+                  <time dateTime={new Date(projectData.updatedAt).toISOString()} className="text-xs text-gray-500 ">
+                    {moment(projectData.updatedAt).fromNow()}
+                  </time>
+                  :
+                  DynamicSkeletonText({ max: 30, min: 10 })}
               </div>
             </div>
           </div>
+        </div>
       </div>
+    </div>
   )
 }
 

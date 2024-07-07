@@ -42,12 +42,9 @@ export default function Page({ params }: { params: { projectType: string } }) {
   } else {
     isFrontPage = true
   }
-
-  console.log(params.projectType)
-  console.log('params.projectType.substring(0, params.projectType.length-1: ' + params.projectType.substring(0, params.projectType.length-1))
-
+  const currProjectType = params.projectType.substring(0, params.projectType.length-1) as ProjectType
   // check if the project type is valid and if not, redirect to 404. Will check if passed in type is valid or if it is a valid type without the last character
-  if (!(getAllProjectTypes(false).includes(params.projectType as ProjectType) || getAllProjectTypes(false).includes(params.projectType.substring(0, params.projectType.length-1) as ProjectType))) {
+  if (!(getAllProjectTypes(false).includes(params.projectType as ProjectType) || getAllProjectTypes(false).includes(currProjectType))) {
     router.push('/404')
     return null
   }
@@ -58,7 +55,7 @@ export default function Page({ params }: { params: { projectType: string } }) {
 
         {isFrontPage ? 
         <div className="pl-0">
-          <FeaturedGroup groupTitle={"Popular Themes"} type={ProjectType.THEME} /> 
+          <FeaturedGroup groupTitle={"Popular Themes"} type={currProjectType} /> 
         </div>: null}
       
       {/* {renderThemesGrid()} */}
