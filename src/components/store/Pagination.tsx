@@ -23,7 +23,7 @@ export default function Pagination({pageNumber,handlePageChange, numShowing, max
     const { hovered, ref } = useHover();
     const [debounceValue, setDebounceValue] = useDebouncedState('', 1500);
 
-  
+    const toMax = pageNumber * numShowing > maxItems ? maxItems : pageNumber * numShowing;
 
     useEffect(() => {
         if (debounceValue != '') {
@@ -35,7 +35,7 @@ export default function Pagination({pageNumber,handlePageChange, numShowing, max
     const renderShowing = () => {
       return(
       <p className="text-sm text-gray-700">
-        Showing <span className="font-medium">{(pageNumber * numShowing ) - numShowing > 0 ? (pageNumber * numShowing ) - numShowing : 1}</span> to <span className="font-medium">{pageNumber * numShowing}</span> of{' '}
+        Showing <span className="font-medium">{(pageNumber * numShowing ) - numShowing > 0 ? (pageNumber * numShowing ) - numShowing : 1}</span> to <span className="font-medium">{toMax}</span> of{' '}
         <span className="font-medium">{maxItems}</span> results
       </p>
       )

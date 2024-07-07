@@ -27,8 +27,6 @@ export default function PaginationPanel() {
     const MAX_ITEMS_PER_PAGE = 30; // Number of items to show on all other pages that doesnt have a featured section
     const MAX_ITEMS_PER_PAGE_FIRST_PAGE = 20; // Number of items to show for first page
 
-    const maxItems = 100; // The total number of items in the store. CHANGE LATER
-
 
     // The number of pages to display either side of the selected page
     const PAGINATION_PAGE_NUMBERS_EITHER_SIDE = 6
@@ -50,35 +48,11 @@ export default function PaginationPanel() {
     });
     const matches = useMediaQuery('(min-width: 768px)');
 
-    const initParams = new URLSearchParams(new URL(window.location.href).searchParams);
+    const [initParams, setInitParams] = useState(new URLSearchParams(new URL(window.location.href).searchParams))
     const [debounceValue, setDebounceValue] = useState(new URL(window.location.href).searchParams);
 
-
-    // ****** Make sure the stays up to date with  components/ui/search****** //
-    const [projectTypeSelected, setProjectTypeSelected] = useState(initParams.get('type') ? getProjectType(initParams.get('type') as string) : undefined);
-
-    // Results has tags
-    const [hasTags, setHasTags] = useState<string[]>(initParams.get('hasTags')?.split(',') || []);
-    // Must not have tags
-    const [notTags, setNotTags] = useState<string[]>(initParams.get('notTags')?.split(',') || []);
-
-    const stringHAInstallTypes = initParams.get('haInsTypes')?.split(',')?.filter((type) => Object.values(HAInstallType).includes(type as HAInstallType));
-    const [haInstallTypes, setHaInstallTypes] = useState<HAInstallType[]>(stringHAInstallTypes ? stringHAInstallTypes.map((type) => type as HAInstallType) || [HAInstallType.ANY] : [HAInstallType.ANY]);
-
-
-    // Home Assistant Install Versions
-    const [worksWithHAVersion, setWorksWithHAVersion] = useState<string>(initParams.get('haVer') || '');
-
-    // SetUp IoTClassification combo
-    const [IoTClassification, setIotClassification] = useState<IoTClassifications | undefined>(initParams.get('iotClass') ? getIoTClassificationType(initParams.get('iotClass') as string) : undefined);
-
-    // sliders
-    const [rating, setRating] = useState<[number, number]>([parseInt(initParams.get('rMin') || "10"), parseInt(initParams.get('rMax') || "100")]);
-    const [activity, setActivity] = useState<[number, number]>([parseInt(initParams.get('aMin') || "10"), parseInt(initParams.get('aMax') || "100")]);
-    const [popularity, setPopularity] = useState<[number, number]>([parseInt(initParams.get('pMin') || "10"), parseInt(initParams.get('pMax') || "100")]);
-
-    // The returned projects that were yielded from the search
     const [searchResults, setSearchResults] = useState<ProjectWithUser[]>([]);
+    const [foundResults, setFoundResults] = useState<number>(0);
 
 
     const projectSearchParams: SearchParams = {
@@ -86,9 +60,9 @@ export default function PaginationPanel() {
         query_by: 'title,description,tagNames',
         include_fields: '*',
         filter_by: "",
-        // filter_by: "(tagNames:='test' || tagNames:='test1') && tagNames:!='3' && popularityRating:>=0 && popularityRating:<=95",
-        // sort_by: 'projectsUsing:desc',
         typo_tokens_threshold: 3,
+        page: pageNumber,
+        per_page: numItemsDisplayed,
     }
     // ****** END search params ****** //
 
@@ -96,8 +70,33 @@ export default function PaginationPanel() {
         if (projectSearchParams) {
 
             // query 
-            const searchParams = new URLSearchParams(new URL(window.location.href).searchParams)
-            projectSearchParams.q = searchParams.get('search') || '*'
+            // const searchParams = new URLSearchParams(new URL(window.location.href).searchParams)
+
+            // ****** Make sure the stays up to date with  components/ui/search****** //
+            const projectTypeSelected:string|undefined = initParams.get('type') ? getProjectType(initParams.get('type') as string) : undefined
+
+            // Results has tags
+            const hasTags:string[] = initParams.get('hasTags')?.split(',') || [];
+            // Must not have tags
+            const notTags:string[] = initParams.get('notTags')?.split(',') || [];
+
+            const stringHAInstallTypes:string[] | undefined = initParams.get('haInsTypes')?.split(',')?.filter((type) => Object.values(HAInstallType).includes(type as HAInstallType));
+            const haInstallTypes:HAInstallType[] = stringHAInstallTypes ? stringHAInstallTypes.map((type) => type as HAInstallType) || [HAInstallType.ANY] : [HAInstallType.ANY];
+
+
+            // Home Assistant Install Versions
+            const worksWithHAVersion:string = initParams.get('haVer') || '';
+
+            // SetUp IoTClassification combo
+            const IoTClassification:IoTClassifications | undefined = initParams.get('iotClass') ? getIoTClassificationType(initParams.get('iotClass') as string) : undefined;
+
+            // sliders
+            const rating:[number, number] = [parseInt(initParams.get('rMin') || "10"), parseInt(initParams.get('rMax') || "100")];
+            const activity:[number, number] = [parseInt(initParams.get('aMin') || "10"), parseInt(initParams.get('aMax') || "100")];
+            const popularity:[number, number] = [parseInt(initParams.get('pMin') || "10"), parseInt(initParams.get('pMax') || "100")];
+
+            // The returned projects that were yielded from the search
+            projectSearchParams.q = initParams.get('search') || '*'
 
             // ########### FILTERS ###########
             // Type
@@ -181,6 +180,20 @@ export default function PaginationPanel() {
                 })
 
                 const tagSearchResponse = res.data;
+
+                setFoundResults(tagSearchResponse.found)
+                if (MAX_ITEMS_PER_PAGE * pageNumber > tagSearchResponse.found) {
+                    const lastPage = Math.ceil(tagSearchResponse.found / MAX_ITEMS_PER_PAGE)
+                    setPageNumber(lastPage)
+                    // set the page number in the url
+                    const url = new URL(window.location.href);
+                    const params = new URLSearchParams(url.search);
+                    params.set('page', String(lastPage));
+                    url.search = params.toString();
+                    window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
+                    return
+                }
+
                 const retProjects: ProjectWithUser[] = []
                 for (const hit of tagSearchResponse.hits) {
                     const project: ProjectWithUser | null = hit.document as unknown as ProjectWithUser | null
@@ -243,22 +256,30 @@ export default function PaginationPanel() {
     }
 
     useEffect(() => {
+        searchProjects()
+    }, [pageNumber]);
+
+    useEffect(() => {
+         if(initParams.get('s') === 't'){
+            searchProjects()
+            const url = new URL(window.location.href);
+            // delete s key and reset url params   
+            initParams.delete('s')
+            url.search = initParams.toString();
+            window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
+         }
+            
+        
+    }, [pageNumber, initParams]);
+
+    useEffect(() => {
         function handleURLChange() {
             const url = new URL(window.location.href);
             const params = new URLSearchParams(url.search);
-            if(params.get('s') === 't'){
-                console.log("searchProjects s: ", "truedsd")
-
-                // delete s key and reset url params   
-
-                params.delete('s')
-                url.search = params.toString();
-                window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
+            setInitParams(params)
     
-                
-    
-                searchProjects()
-            }
+            //     searchProjects()
+            // }
             // Your function here
         }
         
@@ -406,7 +427,7 @@ export default function PaginationPanel() {
                         return <Grid.Col span={4} key={item.id}>{item}</Grid.Col>
                     })}
                 </Grid> */}
-                <Pagination pageNumber={pageNumber} handlePageChange={handlePageChange} numShowing={pageContent.length} maxItems={maxItems} />
+                <Pagination pageNumber={pageNumber} handlePageChange={handlePageChange} numShowing={numItemsDisplayed} maxItems={foundResults} />
 
                 <Grid columns={12} grow justify="space-around"
                     gutter={{ base: 5, xs: 'md', md: 'xl', xl: 40 }} className="px-2">
@@ -422,7 +443,7 @@ export default function PaginationPanel() {
 
 
 
-            <Pagination pageNumber={pageNumber} handlePageChange={handlePageChange} numShowing={pageContent.length} maxItems={maxItems} />
+            <Pagination pageNumber={pageNumber} handlePageChange={handlePageChange} numShowing={numItemsDisplayed} maxItems={foundResults} />
         </>
     )
     // <div className="mx-auto max-w-7xl 3xl:max-w-full sm:px-6 lg:px-8">

@@ -147,7 +147,8 @@ export default function Search() {
   }
 
   function handleSearch(value: string) {
-    setIsSearchActive(true)
+    if(!isSearchActive) setIsSearchActive(true)
+
     setSearch(value)
     setDebounceValue(value)
   }
@@ -471,24 +472,28 @@ export default function Search() {
     setHasTags(newHasTags);
     setNotTags(newNotTags);
 
-    const url = new URL(window.location.href);
-    const params = new URLSearchParams(url.search);
+    // const url = new URL(window.location.href);
+    // const params = new URLSearchParams(url.search);
     // Set the url params for the hasTags
     if (newHasTags.length > 0) {
-      params.set('hasTags', newHasTags.join(','));
+      // params.set('hasTags', newHasTags.join(','));
+      setURLParams('hasTags', newHasTags.join(','), 'set')
     } else {
-      params.delete('hasTags');
+      // params.delete('hasTags');
+      setURLParams('hasTags', '', 'delete')
     }
 
     // Set the url params for the notTags
     if (newNotTags.length > 0) {
-      params.set('notTags', newNotTags.join(','));
+      // params.set('notTags', newNotTags.join(','));
+      setURLParams('notTags', newNotTags.join(','), 'set')
     } else {
-      params.delete('notTags');
+      // params.delete('notTags');
+      setURLParams('notTags', '', 'delete')
     }
 
-    url.search = params.toString();
-    window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
+    // url.search = params.toString();
+    // window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
 
     if (updateSearch) {
       searchProjects(newHasTags, newNotTags)
@@ -498,44 +503,49 @@ export default function Search() {
 
   function handleRating(value: [number, number]) {
 
-    const url = new URL(window.location.href);
-    const params = new URLSearchParams(url.search);
+    // const url = new URL(window.location.href);
+    // const params = new URLSearchParams(url.search);
     // Set the url params for the hasTags
-    params.set('rMin', value[0].toString());
-    params.set('rMax', value[1].toString());
-
+    // params.set('rMin', value[0].toString());
+    // params.set('rMax', value[1].toString());
+    setURLParams('rMin', value[0].toString(), 'set')
+    setURLParams('rMax', value[1].toString(), 'set')
     setRating(value);
 
-    url.search = params.toString();
-    window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
+    // url.search = params.toString();
+    // window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
   }
 
   function handleActivity(value: [number, number]) {
 
-    const url = new URL(window.location.href);
-    const params = new URLSearchParams(url.search);
+    // const url = new URL(window.location.href);
+    // const params = new URLSearchParams(url.search);
     // Set the url params for the hasTags
-    params.set('aMin', value[0].toString());
-    params.set('aMax', value[1].toString());
+    // params.set('aMin', value[0].toString());
+    // params.set('aMax', value[1].toString());
+    setURLParams('aMin', value[0].toString(), 'set')
+    setURLParams('aMax', value[1].toString(), 'set')
 
     setActivity(value);
 
-    url.search = params.toString();
-    window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
+    // url.search = params.toString();
+    // window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
   }
 
   function handlePopularity(value: [number, number]) {
 
-    const url = new URL(window.location.href);
-    const params = new URLSearchParams(url.search);
+    // const url = new URL(window.location.href);
+    // const params = new URLSearchParams(url.search);
     // Set the url params for the hasTags
-    params.set('pMin', value[0].toString());
-    params.set('pMax', value[1].toString());
+    // params.set('pMin', value[0].toString());
+    // params.set('pMax', value[1].toString());
+    setURLParams('pMin', value[0].toString(), 'set')
+    setURLParams('pMax', value[1].toString(), 'set')
 
     setPopularity(value);
 
-    url.search = params.toString();
-    window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
+    // url.search = params.toString();
+    // window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
   }
 
 
