@@ -25,6 +25,12 @@ export default function Pagination({pageNumber,handlePageChange, numShowing, max
 
     const toMax = pageNumber * numShowing > maxItems ? maxItems : pageNumber * numShowing;
 
+
+
+    function isPageDisabled(pageNumber: number) {
+        return pageNumber < 1 || pageNumber > Math.ceil(maxItems / numShowing);
+    }
+
     useEffect(() => {
         if (debounceValue != '') {
             handlePageChange(Number(debounceValue));
@@ -74,18 +80,18 @@ export default function Pagination({pageNumber,handlePageChange, numShowing, max
               <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
             </a>
             {/* Current: "z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600", Default: "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0" */}
-            {arrayRange(pageNumber - 2 <= 0 ? 1 : pageNumber -1, pageNumber <= 1 ? pageNumber + 2: pageNumber + 1 ,1).map((item) => (
-                            <a
+            {arrayRange(pageNumber - 2 <= 0 ? 1 : pageNumber -1, pageNumber <= 1 ? pageNumber + 2: pageNumber + 1 ,1).map((item:number) => (
+                            <button
                             key={item}
-                            href="#"
                             aria-current="page"
                             className={item == pageNumber ?
                                 "relative z-10 inline-flex items-center bg-indigo-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                 : "relative  items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"}
                             onClick={() => handlePageChange(item)}
+                            disabled={isPageDisabled(item)}
                             >
                             {item}
-                          </a>
+                          </button>
                           ))}
             {/* <a
               href="#"
@@ -127,21 +133,24 @@ export default function Pagination({pageNumber,handlePageChange, numShowing, max
                         "w-16 min-w-0 relative inline-flex items-center px-1 text-md font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0"} 
                         placeholder="#" 
                         onChange={(e) => setDebounceValue(String(e))}
+                        // disabled={isPageDisabled(maxItems / pageNumber)}
+
                     />
             </div>
             
             {arrayRange(pageNumber + 5, pageNumber + 7,1).map((item) => (
-                            <a
+                            <button
                             key={item}
-                            href="#"
                             aria-current="page"
                             className={item == pageNumber ?
                                 "relative z-10 inline-flex items-center bg-indigo-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
                                 : "relative items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"}
                             onClick={() => handlePageChange(item)}
+                            disabled={isPageDisabled(item)}
+
                           >
                             {item}
-                          </a>
+                          </button>
                           ))}
             {/* <a
               href="#"

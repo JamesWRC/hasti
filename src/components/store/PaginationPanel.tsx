@@ -166,6 +166,7 @@ export default function PaginationPanel() {
 
                 // Set the search query
                 const params = new URLSearchParams(projectSearchParams as Record<string, any>)
+                console.log("params: ", params)
 
                 const res = await axios({
                     url: `${process.env.API_URL}/api/v1/projects/search?` + params,
@@ -180,7 +181,7 @@ export default function PaginationPanel() {
                 const tagSearchResponse = res.data;
 
                 setFoundResults(tagSearchResponse.found)
-                if (MAX_ITEMS_PER_PAGE * pageNumber > tagSearchResponse.found) {
+                if (MAX_ITEMS_PER_PAGE * pageNumber > tagSearchResponse.found && pageNumber > 1) {
                     const lastPage = Math.ceil(tagSearchResponse.found / MAX_ITEMS_PER_PAGE)
                     setPageNumber(lastPage)
                     // set the page number in the url
@@ -398,6 +399,7 @@ export default function PaginationPanel() {
                 tempPageContent.push(<DescriptionItem title={result.title} description={result.description} author={result.user.username} authorImageUrl={authorImg} authorLink={authLink} loaded={true} backgroundImage={backgroundImage} id={result.id} animateDelayCount={delay} />);
             }
         }
+        console.log("searchResults tempPageContent: ", tempPageContent)
         setPageContent(tempPageContent);
 
 
@@ -408,7 +410,7 @@ export default function PaginationPanel() {
     return (
         <>
 
-            <div className="mx-auto max-w-7xl 3xl:max-w-full sm:px-6 lg:px-8 ">
+            <div className="mx-auto max-w-7xl 3xl:max-w-full sm:px-6 rounded-2xl">
                 <div className="flex min-w-0 px-6 md:px-0">
                     <h1 className="inline-block text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight dark:text-slate-900 py-3">
                         <a href="#Themes">{pageNumber !== 1 ? "Themes" : null}</a>
@@ -428,11 +430,11 @@ export default function PaginationPanel() {
                 <Pagination pageNumber={pageNumber} handlePageChange={handlePageChange} numShowing={numItemsDisplayed} maxItems={foundResults} />
 
                 <Grid columns={12} grow justify="space-around"
-                    gutter={{ base: 5, xs: 'md', md: 'xl', xl: 40 }} className="px-2">
+                    gutter={{ base: 5, xs: 'md', md: 'xl', xl: 40 }} className="px-4">
                     {pageContent.map((item: any, counter: number) => {
-                        return <Grid.Col span={{ base: 12, md: 6, lg: 2, xl: 2 }} key={item.id}
+                        return <Grid.Col span={{ base: 12, md: 6, lg: 6, xl: 3 }} key={item.id}
 
-                            className="flex justify-center">{item}</Grid.Col>
+                            className="flex justify-center w-max my-auto">{item}</Grid.Col>
                     })}
                 </Grid>
                 {/* ------------- PAGINATION BAR  -------------*/}
@@ -444,78 +446,4 @@ export default function PaginationPanel() {
             <Pagination pageNumber={pageNumber} handlePageChange={handlePageChange} numShowing={numItemsDisplayed} maxItems={foundResults} />
         </>
     )
-    // <div className="mx-auto max-w-7xl 3xl:max-w-full sm:px-6 lg:px-8">
-    //     {/* ------------- CONTENT  -------------*/}
-    //     <div className="mx-auto grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 3xl:grid-cols-5 gap-12 lg:gap-9 px-8 xs:px-8 md:px-0">
-    //     {pageContent.map((item: any) => {
-    //         return item;
-    //     })}
-
-    //     </div>
-    //     {/* ------------- PAGINATION BAR  -------------*/}
-    //     <div className="absolute bottom-0">
-    //         <nav className="w-[100rem] flex items-center justify-between border-t border-gray-200 px-4 md:px-0 overflow-hidden -mx-2 mt-1">
-    //             <div className="-mt-px flex w-0 flex-1 justify-start bg-white">
-    //                 <a
-    //                     href="#"
-    //                     className="inline-flex items-center border-t-2 border-transparent pr-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 bg-inherit bg-white z-10"
-    //                     onClick={(e) => handlePageChange(pageNumber - 1)}
-    //                 >
-    //                     <ArrowLongLeftIcon className="mr-3 h-5 w-5 text-gray-400" aria-hidden="true" />
-    //                     Previous
-    //                 </a>
-    //             </div>
-    //             <div className="hidden md:-mt-px xs:flex overflow-x-hidden">
-    //                 <div className="">
-    //                 {/* {pageNumber < 10 ? arrayRange(1, 10, 1).map((i) => {
-    //                     return (<a
-    //                         key={'paginationPrev#' + i}
-    //                         href="#"
-    //                         className={classNames("first:hidden lg:first:inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:text-gray-700", 
-    //                         i == pageNumber ? "inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 border-dark" : "hover:border-gray-300")}
-    //                         onClick={(e) => handlePageChange(i)}
-    //                     >
-    //                         {i}
-    //                     </a>)
-    //                 }) : null} */}
-
-    //                 {arrayRange(pageNumber - PAGINATION_PAGE_NUMBERS_EITHER_SIDE, pageNumber, 1).filter(number => number > 0).map((i) => {
-    //                     return (<a
-    //                         key={'paginationPrev#' + i}
-    //                         href="#"
-    //                         className={classNames("first:hidden lg:first:inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:text-gray-700", 
-    //                         i == pageNumber ? "inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 border-dark" : "hover:border-gray-300")}
-    //                         onClick={(e) => handlePageChange(i)}
-    //                         >
-    //                         {i}
-    //                     </a>)
-    //                 })}
-
-    //                 {/* // keeping the 5 (in pageNumber < 5 ? 10 ) means the selected number will stay in the center when scrolling to higher numbers */}
-    //                 {arrayRange(pageNumber+1, pageNumber < PAGINATION_PAGE_NUMBERS_EITHER_SIDE ? 10 : pageNumber + PAGINATION_PAGE_NUMBERS_EITHER_SIDE, 1).map((i) => {
-    //                     return (<a
-    //                         key={'paginationPrev#' + i}
-    //                         href="#"
-    //                         className={classNames("last:hidden lg:last:inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 hover:text-gray-700", 
-    //                         i == pageNumber ? "inline-flex items-center border-t-2 border-transparent px-4 pt-4 text-sm font-medium text-gray-500 border-dark" : "hover:border-gray-300")}
-    //                         onClick={(e) => handlePageChange(i)}
-    //                         >
-    //                         {i}
-    //                     </a>)
-    //                 })}
-    //                 </div>
-    //             </div>
-    //             <div className="-mt-px flex w-0 flex-1 justify-end bg-white">
-    //                 <a
-    //                     href="#"
-    //                     className="inline-flex items-center border-t-2 border-transparent pl-1 pt-4 text-sm font-medium text-gray-500 hover:border-gray-300 hover:text-gray-700 bg-white z-10"
-    //                     onClick={(e) => handlePageChange(pageNumber + 1)}
-    //                 >
-    //                     Next
-    //                     <ArrowLongRightIcon className="ml-3 h-5 w-5 text-gray-400" aria-hidden="true" />
-    //                 </a>
-    //             </div>
-    //         </nav>
-    //     </div>
-    // </div>
 }

@@ -341,9 +341,6 @@ export default function Search() {
 
   // Update url params when tags change
   useEffect(() => {
-    // const url = new URL(window.location.href);
-    // const params = new URLSearchParams(url.search);
-
     // Set the url params for the hasTags
     if (hasTags.length > 0) {
       setURLParams('hasTags', hasTags.join(','), 'set')
@@ -522,20 +519,30 @@ export default function Search() {
 
   useEffect(() => {
     function handleClickOutside(ev: MouseEvent) {
-      console.log("searchRef: ", searchRef.current)
-      console.log("searchRef: ev.target ", ev.target)
+      // console.log("searchRef: ", searchRef.current)
+      // console.log("searchRef: ev.target ", ev.target)
+
       // if the searchRef exists and the click is outside of the searchRef, hide the advanced search and make sure the Install type isnt being clicked (mantine-MultiSelect-option)
       if ((searchRef.current as unknown as HTMLElement) && !(searchRef.current as unknown as HTMLElement).contains(ev.target as Node) && !(ev.target as HTMLElement).classList.contains('mantine-MultiSelect-option')) {
         setShowAdvancedSearch(false);
         setIsSearchActive(false)
+
+      // if search is open and the search bar is clicked, toggle the search
+      }else if ((searchRef.current as unknown as HTMLElement) && (ev.target as HTMLElement).name === 'searchBar') {
+        setIsSearchActive(prevState => !prevState);
+        console.log("searchRef: ev.target name isSearchActive ", isSearchActive)
       }else{
         setIsSearchActive(true)
       }
+
+
     }
 
     // Bind the event listener
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
+      console.log("searchRef: ev.target name isSearchActive ", isSearchActive)
+
       // Unbind the event listener on clean up
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -543,7 +550,10 @@ export default function Search() {
 
   const handleEnterToSearch = (event: React.KeyboardEvent<HTMLInputElement>) => {
     if (event.key === 'Enter') {
-      console.log("searchProjects", true)
+      // forces search url param to be search value not debounce
+      setURLParams('search', search, 'set')
+
+
       setURLParams('s', 't', 'set')
       // hide search
       setShowAdvancedSearch(false);
@@ -565,6 +575,7 @@ export default function Search() {
       <div className='grid grid-cols-1 max-w-lg 2xl:max-w-2xl mx-auto pt-4 sticky top-0 z-30 pl-2 pr-1 -mt-24' ref={searchRef}>
         <Input
           placeholder="Search Integrations, Themes etc..."
+          name='searchBar'
           value={search}
           onChange={(event) => handleSearch(event.currentTarget.value)}
           // onFocus={() => setShowAdvancedSearch(true)}
