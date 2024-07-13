@@ -170,36 +170,7 @@ export default function  MainLayout({
               </div>
 
               <div className="">
-                <div className=''>
-                  <div className="text-xs font-semibold leading-6 text-gray-400">Your teams</div>
-                  <ul role="list" className="-mx-2 mt-2 space-y-1">
-                    {teams.map((team) => (
-                      <li key={team.name}>
-                        <a
-                          href={team.href}
-                          className={classNames(
-                            team.current
-                              ? 'bg-gray-50 text-cyan-500'
-                              : 'text-gray-700 hover:text-cyan-500 hover:bg-gray-50',
-                            'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
-                          )}
-                        >
-                          <span
-                            className={classNames(
-                              team.current
-                                ? 'text-cyan-500 border-cyan-500'
-                                : 'text-gray-400 border-gray-200 group-hover:border-cyan-500 group-hover:text-cyan-500',
-                              'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-dark'
-                            )}
-                          >
-                            {team.initial}
-                          </span>
-                          <span className="truncate">{team.name}</span>
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+
                 {/* <a
                   onClick={() => handleItemClick('/page1')}
                   className="rounded-md flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-100 hover:bg-gray-50"

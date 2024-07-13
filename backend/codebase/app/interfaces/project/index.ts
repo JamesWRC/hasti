@@ -9,6 +9,7 @@ export enum ProjectType {
     OTHER = "other"
   }
 
+
 export enum HAInstallType {
     OS = "os",
     CONTAINER = "container",
@@ -100,6 +101,17 @@ export function getIoTClassificationType(classification: string): IoTClassificat
     }
     // If the classification is not found, return unknown
     return IoTClassifications.UNKNOWN;
+  }
+
+  export function getProjectTypePath(projectType: ProjectType|undefined): string {
+    switch(projectType){
+      case ProjectType.THEME:
+        return 'themes';
+      case ProjectType.INTEGRATION:
+        return 'integrations';
+      default:
+        return 'other';
+    }
   }
 
 

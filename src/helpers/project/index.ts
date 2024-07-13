@@ -1,4 +1,4 @@
-import { IoTClassifications, Project, ProjectAllInfo, getAllHaInstallTypes } from "@/backend/interfaces/project";
+import { IoTClassifications, Project, ProjectAllInfo, ProjectType, getAllHaInstallTypes, getProjectType } from "@/backend/interfaces/project";
 import { GetContentResponse } from "@/backend/interfaces/project/request";
 import { RepoAnalytics } from "@/backend/interfaces/repoAnalytics";
 import axios from "axios";
@@ -145,6 +145,18 @@ export function getProjectStars(repoAnalytics: RepoAnalytics | null): number {
         projStars = repoAnalytics.stars
     }
     return projStars
+}
+
+export function getProjectTypeFromPath(path: string): ProjectType {
+    const pathParts = path.split('/')
+    let projectTypeString = pathParts[1]
+    // get name without last 's' character
+
+    if (projectTypeString.endsWith('s')) {
+      projectTypeString = projectTypeString.substring(0, projectTypeString.length - 1)
+    }
+
+    return getProjectType(projectTypeString)  
 }
 
 

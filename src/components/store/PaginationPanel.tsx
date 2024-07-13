@@ -32,9 +32,10 @@ export default function PaginationPanel() {
     const PAGINATION_PAGE_NUMBERS_EITHER_SIDE = 6
     const searchParams = useSearchParams()
 
+    
     const router = useRouter();
     const pathname = usePathname();
-    
+
     const paramPageNum = searchParams?.get('page')
     let initPageNumber = paramPageNum ? parseInt(paramPageNum) : 1;
 
@@ -71,27 +72,27 @@ export default function PaginationPanel() {
 
 
             // ****** Make sure the stays up to date with  components/ui/search****** //
-            const projectTypeSelected:ProjectType|undefined = initParams.get('type') ? getProjectType(initParams.get('type') as string) : undefined
+            const projectTypeSelected: ProjectType | undefined = initParams.get('type') ? getProjectType(initParams.get('type') as string) : undefined
 
             // Results has tags
-            const hasTags:string[] = initParams.get('hasTags')?.split(',') || [];
+            const hasTags: string[] = initParams.get('hasTags')?.split(',') || [];
             // Must not have tags
-            const notTags:string[] = initParams.get('notTags')?.split(',') || [];
+            const notTags: string[] = initParams.get('notTags')?.split(',') || [];
 
-            const stringHAInstallTypes:string[] | undefined = initParams.get('haInsTypes')?.split(',')?.filter((type) => Object.values(HAInstallType).includes(type as HAInstallType));
-            const haInstallTypes:HAInstallType[] = stringHAInstallTypes ? stringHAInstallTypes.map((type) => type as HAInstallType) || [HAInstallType.ANY] : [HAInstallType.ANY];
+            const stringHAInstallTypes: string[] | undefined = initParams.get('haInsTypes')?.split(',')?.filter((type) => Object.values(HAInstallType).includes(type as HAInstallType));
+            const haInstallTypes: HAInstallType[] = stringHAInstallTypes ? stringHAInstallTypes.map((type) => type as HAInstallType) || [HAInstallType.ANY] : [HAInstallType.ANY];
 
 
             // Home Assistant Install Versions
-            const worksWithHAVersion:string = initParams.get('haVer') || '';
+            const worksWithHAVersion: string = initParams.get('haVer') || '';
 
             // SetUp IoTClassification combo
-            const IoTClassification:IoTClassifications | undefined = initParams.get('iotClass') ? getIoTClassificationType(initParams.get('iotClass') as string) : undefined;
+            const IoTClassification: IoTClassifications | undefined = initParams.get('iotClass') ? getIoTClassificationType(initParams.get('iotClass') as string) : undefined;
 
             // sliders
-            const rating:[number, number] = [parseInt(initParams.get('rMin') || "10"), parseInt(initParams.get('rMax') || "100")];
-            const activity:[number, number] = [parseInt(initParams.get('aMin') || "10"), parseInt(initParams.get('aMax') || "100")];
-            const popularity:[number, number] = [parseInt(initParams.get('pMin') || "10"), parseInt(initParams.get('pMax') || "100")];
+            const rating: [number, number] = [parseInt(initParams.get('rMin') || "10"), parseInt(initParams.get('rMax') || "100")];
+            const activity: [number, number] = [parseInt(initParams.get('aMin') || "10"), parseInt(initParams.get('aMax') || "100")];
+            const popularity: [number, number] = [parseInt(initParams.get('pMin') || "10"), parseInt(initParams.get('pMax') || "100")];
 
             // The returned projects that were yielded from the search
             projectSearchParams.q = initParams.get('search') || '*'
@@ -225,12 +226,13 @@ export default function PaginationPanel() {
 
                                 // Handle single snippet
                                 if (highlight.snippet === undefined) continue;
+
                                 const replacedSnipped: string = highlight.snippet.replaceAll(/<mark>/g, '').replaceAll(/<\/mark>/g, '')
                                 if (highlight.field === 'description') {
-                                    project.description = project.description.replace(replacedSnipped, highlight.snippet)
+                                    project.description = project.description.replaceAll(/<mark>/g, '').replaceAll(/<\/mark>/g, '')
                                 }
                                 if (highlight.field === 'title') {
-                                    project.title = project.title.replace(replacedSnipped, highlight.snippet)
+                                    project.title = project.title.replaceAll(/<mark>/g, '').replaceAll(/<\/mark>/g, '')
                                 }
                             }
                         }
@@ -259,16 +261,16 @@ export default function PaginationPanel() {
     }, [pageNumber]);
 
     useEffect(() => {
-         if(initParams.get('s') === 't'){
+        if (initParams.get('s') === 't') {
             searchProjects()
             const url = new URL(window.location.href);
             // delete s key and reset url params   
             initParams.delete('s')
             url.search = initParams.toString();
             window.history.pushState({}, '', url.toString().replaceAll(/%2C/g, ','));
-         }
-            
-        
+        }
+
+
     }, [pageNumber, initParams]);
 
     useEffect(() => {
@@ -276,18 +278,18 @@ export default function PaginationPanel() {
             const url = new URL(window.location.href);
             const params = new URLSearchParams(url.search);
             setInitParams(params)
-    
+
             //     searchProjects()
             // }
             // Your function here
         }
-        
+
         // Run the function initially
         handleURLChange();
-    
+
         // Listen for changes in the URL
         window.addEventListener('urlchange', handleURLChange);
-    
+
         // Clean up the event listener when the component unmounts
         return () => {
             window.removeEventListener('urlchange', handleURLChange);
@@ -392,7 +394,7 @@ export default function PaginationPanel() {
         for (var i = 0; i < searchResults.length && i < currNumItemsDisplayed; i++) {
             const delay = 100 * i
             const result: ProjectWithUser = searchResults[i]
-            if(result){
+            if (result) {
                 const authLink = result.user ? `/users/${result.user.username}` : ''
                 const authorImg = `https://avatars.githubusercontent.com/u/${result.user.githubID}?v=4`
                 const backgroundImage = result.backgroundImage

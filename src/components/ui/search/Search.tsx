@@ -1,6 +1,6 @@
 'use client'
 
-import { IoTClassifications, Project, ProjectType, ProjectWithUser, getAllProjectTypes, getProjectType } from '@/backend/interfaces/project';
+import { IoTClassifications, Project, ProjectType, ProjectWithUser, getAllProjectTypes, getProjectType, getProjectTypePath } from '@/backend/interfaces/project';
 import { GetPopularTagsQueryParams, PopularTagResponse, TagSearchResponse, TagWithCount } from '@/backend/interfaces/tag/request';
 import { AdjustmentsVerticalIcon, ChevronDoubleDownIcon, MagnifyingGlassIcon } from '@heroicons/react/24/solid';
 // Make a search Bar component
@@ -28,10 +28,13 @@ import { ProjectTypeSelectDropdownBox } from '@/frontend/components/ui/ProjectTy
 import { rngAvatarBackground } from "@/frontend/components/ui/project";
 import React from 'react';
 import { FaceFrownIcon } from '@heroicons/react/24/outline';
+import { useRouter } from "next/navigation";
 
 
 export default function Search() {
-  const initParams = new URLSearchParams(new URL(window.location.href).searchParams);
+  const router = useRouter()
+  const _url = new URL(window.location.href)
+  const initParams = new URLSearchParams(_url.searchParams);
   // *** States for search bar*** //
   //Search
   const [search, setSearch] = useState(initParams.get('search') || '');
@@ -42,33 +45,37 @@ export default function Search() {
   const searchRef = useRef(null);
   const [isSearchActive, setIsSearchActive] = useState(false);
 
-
+  // Get the project type from the URL
+  let projectTypeString = _url.pathname.split('/')[1];
+  if (projectTypeString.endsWith('s')) {
+    projectTypeString = projectTypeString.substring(0, projectTypeString.length - 1)
+  }
   // ****** Make sure the below search options are the same in /[projectType]/[developer]/[name] projects ****** //
   // *** Params *** //
-  const _projectTypeSelected:ProjectType|undefined = initParams.get('type') ? getProjectType(initParams.get('type') as string) : undefined
+  const _projectTypeSelected: ProjectType | undefined = getProjectType(initParams.get('type') ? initParams.get('type') as string : projectTypeString) || undefined;
 
   // Results has tags
-  const _hasTags:string[] = initParams.get('hasTags')?.split(',') || [];
+  const _hasTags: string[] = initParams.get('hasTags')?.split(',') || [];
   // Must not have tags
-  const _notTags:string[] = initParams.get('notTags')?.split(',') || [];
+  const _notTags: string[] = initParams.get('notTags')?.split(',') || [];
 
-  const _stringHAInstallTypes:string[] | undefined = initParams.get('haInsTypes')?.split(',')?.filter((type) => Object.values(HAInstallType).includes(type as HAInstallType));
-  const _haInstallTypes:HAInstallType[] = _stringHAInstallTypes ? _stringHAInstallTypes.map((type) => type as HAInstallType) || [HAInstallType.ANY] : [HAInstallType.ANY];
+  const _stringHAInstallTypes: string[] | undefined = initParams.get('haInsTypes')?.split(',')?.filter((type) => Object.values(HAInstallType).includes(type as HAInstallType));
+  const _haInstallTypes: HAInstallType[] = _stringHAInstallTypes ? _stringHAInstallTypes.map((type) => type as HAInstallType) || [HAInstallType.ANY] : [HAInstallType.ANY];
 
 
   // Home Assistant Install Versions
-  const _worksWithHAVersion:string = initParams.get('haVer') || '';
+  const _worksWithHAVersion: string = initParams.get('haVer') || '';
 
   // SetUp IoTClassification combo
-  const _IoTClassification:IoTClassifications | undefined = initParams.get('iotClass') ? getIoTClassificationType(initParams.get('iotClass') as string) : undefined;
+  const _IoTClassification: IoTClassifications | undefined = initParams.get('iotClass') ? getIoTClassificationType(initParams.get('iotClass') as string) : undefined;
 
   // sliders
-  const _rating:[number, number] = [parseInt(initParams.get('rMin') || "10"), parseInt(initParams.get('rMax') || "100")];
-  const _activity:[number, number] = [parseInt(initParams.get('aMin') || "10"), parseInt(initParams.get('aMax') || "100")];
-  const _popularity:[number, number] = [parseInt(initParams.get('pMin') || "10"), parseInt(initParams.get('pMax') || "100")];
+  const _rating: [number, number] = [parseInt(initParams.get('rMin') || "10"), parseInt(initParams.get('rMax') || "100")];
+  const _activity: [number, number] = [parseInt(initParams.get('aMin') || "10"), parseInt(initParams.get('aMax') || "100")];
+  const _popularity: [number, number] = [parseInt(initParams.get('pMin') || "10"), parseInt(initParams.get('pMax') || "100")];
 
   // *** States *** //
-  const [projectTypeSelected, setProjectTypeSelected] = useState(_projectTypeSelected);
+  const [projectTypeSelected, setProjectTypeSelected] = useState<ProjectType | undefined>(_projectTypeSelected);
   // Results has tags
   const [hasTags, setHasTags] = useState<string[]>(_hasTags);
   // Must not have tags
@@ -123,7 +130,7 @@ export default function Search() {
   ];
 
   // simple function to set the URL params
-  function setURLParams(key:string, value:string, method:string){
+  function setURLParams(key: string, value: string, method: string) {
     const url = new URL(window.location.href);
     const params = new URLSearchParams(url.search);
 
@@ -161,7 +168,7 @@ export default function Search() {
   }
 
   function handleSearch(value: string) {
-    if(!isSearchActive) setIsSearchActive(true)
+    if (!isSearchActive) setIsSearchActive(true)
 
     setSearch(value)
     setDebounceValue(value)
@@ -412,7 +419,6 @@ export default function Search() {
       setProjectTypeSelected(undefined);
 
     }
-
   }
 
 
@@ -527,11 +533,11 @@ export default function Search() {
         setShowAdvancedSearch(false);
         setIsSearchActive(false)
 
-      // if search is open and the search bar is clicked, toggle the search
-      }else if ((searchRef.current as unknown as HTMLElement) && (ev.target as HTMLElement).name === 'searchBar') {
+        // if search is open and the search bar is clicked, toggle the search
+      } else if ((searchRef.current as unknown as HTMLElement) && (ev.target as HTMLInputElement).name === 'searchBar') {
         setIsSearchActive(prevState => !prevState);
         console.log("searchRef: ev.target name isSearchActive ", isSearchActive)
-      }else{
+      } else {
         setIsSearchActive(true)
       }
 
@@ -557,16 +563,21 @@ export default function Search() {
       setURLParams('s', 't', 'set')
       // hide search
       setShowAdvancedSearch(false);
-      setIsSearchActive(false)    
+      setIsSearchActive(false)
     }
   };
 
   function handleSearchButtonClick() {
-    searchProjects(); 
+    searchProjects();
     setURLParams('s', 't', 'set');
     // hide search
     setShowAdvancedSearch(false);
     setIsSearchActive(false)
+    const url = new URL(window.location.href);
+    const params = new URLSearchParams(url.search);
+
+    // set the pathname to the project type
+    router.push(`/${getProjectTypePath(projectTypeSelected)}` + '?' + params.toString())
   }
 
   return (
@@ -736,11 +747,11 @@ export default function Search() {
                   </div>
                   <a className="ml-4 flex-auto w-full z-40 overflow-hidden py-1" >
                     <a className={classNames(project && project.title.length > 30 ? 'text-xs font-bold' : 'text-lg font-medium', ' w-full line-clamp-1 overflow-ellipsis text-gray-700 cursor-pointer')}
-                    href={`${project?.projectType}/${project?.user.username}/${project?.title}`}>
+                      href={`${project?.projectType}/${project?.user.username}/${project?.title}`}>
                       <HighlightText text={project ? project.title : ""} type={"title"} />
                     </a>
                     <a className={classNames('text-sm w-full line-clamp-5 overflow-ellipsis', 'text-gray-500')}
-                    href={`${project?.projectType}/${project?.user.username}/${project?.title}`}>
+                      href={`${project?.projectType}/${project?.user.username}/${project?.title}`}>
                       <HighlightText text={project ? project.description : ""} type={"title"} />
                     </a>
                     <p className={classNames('text-sm w-full line-clamp-2 relative flex overflow-auto scrollbar pt-2', 'text-gray-500')}>

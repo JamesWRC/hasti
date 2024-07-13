@@ -1,6 +1,6 @@
 'use strict'
 'use client'
-import { ProjectType } from "@/backend/interfaces/project";
+import { ProjectType, getProjectTypePath } from "@/backend/interfaces/project";
 import FeaturedGroup from "@/frontend/components/store/FeaturedGroup";
 import PaginationPanel from "@/frontend/components/store/PaginationPanel";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -42,7 +42,17 @@ export default function Page({ params }: { params: { projectType: string } }) {
   } else {
     isFrontPage = true
   }
-  const currProjectType = params.projectType.substring(0, params.projectType.length-1) as ProjectType
+
+  let projectTypeString = params.projectType
+  if (projectTypeString.endsWith('s')) {
+    projectTypeString = projectTypeString.substring(0, projectTypeString.length - 1)
+  }
+
+  let pageTitle = `Popular ${projectTypeString}s`
+  if (projectTypeString === 'other') {
+    pageTitle = 'Other Popular Projects'
+  }
+  const currProjectType:ProjectType = projectTypeString as ProjectType
   // check if the project type is valid and if not, redirect to 404. Will check if passed in type is valid or if it is a valid type without the last character
   if (!(getAllProjectTypes(false).includes(params.projectType as ProjectType) || getAllProjectTypes(false).includes(currProjectType))) {
     router.push('/404')
@@ -55,7 +65,7 @@ export default function Page({ params }: { params: { projectType: string } }) {
 
         {isFrontPage ? 
         <div className="pl-0">
-          <FeaturedGroup groupTitle={"Popular Themes"} type={currProjectType} /> 
+          <FeaturedGroup groupTitle={pageTitle} type={currProjectType} /> 
         </div>: null}
       
       {/* {renderThemesGrid()} */}

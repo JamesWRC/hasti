@@ -16,6 +16,11 @@ export default function FeaturedGroupSection({...props}: FeaturedGroup) {
 
     const {projects, reqStatus} = useProjects({...props});
 
+    
+
+    if (projects && reqStatus === 'success' && projects.length < 10 ) {
+        return null
+    }
 
     return (
         <div className="bg-white">
@@ -40,11 +45,14 @@ export default function FeaturedGroupSection({...props}: FeaturedGroup) {
                             <div className="overflow-x-scroll scrollbar">
                                 {/* <div className="mx-auto mt-4 grid max-w-2xl auto-rows-fr grid-cols-1 gap-8 lg:mx-0 lg:max-w-none lg:grid-cols-3 2xl:grid-cols-4 3xl:grid-cols-5"> */}
                                 <div className="mt-4 pl-3 min-w-[250%] grid grid-cols-10 gap-[11.35rem] sm:gap-[12rem] md:gap-[12rem] lg:gap-[12rem] xl:gap-12">
-                                    {projects ? projects.map((project:ProjectWithUser, index:number) => (
+                                    {projects && projects.length > 0 ? projects.map((project:ProjectWithUser, index:number) => (
                                         <div key={`featured-group-${index}`}>
                                             <PackageCard userProject={project} style={"featured"} loaded={reqStatus === "success"} />
                                         </div>)
-                                    ): null}
+                                    ): <div className=" mx-auto flex justify-center items-center h-96">
+                                        No projects found :(
+                                        </div>
+                                        }
                                 </div>
                             </div>
                         </div>
