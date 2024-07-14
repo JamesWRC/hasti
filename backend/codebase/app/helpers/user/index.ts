@@ -1,7 +1,6 @@
-import { UserJWT, UserType, getUserType } from "@/backend/interfaces/user";
+import { User, UserJWT, UserType, getUserType } from "@/backend/interfaces/user";
 import type { JWTBodyRequest } from "@/backend/interfaces/user/request";
 import prisma from "@/backend/clients/prisma/client";
-import { User } from "@prisma/client";
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 import { jwtVerify } from "jose";
 import { NextApiResponse } from "next/types";
@@ -35,7 +34,7 @@ export default async function addOrUpdateUser(user: JWTBodyRequest): Promise<Use
         userType = UserType.USER
       }
 
-      const updatedUser = await prisma.user.update({
+      await prisma.user.update({
         where: {
           githubID: user.user.id
         },
@@ -53,7 +52,10 @@ export default async function addOrUpdateUser(user: JWTBodyRequest): Promise<Use
           githubID: user.user.id,
           githubNodeID: user.user.node_id,
           username: user.user.username,
-          image: user.user.image
+          image: user.user.image,
+        },
+        omit: {
+          ghuToken: false
         }
       })
 
@@ -61,9 +63,9 @@ export default async function addOrUpdateUser(user: JWTBodyRequest): Promise<Use
       return null
     }
   }
-
+  console.log('currUser', currUser)
   // Update the GitHub user token if it has changed.
-  if(getGitHubUserToken(currUser.ghuToken) !== user.user.ghu_token){
+  if(!currUser.ghuToken || getGitHubUserToken(currUser.ghuToken) !== user.user.ghu_token){
     await updateGitHubUserToken(user.user.ghu_token, currUser)
   }
 

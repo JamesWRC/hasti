@@ -1,5 +1,7 @@
 {
   "name": "codebase",
+  "license": "GPL",
+  "private": true,
   "version": "1.0.0",
   "description": "Hasti API",
   "main": "index.ts",
@@ -9,12 +11,9 @@
   "module": "commonjs",
   "scripts": {
     "dev": "nodemon",
-    "start": "node index.ts",
-    "build": "yarn build",
+    "start": "ts-node --files --project tsconfig.json ./app/server.ts",
     "test": "echo \"Error: no tests atm ;)\" && exit 1"
   },
-  "license": "GPL",
-  "private": false,
   "dependencies": {
     "@babel/runtime": "^7.24.4",
     "@octokit/types": "^13.4.1",
@@ -40,6 +39,7 @@
     "markdown-it": "^14.1.0",
     "nodemon": "^3.1.0",
     "octokit": "^3.2.0",
+    "prisma": "^5.16.2",
     "response-time": "^2.3.2",
     "sanitize-html": "^2.13.0",
     "ts-node": "^10.9.2",
