@@ -21,6 +21,7 @@ services:
     # env_file Will be overriden by the environment variables in elasticbeanstalk configuration.
     env_file:
      - .env
+     - codebase/.env
     ports:
       - 3117:3000
     networks:
