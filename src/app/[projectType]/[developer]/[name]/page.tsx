@@ -323,7 +323,7 @@ export default function Page({ params }: { params: { developer: string, name: st
       <>
         <div className={classNames("flex flex-col", Math.floor(Math.random() * 10) + 1 > 7 ? " items-center justify-center" : "")}>
           {DynamicSkeletonTitle({ max: 10, min: 4 })}
-          {shouldShowTopImage ? <div className={`mx-auto py-10 max-w-fit`}>{DynamicSkeletonImage({ height: 300, width: window.innerHeight })} </div> : null}
+          {shouldShowTopImage ? <div className={`mx-auto py-10 max-w-fit`}>{DynamicSkeletonImage({ height: 300, width: typeof window !== 'undefined' ? window.innerHeight : 0 })} </div> : null}
 
         </div>
         <div className="pt-3 pb-10 text-left">
@@ -334,7 +334,7 @@ export default function Page({ params }: { params: { developer: string, name: st
         </div>
         <div className="pt-3 pb-10 text-left">
           {DynamicSkeletonText({ max: 500, min: 40 })}
-          {shouldShowTopImage2 ? <div className={`mx-auto py-10 max-w-fit`}>{DynamicSkeletonImage({ height: 400, width: window.innerHeight / 2 })} </div> : null}
+          {shouldShowTopImage2 ? <div className={`mx-auto py-10 max-w-fit`}>{DynamicSkeletonImage({ height: 400, width: typeof window !== 'undefined' ? window.innerHeight : 2 / 2 })} </div> : null}
 
         </div>
         <div className={classNames("flex flex-col", Math.floor(Math.random() * 10) + 1 > 7 ? " items-center justify-center" : "")}>
@@ -348,7 +348,7 @@ export default function Page({ params }: { params: { developer: string, name: st
         </div>
         <div className="pt-3 pb-10 text-left">
           {DynamicSkeletonText({ max: 500, min: 40 })}
-          {shouldShowTopImage3 ? <div className={`mx-auto py-10 max-w-fit`}>{DynamicSkeletonImage({ height: 400, width: window.innerHeight / 2 })} </div> : null}
+          {shouldShowTopImage3 ? <div className={`mx-auto py-10 max-w-fit`}>{DynamicSkeletonImage({ height: 400, width: typeof window !== 'undefined' ? window.innerHeight : 2 / 2 })} </div> : null}
 
         </div>
         <div className={classNames("flex flex-col", Math.floor(Math.random() * 10) + 1 > 7 ? " items-center justify-center" : "")}>

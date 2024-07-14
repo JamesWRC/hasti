@@ -34,7 +34,7 @@ export default function DescriptionItem({title, description, author, authorImage
           </svg> */}
           {/* <img src="https://www.freepnglogos.com/uploads/512x512-logo/512x512-transparent-instagram-logo-icon-5.png" alt="Theme Icon" className={classNames(loaded ? "h-12 w-12" : "hidden" )}/> */}
           <div
-                    className={classNames(
+            className={classNames(
                       'flex h-14 w-14 flex-none items-center justify-center rounded-lg',
                     )}
                   >

@@ -21,6 +21,10 @@ const nextConfig = {
   webpack: (config, { isServer }) => {
     config.resolve.alias['@dicebear/converter'] = path.resolve(__dirname, 'node_modules/@dicebear/converter/lib/index.js');
     config.resolve.alias['react-prism'] = path.resolve(__dirname, 'node_modules/react-prism/lib/index.js');
+    config.module.rules.push({
+      test: /\.node$/,
+      use: 'node-loader',
+    });
 
     return config;
   }

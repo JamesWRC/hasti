@@ -258,11 +258,15 @@ export default function  MainLayout({
 
 
         <main className="md:pl-72 bg-dark h-full md:h-screen p-2 ">
+          {/* // Show this is a beta version. */}
+          
+          <div className="pr-0 pl-0 bg-amber-200 rounded-2xl w-full font-extrabold py-2 mb-2 flex items-center">
+            <div className='mx-auto px-4'>Beta Version. This is not the final version. Many things are still in the works.</div>
+          </div>
 
+          {/* end beta banner */}
           <div className="pr-0 pl-0 bg-white rounded-2xl w-full h-full md:h-full overflow-y-scroll overflow-x-hidden scrollbar">
-
             {children}
-
           </div>
         </main>
 
