@@ -260,8 +260,9 @@ export default function  MainLayout({
         <main className="md:pl-72 bg-dark h-full md:h-screen p-2 ">
           {/* // Show this is a beta version. */}
           
-          <div className="pr-0 pl-0 bg-amber-200 rounded-2xl w-full font-extrabold py-2 mb-2 flex items-center">
-            <div className='mx-auto px-4'>Beta Version. This is not the final version. Many things are still in the works.</div>
+          <div className="pr-0 pl-0 bg-amber-200 rounded-2xl w-full font-bold py-2 mb-2 flex items-center">
+            <div className='mx-auto px-4'>Beta Version. This is not the final version. Many things are still in the works.
+            Report any issues/bugs <a href='https://github.com/JamesWRC/hasti/issues' className='underline font-extrabold'>here.</a></div>
           </div>
 
           {/* end beta banner */}
