@@ -8,7 +8,7 @@ if [ $region = "develop" ]; then
 fi
 
 if [ $region = "production" ]; then
-    echo "Starting production environment 'HAST_PROD'..."
+    echo "Starting production environment 'HASTI_PROD'..."
     sleep 5
-    docker compose -p 'HAST_PROD' up -d
+    docker compose -p 'HASTI_PROD' up -d
 fi
