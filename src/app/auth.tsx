@@ -2,6 +2,7 @@ import NextAuth, { User } from "next-auth"
 import GitHub from "next-auth/providers/github"
 import { Session } from 'next-auth';
 import { JWTBodyRequest, JWTBodyResponse } from '@/backend/interfaces/user/request';
+import axios from 'axios';
 
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY as string
 
@@ -13,20 +14,23 @@ const getTokenFromAPIServer = async (provider: string, user: any) => {
 
     const JWTBodyRequest: JWTBodyRequest = {
         provider,
-        user
+        user,
     }
+    console.log("JWTBodyRequest req", JWTBodyRequest)
 
-    // Make request to your API
-    const response = await fetch(`${process.env.API_URL}/api/auth/jwt`, {
+    const imageResponse = await axios({
+        url: `${process.env.API_URL}/api/v1/auth/jwt`,
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify(JWTBodyRequest),
-    });
+        data: JWTBodyRequest,
+        timeout: 10000,
+        timeoutErrorMessage: 'Request timed out. Please try again.',
+      })
 
-    const data:JWTBodyResponse = await response.json();
-
+    const data:JWTBodyResponse = imageResponse.data;
+    console.log("JWTBodyRequest resp", data)
     return data;
 
 }
@@ -50,18 +54,20 @@ export const authOptions = {
       },
       callbacks: {
         async signIn({ user, account, profile, email, credentials }: {user: User, account: any, profile?: any, email?: any, credentials: any}) {
-            console.log("SBBBB user: ", user)
-            console.log("SBBBB account: ", account)
-            console.log("SBBBB profile: ", profile)
-            console.log("SBBBB email: ", email)
-            console.log("SBBBB credentials: ", credentials)
+            // console.log("SBBBB user: ", user)
+            // console.log("SBBBB account: ", account)
+            // console.log("SBBBB profile: ", profile)
+            // console.log("SBBBB email: ", email)
+            // console.log("SBBBB credentials: ", credentials)
 
             if (account.provider === 'github') {    
                 const githubUser = {
                     id: profile.id,
+                    node_id: profile.node_id,
                     username: profile.login,
                     name: profile.name,
                     image: profile.avatar_url,
+                    ghu_token: account.access_token
                 }
                 user.name = githubUser.username
                 user.githubID = githubUser.id

@@ -2,6 +2,7 @@
 // Create basic sign in page
 //
 import React from 'react';
+import axios from 'axios';
 const crypto = require('crypto');
 
 function generateCsrfToken() {
@@ -12,13 +13,18 @@ const csrfToken = generateCsrfToken();
 const SignInPage = () => {
     const handleButtonClick = async () => {
         try {
-            const response = await fetch('http://localhost:3000/api/auth/signin/github', {
+            const response = await axios({
+                url: '/api/auth/signin/github',
                 method: 'POST',
-                // Add any required headers or body parameters here
-            });
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                timeout: 10000,
+                timeoutErrorMessage: 'Request timed out. Please try again.',
+              })
 
             // Handle the response as needed
-            if (response.ok) {
+            if (response.status === 200) {
                 // Success logic
             } else {
                 // Error logic

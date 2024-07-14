@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Project" ADD COLUMN     "useingHastiMD" BOOLEAN NOT NULL DEFAULT false,
+ALTER COLUMN "contentImages" SET DEFAULT ARRAY[]::VARCHAR(255)[];

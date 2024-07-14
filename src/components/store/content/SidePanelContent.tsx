@@ -4,92 +4,56 @@ import { Table, ScrollArea } from '@mantine/core';
 import classes from '@/frontend/app/page.module.css';
 import { Container, Grid, SimpleGrid, Skeleton, rem } from '@mantine/core';
 import { Button } from '@mantine/core';
+import { Tag } from '@/backend/interfaces/tag';
+import { DynamicSkeletonText } from '@/frontend/components/ui/skeleton';
+import { useRouter } from 'next/router';
 
-const data = [
-  {
-    name: 'Tags',
-    company: 'Little - Rippin',
-    email: 'Elouise.Prohaska@yahoo.com',
+function handleQueryParams(tagName: string, searchParamKey: string) {
+
+  // See if the there are any query params
+  const url = new URL(window.location.href);
+  const searchParams = new URLSearchParams(url.search);
+  if (searchParams && searchParams.has(searchParamKey)) {
+    const currentTags = searchParams.get(searchParamKey)?.split(',') || [];
+    if (!currentTags.includes(tagName)) {
+      currentTags.push(tagName);
+      searchParams.set(searchParamKey, currentTags.join(','));
+    }else{
+      searchParams.set(searchParamKey, tagName);
+    }
+  }else{
+    searchParams.set(searchParamKey, tagName);
   }
-];
+  return searchParams.toString().replaceAll(/%2C/g, ',');
+}
 
 
+function Tags({ tags, searchParamKey, tagBaseURL, loaded }: { tags: Tag[], searchParamKey:string, tagBaseURL:string, loaded: boolean}) {
 
-function Tags() {
-  const tags = [{name: 'Hello', href: 'https://google.com'},
-  {name: 'World', href: 'https://google.com'},
-  {name: 'Foo', href: 'https://google.com'},
-  {name: 'Bar', href: 'https://google.com'},
-  {name: 'Baz', href: 'https://google.com'},
-  {name: 'Qux', href: 'https://google.com'},
-  {name: 'Quux', href: 'https://google.com'},
-  {name: 'Max Longer name for a tag', href: 'https://google.com'},
-  {name: 'Corge', href: 'https://google.com'},
-  {name: 'Grault', href: 'https://google.com'},
-  {name: 'Garply', href: 'https://google.com'},
-  {name: 'Waldo', href: 'https://google.com'},
-  {name: 'Fred', href: 'https://google.com'},
-  {name: 'Plugh', href: 'https://google.com'},
-  {name: 'Max 25 characters for tag', href: 'https://google.com'},
-  {name: 'Xyzzy', href: 'https://google.com'},
-  {name: 'Longer name', href: 'https://google.com'},
-  {name: 'Thud', href: 'https://google.com'},  {name: 'Waldo', href: 'https://google.com'},
-  {name: 'Fred', href: 'https://google.com'},
-  {name: 'Plugh', href: 'https://google.com'},
-  {name: 'Max 25 characters for tag', href: 'https://google.com'},
-  {name: 'Xyzzy', href: 'https://google.com'},
-  {name: 'Longer name', href: 'https://google.com'},
-  {name: 'Thud', href: 'https://google.com'},  {name: 'Waldo', href: 'https://google.com'},
-  {name: 'Fred', href: 'https://google.com'},
-  {name: 'Plugh', href: 'https://google.com'},
-  {name: 'Max 25 characters for tag', href: 'https://google.com'},
-  {name: 'Xyzzy', href: 'https://google.com'},
-  {name: 'Longer name', href: 'https://google.com'},
-  {name: 'Thud', href: 'https://google.com'},  {name: 'Waldo', href: 'https://google.com'},
-  {name: 'Fred', href: 'https://google.com'},
-  {name: 'Plugh', href: 'https://google.com'},
-  {name: 'Max 25 characters for tag', href: 'https://google.com'},
-  {name: 'Xyzzy', href: 'https://google.com'},
-  {name: 'Longer name', href: 'https://google.com'},
-  {name: 'Thud', href: 'https://google.com'},  {name: 'Waldo', href: 'https://google.com'},
-  {name: 'Fred', href: 'https://google.com'},
-  {name: 'Plugh', href: 'https://google.com'},
-  {name: 'Max 25 characters for tag', href: 'https://google.com'},
-  {name: 'Xyzzy', href: 'https://google.com'},
-  {name: 'Longer name', href: 'https://google.com'},
-  {name: 'Thud', href: 'https://google.com'},
-  {name: 'Hello', href: 'https://google.com'}]
   // const PRIMARY_COL_HEIGHT = rem(300);
   // const SECONDARY_COL_HEIGHT = `calc(${PRIMARY_COL_HEIGHT} / 2 - var(--mantine-spacing-md) / 2)`;
 
-  const tagButtons = tags.map((tag) => (
+  const tagButtons = tags.map((tag, index) => (
     <Button
-      key={tag.name}
+      key={`project-tag-${index}`}
+      className='text-white bg-gray-700 hover:bg-gray-600 max-w-[98%]'
       size={'compact-xs'}
       p={3}
       radius={'md'}
       variant="default"
-      m={2}>
-      {tag.name}
+      m={2}
+    >
+      <a href={`${tagBaseURL}?${handleQueryParams(tag.name, searchParamKey)}`} className='px-1 pb-1 truncate'>
+        {loaded ? tag.name : DynamicSkeletonText({max:1, min:1}) }
+      </a>
     </Button>
   ));
 
   return (
-    <Container my="md" className='w-fit'>
+    <Container className='w-fit' pr={0}>
       <SimpleGrid cols={{ base: 1 }} spacing="md">
-        <Grid gutter="">
-          {/* <Grid.Col> */}
-
-            {/* <Skeleton width={'100%'} radius="md" animate={false} /> */}
-            {tagButtons}
-  
-          {/* </Grid.Col> */}
-          {/* <Grid.Col span={6}>
-            <Skeleton width={'100%'} radius="md" animate={false} />
-          </Grid.Col>
-          <Grid.Col span={6}>
-            <Skeleton width={'100%'} radius="md" animate={false} />
-          </Grid.Col> */}
+        <Grid gutter="" className='h-28 overflow-y-scroll 4xl:h-full 4xl:overflow-y-auto scrollbar'>
+          {tagButtons}
         </Grid>
       </SimpleGrid>
     </Container>
@@ -99,23 +63,26 @@ function Tags() {
 
 
 
-export default function SidePaneContent() {
+export default function SidePanelTagsContent({ tags, loaded, tagBaseURL }: { tags: Tag[], loaded: boolean, tagBaseURL: string}) {
   const [scrolled, setScrolled] = useState(false);
 
-  const rows = data.map((row) => (
-    <Table.Tr key={row.name}>
-      <Table.Td>
-        <div className='text-white'>{row.name}</div></Table.Td>
-      <Table.Td><Tags/></Table.Td>
-    </Table.Tr>
-  ));
+
 
   return (
-    <ScrollArea h={{base: 'auto'}} onScrollPositionChange={({ y }) => setScrolled(y !== 0)}>
-      <Table miw={{base: '100%'}}>
+    <ScrollArea h={{ base: 'auto' }} onScrollPositionChange={({ y }) => setScrolled(y !== 0)}>
+      <Table miw={{ base: '100%' }} horizontalSpacing={0} verticalSpacing={0}>
         <Table.Thead className={cx(classes.m_table_header, { [classes.m_scrolled]: scrolled })}>
         </Table.Thead>
-        <Table.Tbody>{rows}</Table.Tbody>
+        <Table.Tbody>
+
+          <Table.Tr key="project-tags">
+            <Table.Td>
+              <div className='text-white mx-0'>Tags</div></Table.Td>
+            <Table.Td >
+                <Tags tags={tags} searchParamKey={'tags'} tagBaseURL={tagBaseURL} loaded={loaded} />
+            </Table.Td>
+          </Table.Tr>
+        </Table.Tbody>
       </Table>
     </ScrollArea>
   );

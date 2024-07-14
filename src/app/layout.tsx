@@ -26,7 +26,7 @@ export default async function RootLayout({
 
   return (
 
-    <html lang="en" className='bg-dark h-screen'>
+    <html lang="en" className='bg-dark overflow-hidden'>
           {/* <NextAuthProvider> */}
           <SessionProvider session={session}>
 

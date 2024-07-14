@@ -1,0 +1,29 @@
+-- AlterTable
+ALTER TABLE "Project" ADD COLUMN     "activityRating" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "overallRating" INTEGER NOT NULL DEFAULT 0,
+ADD COLUMN     "popularityRating" INTEGER NOT NULL DEFAULT 0,
+ALTER COLUMN "contentImages" SET DEFAULT ARRAY[]::VARCHAR(255)[];
+
+-- CreateTable
+CREATE TABLE "RepoAnalytics" (
+    "id" TEXT NOT NULL,
+    "repoID" TEXT NOT NULL,
+    "stars" INTEGER NOT NULL DEFAULT 0,
+    "forks" INTEGER NOT NULL DEFAULT 0,
+    "watchers" INTEGER NOT NULL DEFAULT 0,
+    "contributors" INTEGER NOT NULL DEFAULT 0,
+    "commits" INTEGER NOT NULL DEFAULT 0,
+    "releases" INTEGER NOT NULL DEFAULT 0,
+    "license" VARCHAR(255) NOT NULL DEFAULT '',
+    "openIssues" INTEGER NOT NULL DEFAULT 0,
+    "closedIssues" INTEGER NOT NULL DEFAULT 0,
+    "pullRequests" INTEGER NOT NULL DEFAULT 0,
+    "lastCommit" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "RepoAnalytics_pkey" PRIMARY KEY ("id")
+);
+
+-- AddForeignKey
+ALTER TABLE "RepoAnalytics" ADD CONSTRAINT "RepoAnalytics_repoID_fkey" FOREIGN KEY ("repoID") REFERENCES "Repo"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

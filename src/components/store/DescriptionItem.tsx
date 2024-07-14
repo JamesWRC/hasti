@@ -1,30 +1,26 @@
 import AuthorDescription from "./AuthorDescription";
+import { DynamicSkeletonText, DynamicSkeletonTitle } from '@/frontend/components/ui/skeleton';
+import { rngAvatarBackground } from '@/frontend/components/ui/project';
 
 function classNames(...classes: String[]) {
   return classes.filter(Boolean).join(' ')
 }
 
-function generateSkeletonLines(){
-  // generate 2 to 3 lines of text
-  const lines = Math.floor(Math.random() * 2) + 2;
-  const widths = [ 20, 24, 28, 32, 36, 999];
-  const lineArray = [];
-  let widthArray = []
-  for(let i = 0; i < lines; i++){
-    const randomWidths = Math.floor(Math.random() * widths.length);
-    widthArray.push(widths[randomWidths])
-  }
-  widthArray.sort((a, b) => (a > b) ? 1 : -1);
-  // widthArray.reverse();
-  for(let i = 0; i < lines; i++){
-    lineArray.push(<p className={`bg-gray-200 animate-pulse rounded-xl h-4 my-1 mt-1 w-${widthArray[i] == 999 ? "full" : widthArray[i]}`}>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</p>)
-  }
-  return (lineArray)
-}
 
-export default function DescriptionItem({title, description, author, authorImageUrl, authorLink, loaded, animateDelayCount}:{title: string, description: string, author: string, authorImageUrl: string, authorLink: string, loaded: boolean, animateDelayCount: number}) {
+export default function DescriptionItem({title, description, author, authorImageUrl, authorLink, loaded, backgroundImage, id, animateDelayCount}:{title: string, description: string, author: string, authorImageUrl: string, authorLink: string, loaded: boolean, backgroundImage: string|null, id: string, animateDelayCount: number}) {
+
+  // get current url
+  // const projectURl = `/project/${id}`
+  const url = new URL(window.location.href)
+
+  let projectTypeString = url.pathname.split('/')[1];
+  if (projectTypeString.endsWith('s')) {
+    projectTypeString = projectTypeString.substring(0, projectTypeString.length - 1)
+  }
+    const projectURl = `/${projectTypeString}/${author}/${title}`
+
     return (
-      <div className={classNames('flex px-auto', loaded ? `animate-fade-up animate-once animate-duration-500 p-auto`: '')}>
+      <div className={classNames('flex px-auto', loaded ? `animate-fade-up animate-once animate-duration-500 p-auto`: 'max-w-xs')}>
         <div className={classNames("mr-4 flex-shrink-0 self-center", loaded ? "" : "bg-gray-200 animate-pulse rounded-2xl")}>
           {/* <svg
             className="h-16 w-16 border border-gray-300 bg-white text-gray-300"
@@ -36,17 +32,37 @@ export default function DescriptionItem({title, description, author, authorImage
           >
             <path vectorEffect="non-scaling-stroke" strokeWidth={1} d="M0 0l200 200M0 200L200 0" />
           </svg> */}
-          <img src="https://www.freepnglogos.com/uploads/512x512-logo/512x512-transparent-instagram-logo-icon-5.png" alt="Theme Icon" className="h-12 w-12" />
+          {/* <img src="https://www.freepnglogos.com/uploads/512x512-logo/512x512-transparent-instagram-logo-icon-5.png" alt="Theme Icon" className={classNames(loaded ? "h-12 w-12" : "hidden" )}/> */}
+          <div
+            className={classNames(
+                      'flex h-14 w-14 flex-none items-center justify-center rounded-lg',
+                    )}
+                  >
+                    {!backgroundImage ?
+                      <div className='border-dark rounded-lg border flex'>
+                        <img src={backgroundImage && backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL + '/' + backgroundImage : rngAvatarBackground(id)} alt="" className={classNames("flex h-14 w-24 items-center justify-center rounded-lg object-cover -mr-28 ", !backgroundImage ? `blur-[5px]` : "")} />
+
+                        <img src={backgroundImage && backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL + '/' + backgroundImage : rngAvatarBackground(id)} alt="" className={classNames("flex h-12 w-12 items-center justify-center rounded-lg object-cover", !backgroundImage ? `blur-[50px]` : "")} />
+                        <img src={backgroundImage && backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL + '/' + backgroundImage : rngAvatarBackground(id)} alt="" className={classNames("flex h-12 w-12 items-center justify-center rounded-lg object-cover", !backgroundImage ? `blur-[50px]` : "")} />
+
+                      </div>
+                      :
+                      <img src={backgroundImage && backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL + '/' + backgroundImage : rngAvatarBackground(id)} alt="" className={classNames("flex h-max w-max items-center justify-center rounded-lg object-cover", !backgroundImage ? `blur-[50px]` : "")} />
+                    }
+
+                  </div>
+        
+        
         </div>
         <div className="w-max min-h-full">
-          <h4 className={classNames("text-md xl:text-lg font-bold min-w-full text-black", loaded ? "" : "bg-gray-200 animate-pulse rounded-2xl")}>{loaded ? title : <>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</>}</h4>
+          <a href={projectURl} className={classNames("text-md xl:text-lg font-bold min-w-full text-black")}>{loaded ? title : <DynamicSkeletonTitle min={3} max={4} maxWidth={100}/>}</a>
 
-          {loaded ? <p className="mt-1 line-clamp-3 text-xs xl:text-base min-h-fit text-gray-800 max-w-xs 3xl:max-w-2xl">
+          {loaded ? <a href={projectURl} className="mt-1 line-clamp-3 text-xs xl:text-base min-h-fit text-gray-800 max-w-xs 3xl:max-w-2xl">
             {description}
-          </p> : generateSkeletonLines()}
+          </a> : < DynamicSkeletonText min={5} max={10}/>}
 
-          <div className={loaded ? "pt-1 -ml-4" : "bg-gray-200 animate-pulse rounded-xl pt-1 -ml-4 mt-2"}>
-            <AuthorDescription name={'post.author.name'} imageUrl={'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'} link={'www.github.com'} loaded={loaded}/>
+          <div className={loaded ? "pt-1 -ml-4" : "rounded-xl pt-1 -ml-4 mt-2 w-fit"}>
+            <AuthorDescription name={author} imageUrl={authorImageUrl} link={authorLink} loaded={loaded}/>
           </div>
 
         </div>

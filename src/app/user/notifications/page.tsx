@@ -262,8 +262,8 @@ function renderSkeletonPlaceholder(notification: Notification, notificationIndex
     <>
         {/* {setAboutIcon(notification)} */}
         <div className="flex-auto py-0.5 text-xs leading-5 text-gray-500">
-          <DynamicSkeletonTitle/> <br />
-          <DynamicSkeletonText/>
+          <DynamicSkeletonTitle max={1} min={1}/> <br />
+          <DynamicSkeletonText max={6} min={1}/>
 
         </div>
 

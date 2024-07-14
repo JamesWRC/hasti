@@ -24,15 +24,12 @@ import {
     SwatchIcon,
   
   } from '@heroicons/react/24/outline'
+import { ProjectType, getProjectTypePath } from '@/backend/interfaces/project';
 const navigation = [
     { name: 'Store', href: '/', icon: HomeIcon},
-    { name: 'Themes', href: '/themes', icon: SwatchIcon},
-    { name: 'Integrations', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'adfag', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
+    { name: 'Themes', href: `/${getProjectTypePath(ProjectType.THEME)}`, icon: SwatchIcon, projectType: ProjectType.THEME},
+    { name: 'Integrations', href: `/${getProjectTypePath(ProjectType.INTEGRATION)}`, icon: SquaresPlusIcon, projectType: ProjectType.INTEGRATION},
+    { name: 'Other', href: `/${getProjectTypePath(ProjectType.OTHER)}`, icon: SquaresPlusIcon, projectType: ProjectType.INTEGRATION},
     
   ]
 

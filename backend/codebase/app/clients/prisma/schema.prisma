@@ -1,0 +1,211 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["omitApi"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+
+model Tag {
+  id                String        @id @default(uuid())
+  name              String        @unique @db.VarChar(255)
+  type              String        @db.VarChar(255)
+  projects          Project[]     // IMPLICIT many to many relationship to Project
+
+  createdAt         DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime      @updatedAt
+
+  @@index([name], name: "name_index")
+}
+
+model Project {
+  id                String        @id @default(uuid())
+  title             String        @db.VarChar(255)
+
+  contentSHA        String        @db.VarChar(255) @default("") // SHA of the content for caching/version control purposes
+
+  description       String        @default("") @db.Text 
+
+  tags              Tag[]         // IMPLICIT many to many relationship to Tag
+  tagNames          String[]      @default([]) @db.VarChar(255) // Array of tag names. ONLY used for search purposes.
+
+  published         Boolean       @default(false)
+  userID            String
+  user              User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  repoID            String
+  repo              Repo          @relation(fields: [repoID], references: [id])
+  
+  worksWithOS               Boolean       @default(false)
+  worksWithContainer        Boolean       @default(false)
+  worksWithCore             Boolean       @default(false)
+  worksWithSupervised       Boolean       @default(false)
+
+  worksWithHAVersion        String        @default("") @db.VarChar(255)
+  IoTClassification         String        @default("unknown") @db.VarChar(255) // https://www.home-assistant.io/blog/2016/02/12/classifying-the-internet-of-things/#classifiers
+  
+  projectType       String        @default("integration") @db.VarChar(255)
+
+  iconImage         String?       @default("") @db.VarChar(255)
+  backgroundImage   String?       @default("") @db.VarChar(255)
+
+  contentImages     String[]      @default([]) @db.VarChar(255) // Array of image URLs
+  claimed           Boolean       @default(false)
+  usingHastiMD      Boolean       @default(false) // If the project is using HastiMD markdown for content
+
+  popularityRating  Int           @default(0)
+  activityRating    Int           @default(0)
+  overallRating     Int           @default(0)
+
+  createdAt         DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime      @updatedAt
+}
+
+//  RepoAnalytics is a record of the analytics for a repo.
+model RepoAnalytics {
+  id                String        @id @default(uuid())
+  
+  repoID            String
+  repo              Repo          @relation(fields: [repoID], references: [id])
+  
+  stars             Int           @default(0)
+  forks             Int           @default(0)
+  watchers          Int           @default(0)
+  contributors      Int           @default(0)
+  commits           Int           @default(0)
+  releases          Int           @default(0)
+  license           String        @default("") @db.VarChar(255)
+  openIssues        Int           @default(0)
+  closedIssues      Int           @default(0)
+  pullRequests      Int           @default(0)
+  lastCommit        DateTime?     @default(now())
+
+
+  
+  createdAt         DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime      @updatedAt
+}
+
+//  A collaborator is a github user who has access to a project and/or repo.
+//  Depending on the permissions, they can do different things.
+model Collaborator {
+  id                String        @id @default(uuid())
+
+  repoID            String
+  repo              Repo          @relation(fields: [repoID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  userID            String
+  user              User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  githubID          Int
+
+  // Permissions for the collaborator to a projects AND/OR repo.
+  type              String        @default("user") @db.VarChar(255) // Lowercase "user" or "admin"
+  admin             Boolean       @default(false)
+  maintain          Boolean       @default(false)
+  push              Boolean       @default(false)
+  triage            Boolean       @default(false)
+  pull              Boolean       @default(false)
+
+  createdAt         DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime      @updatedAt
+
+  @@index([githubID], name: "collaborator_githubID_index")
+  @@index([repoID], name: "repoID_index")
+
+}
+ 
+// Repo fullName can change if a user changes the name of the repo. 
+// Can look up repo details via https://api.github.com/repositories/<repoID>
+model Repo {
+  id                String        @id @default(uuid())
+  gitHubRepoID      Int           @unique @default(-1)            
+  gitHubNodeID      String        @db.VarChar(255) @default("")
+  name              String        @db.VarChar(255)
+  fullName          String        @db.VarChar(255)
+  private           Boolean       @default(false)
+  
+  ownerGithubID     Int           
+  ownerType         String        @default("user") @db.VarChar(255) // Lowercase "user" or "organization"
+  addedByGithubID   Int           
+
+  userID            String
+  user              User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  
+  projects          Project[]
+
+  // Repo metadata
+  repoCreatedAt     DateTime      @default(now()) // Date the repo was created on GitHub
+  repoPushedAt      DateTime      @default(now()) // Date the repo was last pushed to on GitHub
+
+  forked            Boolean       @default(false) // If the repo is a fork
+  forks             Int           @default(0)
+  forkedGitHubRepoID    Int       @default(0) // If the repo is a fork, this is the original repo ID
+  forkedGitHubNodeID    String    @default("") // If the repo is a fork, this is the original repo nodeID
+  forkedRepoFullName    String    @default("") // If the repo is a fork, this is the original repo fullName
+  forkedGitHubOwnerID   Int       @default(0) // If the repo is a fork, this is the original repo owner ID
+
+  archived          Boolean       @default(false) // If the repo is archived
+
+  gitAppHasAccess   Boolean       @default(false) // If the app has access to the repo
+
+  collaborators     Collaborator[]
+  repoAnalytics     RepoAnalytics[]
+
+  createdAt         DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime      @updatedAt
+
+  @@index([gitHubRepoID], name: "gitHubRepoID_index")
+
+}
+
+model User {
+  id                String        @id @default(uuid())
+  githubID          Int           @unique
+  githubNodeID      String        @unique
+  username          String        @db.VarChar(255)
+  image             String        @db.VarChar(255)
+  type              String        @db.VarChar(255) @default("user")
+  repos             Repo[]
+  projects          Project[]
+  notifications     Notification[]
+  collaborations    Collaborator[] // records where the user is a collaborator on repo.
+  ghuToken          String        @db.VarChar(255) @default("")// GitHub User Token used to access GitHub API
+
+  createdAt         DateTime      @default(now()) @db.Timestamp(6)
+  updatedAt         DateTime      @updatedAt
+
+  @@index([githubID], name: "githubID_index")
+
+}
+
+model Notification {
+    id              String        @id @default(uuid())
+    type            String        @db.VarChar(255)
+    title           String        @db.VarChar(255)   
+    message         String        @db.Text
+    about           String        @db.VarChar(255)
+    read            Boolean       @default(false)
+
+    userID          String
+    user            User          @relation(fields: [userID], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+    createdAt       DateTime      @default(now()) @db.Timestamp(6)
+    updatedAt       DateTime      @updatedAt
+}
+
+
+model WebhookEvents {
+  id                Int           @id @default(autoincrement())
+  webhookId         String        @db.VarChar(255) @unique
+  source            String        @db.VarChar(255) @default("github")
+  createdAt         DateTime      @default(now())
+
+  @@index([webhookId], name: "webhookId_index")
+}

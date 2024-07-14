@@ -22,11 +22,11 @@
     "preserveSymlinks": true,
     "baseUrl": ".",
     "paths": {
-      "@/frontend*": ["./src/*"],
-      "@/backend/*": ["./backend/codebase/hasti_api/*"]
+      "@/frontend/*": ["./src/*"],
+      "@/backend/*": ["./backend/codebase/app/*"],
     },
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "src/components/markdoc/Layout.nused", "src/components/markdoc/lib/sections.nused", "src/components/markdoc/lib/navigation.nused", "src/components/markdoc/DocsHeader.nused", "src/components/markdoc/Navigation.nused"],
   // "exclude": ["node_modules"]
   "exclude": ["node_modules", "backend", "./backend"]
 }

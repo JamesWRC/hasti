@@ -17,7 +17,7 @@ const people = [
                   <p className="mt-2 text-sm text-gray-300">
                     A list of all the users in your account including their name, title, email and role.
                   </p>
-                  <SidePaneContent/>
+                  {/* <SidePaneContent/> */}
                 </div>
                 {/* <div className="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
                   <button

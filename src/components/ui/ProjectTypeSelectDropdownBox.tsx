@@ -1,13 +1,13 @@
 import { upperFirst } from 'lodash';
 
-import { Combobox, Input, InputBase, useCombobox } from '@mantine/core';
+import { CloseButton, Combobox, Input, InputBase, useCombobox } from '@mantine/core';
 
 import { ProjectType, getAllProjectTypes, getProjectType } from '@/backend/interfaces/project'
 import { GetInputProps } from '@mantine/form/lib/types';
 
 
 const projectTypes = getAllProjectTypes()
-export function ProjectTypeSelectDropdownBox({projectType, setProjectType, inputProps}:{projectType:ProjectType|undefined, setProjectType: (projectType: ProjectType) => void, inputProps: GetInputProps<any>}) {
+export function ProjectTypeSelectDropdownBox({projectType, setProjectType, inputProps, disabled}:{projectType:ProjectType|undefined, setProjectType: (projectType: ProjectType|undefined) => void, inputProps?: GetInputProps<any>, disabled:boolean}) {
 
     const combobox = useCombobox({
         onDropdownClose: () => combobox.resetSelectedOption(),
@@ -34,19 +34,29 @@ export function ProjectTypeSelectDropdownBox({projectType, setProjectType, input
                 setProjectType(getProjectType(val)) ;
                 combobox.closeDropdown();
             }}
-            
-            {...inputProps('projectType')}
+            disabled={disabled}
+            {...(inputProps && inputProps('projectType'))}
         >
-                            <Combobox.Target>
+            <Combobox.Target>
                 <InputBase
-                    label="Project Type" 
                     component="button"
                     type="button"
                     pointer
-                    rightSection={<Combobox.Chevron />}
                     onClick={() => combobox.toggleDropdown()}
-                    rightSectionPointerEvents="none"
-                >
+                    rightSection={
+                        projectType !== undefined ? (
+                          <CloseButton
+                            size="sm"
+                            onMouseDown={(event) => event.preventDefault()}
+                            onClick={() => setProjectType(undefined)}
+                            aria-label="Clear value"
+                          />
+                        ) : (
+                          <Combobox.Chevron />
+                        )
+                      }     
+                      rightSectionPointerEvents={projectType === undefined ? 'none' : 'all'}
+                      >
                     {upperFirst(projectType) || <Input.Placeholder>Pick Project type</Input.Placeholder>}
                 </InputBase>
             </Combobox.Target>

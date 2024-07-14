@@ -5,8 +5,9 @@ import { MultiSelect } from '@mantine/core';
 import { useDebouncedState } from '@mantine/hooks';
 import { useSession } from 'next-auth/react'
 import { TagSearchResponse } from '@/backend/interfaces/tag/request'
-import { SearchParams } from '@/backend/interfaces/tag/request';
+import { SearchParams } from '@/backend/interfaces/tag';
 import { GetInputProps } from '@mantine/form/lib/types';
+import axios from 'axios';
 
 export default function SearchComboBox({
     label,
@@ -19,7 +20,7 @@ export default function SearchComboBox({
     setTags,
     searchParams,
     inputProps}: 
-    {label: string,
+    {label?: string,
         placeholder: string,
         searchable: boolean,
         maxSelectedValues: number,
@@ -28,7 +29,7 @@ export default function SearchComboBox({
         tags: string[], 
         setTags: (tags: string[]) => void,
         searchParams?: SearchParams,
-        inputProps: GetInputProps<any>
+        inputProps?: GetInputProps<any>
     }) {
     // Holds what the user has entered in the search box
     const [search, setSearch] = useState('');
@@ -39,34 +40,46 @@ export default function SearchComboBox({
 
     const [cachedTags, setCachedTags] = useState(existingTags);
 
+    const [message, setMessage] = useState("Start typing to search for tags.");
+    // let message = 'searching...'
     
+    useEffect(() => {
+        setCachedTags(existingTags)
+    }, [existingTags]);
+
     // Function to handle the search input]
     useEffect(() => {
         if (searchParams && debounceValue != '') {
             const searchTags = async () => {
-
+                
                 // Set the search query
                 searchParams.q = debounceValue
                 const params = new URLSearchParams(searchParams as Record<string, any>)
 
-                const res = await fetch(`${process.env.API_URL}/api/tags/search?` + params, {
+                const res = await axios({
+                    url: `${process.env.API_URL}/api/v1/tags/search?` + params,
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${session?.user.jwt}`
-                    }
-                })
-                const tagSearchResponse: TagSearchResponse = await res.json()
+                    },
+                    timeout: 30000,
+                    timeoutErrorMessage: 'Request timed out. Please try again.',
+                  })
+
+                const tagSearchResponse: TagSearchResponse = res.data;
 
                 const tags = tagSearchResponse.hits.map((hit) => hit.document.name)
 
-                if (res.ok) {
+                if (res.status === 200) {
                     // Concat and de duplicate the tags
-                    setCachedTags(tags.concat(cachedTags.filter((cachedTag:string) => tags.indexOf(cachedTag) < 0)))
+                    setCachedTags(tags.concat(cachedTags).filter((tag, index, self) => self.indexOf(tag) === index))
                     // setExistingTags(tags)
                 }
             }
             searchTags()
+            setMessage(nothingFoundMessage)
+
         }
     }, [debounceValue]);
 
@@ -101,6 +114,8 @@ export default function SearchComboBox({
             setSearch('')
         } else {
             setDebounceValue(search)
+            setMessage('searching...')
+
         }
     }
 
@@ -120,11 +135,11 @@ export default function SearchComboBox({
             onSearchChange={setSearch}
             value={tags.filter((tag) => tag.length > 0)}
             onChange={handleSearches}
-            nothingFoundMessage={nothingFoundMessage}
+            nothingFoundMessage={message}
             onKeyUp={(e) => { handleSearch(e) }}
             limit={6}
             maxValues={maxSelectedValues}
-            error={inputProps('tags').error}
+            error={inputProps ? inputProps('tags').error : null}
         />
     )
 }

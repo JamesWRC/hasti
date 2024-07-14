@@ -30,6 +30,7 @@ import UserNavi from '@/frontend/components/ui/navigation/UserNavi'
 import Navigation from '@/frontend/components/ui/navigation/Navigation'
 import { auth } from './auth'
 import { SignIn } from '@/frontend/components/authComp'
+import Search from '@/frontend/components/ui/search/Search';
 
 
 
@@ -38,10 +39,10 @@ const navigation = [
   { name: 'Themes', href: '/themes', icon: SwatchIcon},
   { name: 'Integrations', href: '/integrations', icon: SquaresPlusIcon},
   { name: 'adfag', href: '/integrations', icon: SquaresPlusIcon},
-  { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
-  { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
-  { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
-  { name: 'hdshsd', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'sdfgsd', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'hdszxvhsd', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'hdsshsd', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'vv', href: '/integrations', icon: SquaresPlusIcon},
   
 ]
 const teams = [
@@ -116,11 +117,11 @@ export default function  MainLayout({
 
 
         {/* Static sidebar for desktop */}
-        <div className="md:fixed md:inset-y-0 md:z-50 md:flex md:w-72 md:flex-col hidden">
+        <div className="md:fixed md:inset-y-0 md:z-50 md:flex md:w-72 md:flex-col hidden ">
 
           {/* Sidebar component, swap this element with another sidebar if you like */}
-          <div className="flex flex-col gap-y-5 overflow-y-auto bg-dark pr-6 pl-7">
-            <div className="grid grid-cols-1 gap-4 place-content-between h-screen">
+          <div className="flex flex-col gap-y-5 overflow-y-auto bg-dark pr-6 pl-7 scrollbar">
+            <div className="grid grid-cols-1 gap-4 place-content-between h-screen ">
               <div>
 
                 <div className="my-10 -ml-4 flex h-16 shrink-0 items-center">
@@ -169,36 +170,7 @@ export default function  MainLayout({
               </div>
 
               <div className="">
-                <div className=''>
-                  <div className="text-xs font-semibold leading-6 text-gray-400">Your teams</div>
-                  <ul role="list" className="-mx-2 mt-2 space-y-1">
-                    {teams.map((team) => (
-                      <li key={team.name}>
-                        <a
-                          href={team.href}
-                          className={classNames(
-                            team.current
-                              ? 'bg-gray-50 text-cyan-500'
-                              : 'text-gray-700 hover:text-cyan-500 hover:bg-gray-50',
-                            'group flex gap-x-3 rounded-md p-2 text-sm leading-6 font-semibold'
-                          )}
-                        >
-                          <span
-                            className={classNames(
-                              team.current
-                                ? 'text-cyan-500 border-cyan-500'
-                                : 'text-gray-400 border-gray-200 group-hover:border-cyan-500 group-hover:text-cyan-500',
-                              'flex h-6 w-6 shrink-0 items-center justify-center rounded-lg border text-[0.625rem] font-medium bg-dark'
-                            )}
-                          >
-                            {team.initial}
-                          </span>
-                          <span className="truncate">{team.name}</span>
-                        </a>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+
                 {/* <a
                   onClick={() => handleItemClick('/page1')}
                   className="rounded-md flex items-center gap-x-4 px-6 py-3 text-sm font-semibold leading-6 text-gray-100 hover:bg-gray-50"
@@ -285,15 +257,21 @@ export default function  MainLayout({
 
 
 
-        <main className="md:pl-72 bg-dark h-full md:h-screen p-2">
-          <div className="pr-0 pl-0 bg-white rounded-2xl w-full h-full md:h-full overflow-y-scroll scrollbar overflow-x-hidden">
-            {children}
+        <main className="md:pl-72 bg-dark h-full md:h-screen p-2 ">
+          {/* // Show this is a beta version. */}
+          
+          <div className="pr-0 pl-0 bg-amber-200 rounded-2xl w-full font-extrabold py-2 mb-2 flex items-center">
+            <div className='mx-auto px-4'>Beta Version. This is not the final version. Many things are still in the works.</div>
+          </div>
 
+          {/* end beta banner */}
+          <div className="pr-0 pl-0 bg-white rounded-2xl w-full h-full md:h-full overflow-y-scroll overflow-x-hidden scrollbar">
+            {children}
           </div>
         </main>
 
       </div>
-      <Footer />
+      {/* <Footer /> */}
 
     </>
 
