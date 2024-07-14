@@ -8,7 +8,7 @@ if [ $region = "develop" ]; then
 fi
 
 if [ $region = "production" ]; then
-    echo "Stopping production environment 'HAST_PROD'..."
+    echo "Stopping production environment 'HASTI_PROD'..."
     sleep 5
-    docker compose -p 'HAST_PROD' down
+    docker compose -p 'HASTI_PROD' down
 fi
