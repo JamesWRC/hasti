@@ -11,8 +11,8 @@
   "module": "commonjs",
   "scripts": {
     "dev": "nodemon",
-    "build": "tsc",
-    "start": "ts-node --files --project tsconfig.json ./app/server.ts",
+    "build": "tsc --build tsconfig.json && tsc -p . && tsc-alias -p tsconfig.json",
+    "start": "node dist/app/server.js",
     "test": "echo \"Error: no tests atm ;)\" && exit 1"
   },
   "dependencies": {
@@ -46,6 +46,7 @@
     "response-time": "^2.3.2",
     "sanitize-html": "^2.13.0",
     "ts-node": "^10.9.2",
+    "tsc-alias": "^1.8.10",
     "tsconfig-paths": "^4.2.0",
     "type-fest": "^4.18.2",
     "typescript": "^5.5.3",

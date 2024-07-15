@@ -12,7 +12,7 @@ WORKDIR /app
 COPY ./codebase/package.json ./codebase/yarn.lock ./codebase/process.yml ./   
 
 # Install all dependencies
-RUN npm i               
+RUN yarn
 
 # Copy the rest of the code
 COPY ./codebase/ .                
@@ -46,19 +46,25 @@ WORKDIR /home/node/app
 RUN npm i -g pm2
 
 # Copy package.json, package-lock.json and process.yml
-COPY package.json process.yml ./
+COPY ./codebase/package.json ./codebase/yarn.lock ./codebase/process.yml ./codebase/app/clients/prisma/schema.prisma ./   
 
 # Switch to user node
 USER node
 
 # Install libraries as user node
-RUN npm i --only=production
+# RUN npm i --only=production
+RUN yarn install --production --prefer-offline
 
 # Copy js files and change ownership to user node
 COPY --chown=node:node --from=builder /app/dist ./dist
 
 # Open desired port
 EXPOSE ${PORT}
+
+RUN ls -la && sleep 10
+
+# Generate prisma client
+RUN yarn prisma generate --schema=./schema.prisma
 
 # Use PM2 to run the application as stated in config file
 ENTRYPOINT ["pm2-runtime", "./process.yml"] 
