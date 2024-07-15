@@ -11,6 +11,7 @@
   "module": "commonjs",
   "scripts": {
     "dev": "nodemon",
+    "build": "tsc",
     "start": "ts-node --files --project tsconfig.json ./app/server.ts",
     "test": "echo \"Error: no tests atm ;)\" && exit 1"
   },

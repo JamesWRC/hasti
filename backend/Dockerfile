@@ -1,24 +1,64 @@
-FROM node:20.5.0-alpine AS dependencies
-RUN apk add --no-cache libc6-compat
-WORKDIR /home/app
-COPY ./codebase/package.json ./
-COPY ./codebase/yarn.lock ./
-RUN yarn install --production --prefer-offline
+ARG PORT=3000
+
+FROM node:20.5.0-alpine AS node
+
+# Builder stage
 FROM node:20.5.0-alpine AS builder
-WORKDIR /home/app
-COPY --from=dependencies /home/app/node_modules ./node_modules
-COPY ./codebase/ .
-ENV NEXT_TELEMETRY_DISABLED 1
-ENV NODE_ENV=production
-RUN yarn prisma generate --schema=app/clients/prisma/schema.prisma
-# RUN yarn build
-# FROM node:20.5.0-alpine AS runner
-# WORKDIR /home/app
-# ENV NEXT_TELEMETRY_DISABLED 1
-# COPY --from=builder /home/app/.next/standalone ./standalone
-# COPY --from=builder /home/app/.next/static /home/app/standalone/.next/static
-EXPOSE 3000
-ENV PORT 3000
-CMD ["yarn", "start"]
 
+# Use /app as the CWD
+WORKDIR /app            
 
+# Copy package.json and package-lock.json to /app
+COPY ./codebase/package.json ./codebase/yarn.lock ./codebase/process.yml ./   
+
+# Install all dependencies
+RUN npm i               
+
+# Copy the rest of the code
+COPY ./codebase/ .                
+
+# Invoke the build script to transpile ts code to js
+RUN npm run build    
+
+# Open desired port
+EXPOSE ${PORT}
+
+# Run development server
+ENTRYPOINT [ "npm", "run", "dev" ]
+
+# Final stage
+
+FROM node:20.5.0-alpine AS final
+
+# Set node environment to production
+ENV NODE_ENV production
+
+# Update the system
+RUN apk --no-cache -U upgrade
+
+# Prepare destination directory and ensure user node owns it
+RUN mkdir -p /home/node/app/dist && chown -R node:node /home/node/app
+
+# Set CWD
+WORKDIR /home/node/app
+
+# Install PM2
+RUN npm i -g pm2
+
+# Copy package.json, package-lock.json and process.yml
+COPY package.json process.yml ./
+
+# Switch to user node
+USER node
+
+# Install libraries as user node
+RUN npm i --only=production
+
+# Copy js files and change ownership to user node
+COPY --chown=node:node --from=builder /app/dist ./dist
+
+# Open desired port
+EXPOSE ${PORT}
+
+# Use PM2 to run the application as stated in config file
+ENTRYPOINT ["pm2-runtime", "./process.yml"] 
