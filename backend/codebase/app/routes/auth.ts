@@ -13,7 +13,6 @@ import axios from 'axios';
 import { isAuthenticated } from '@/backend/helpers/auth';
 import { AuthCheckType, CheckAuthResponse } from '@/backend/interfaces/auth/index';
 import { constructUserOctoKitAuth } from '@/backend/helpers/auth/github';
-import { headers } from 'next/dist/client/components/headers';
 
 const authRouter = Router();
 const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY as string
