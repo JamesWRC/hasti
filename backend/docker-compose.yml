@@ -39,7 +39,7 @@ services:
       - "traefik.http.routers.hastibackend.entrypoints=websecure"
       - "traefik.http.routers.hastibackend.tls=true"
       # Tell Treafik to route to a specific port
-      - "traefik.http.services.hastibackend.loadbalancer.server.port=3117"
+      - "traefik.http.services.hastibackend.loadbalancer.server.port=3000"
       - "traefik.docker.network=traefik_default_network"
 
   #################################################
