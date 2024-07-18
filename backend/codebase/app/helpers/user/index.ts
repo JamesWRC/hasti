@@ -3,7 +3,6 @@ import type { JWTBodyRequest } from "@/backend/interfaces/user/request";
 import prisma from "@/backend/clients/prisma/client";
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 import { jwtVerify } from "jose";
-import { NextApiResponse } from "next/types";
 import { decrypt, encrypt } from "../auth";
 import { OctokitResponse } from "@octokit/types";
 import { NotificationAbout, NotificationType } from "@/backend/interfaces/notification";

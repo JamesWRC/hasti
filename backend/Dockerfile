@@ -42,6 +42,7 @@ COPY ./codebase/process.yml ./codebase/app/clients/prisma/schema.prisma ./
 
 # Copy js files and change ownership to user node
 COPY --chown=node:node --from=builder /app/dist ./dist
+COPY --chown=node:node --from=builder /app/.next ./.next
 
 # Open desired port
 EXPOSE ${PORT}
