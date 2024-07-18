@@ -20,8 +20,10 @@ services:
     image: jameswrc/hastibackend
     # env_file Will be overriden by the environment variables in elasticbeanstalk configuration.
     env_file:
-     - .env
-     - codebase/.env
+      - .env
+      - ./codebase/.env
+    volumes:
+      - ./codebase/PROD_GitHub_app.pem:/home/node/app/PROD_GitHub_app.pem
     ports:
       - 3117:3000
     networks:

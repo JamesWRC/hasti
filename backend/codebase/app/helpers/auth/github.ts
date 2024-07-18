@@ -10,7 +10,7 @@ import { User } from "@/backend/interfaces/user";
 const AUTH_GITHUB_APP_ID = process.env.NODE_ENV === 'production' ? process.env.AUTH_GITHUB_APP_ID : process.env.DEV_AUTH_GITHUB_APP_ID;
 const AUTH_GITHUB_ID = process.env.NODE_ENV === 'production' ? process.env.AUTH_GITHUB_ID : process.env.DEV_AUTH_GITHUB_ID;
 const AUTH_GITHUB_SECRET = process.env.NODE_ENV === 'production' ? process.env.AUTH_GITHUB_SECRET : process.env.DEV_AUTH_GITHUB_SECRET;
-const PRIVATE_KEY = process.env.NODE_ENV === 'production' ? 'PROD_GitHub_app.pem.pem' : './dev_GitHub_app.pem';
+const PRIVATE_KEY = process.env.NODE_ENV === 'production' ? './PROD_GitHub_app.pem ' : './dev_GitHub_app.pem';
 
 function getAppID(){
     if(AUTH_GITHUB_APP_ID === undefined){
