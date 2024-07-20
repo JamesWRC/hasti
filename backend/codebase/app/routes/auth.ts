@@ -36,7 +36,7 @@ authRouter.get<Record<string, string>, string | BadRequestResponse>(
             res.status(200).json({ success: true, message: "Not implemented yet" });
         } catch (error) {
             logger.warn(`Request threw an exception: ${error}`, {
-                label: 'GET: /projects/:userid/count: ',
+                label: 'GET: /auth/getGhuToken: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
         }
@@ -174,7 +174,7 @@ authRouter.get<Record<string, string>, CheckAuthResponse | BadRequestResponse>(
 
         } catch (error) {
             logger.warn(`Request threw an exception: ${error}`, {
-                label: 'GET: /projects/:userid/count: ',
+                label: 'GET: /auth/gitUserToken: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
         }
@@ -231,7 +231,7 @@ authRouter.post<Record<string, string>, OkResponse | BadRequestResponse>(
 
         } catch (error) {
             logger.warn(`Request threw an exception: ${error}`, {
-                label: 'GET: /projects/:userid/count: ',
+                label: 'POST: /auth/gitUserToken: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
         }

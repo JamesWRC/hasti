@@ -64,7 +64,7 @@ export default async function addOrUpdateUser(user: JWTBodyRequest): Promise<Use
   }
   console.log('currUser', currUser)
   // Update the GitHub user token if it has changed.
-  if(!currUser.ghuToken || getGitHubUserToken(currUser.ghuToken) !== user.user.ghu_token){
+  if(!currUser.ghuToken || currUser.ghuToken.length === 0 || getGitHubUserToken(currUser.ghuToken) !== user.user.ghu_token){
     await updateGitHubUserToken(user.user.ghu_token, currUser)
   }
 
@@ -74,6 +74,10 @@ export default async function addOrUpdateUser(user: JWTBodyRequest): Promise<Use
 
 
 export async function updateGitHubUserToken(token:string, user: User){
+  console.log('updateGitHubUserToken', token, user)
+  // Check if token is empty, if so return the user.
+  if(token.length <= 0) return user
+
   const encryptedToken = encrypt(token)
   const updatedUser:User = await prisma.user.update({
     where: {

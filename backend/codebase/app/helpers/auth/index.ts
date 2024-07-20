@@ -19,15 +19,23 @@ const JWT_SECRET__KEY = process.env.JWT_SECRET_KEY as string
 
 
     export function encrypt(text: string): string {
+        console.log('begin decrypt')
+
         const iv = randomBytes(16);
-    
+        console.log('iv:', iv)
         const cipher = createCipheriv(algorithm, key, iv);
+        console.log('cipher:', cipher)
+
         let encrypted = cipher.update(text, 'utf8', 'hex');
+        console.log('encrypted:', encrypted)
+
         encrypted += cipher.final('hex');
-    
+        console.log('encrypted 2 :', encrypted)
+
         // Return the iv and the encrypted message
         const encryptedMessage = iv.toString('hex') + encrypted;
-    
+        console.log('encryptedMessage:', encryptedMessage)
+
         return encryptedMessage;
     }
     

@@ -41,7 +41,7 @@ async (req, res) => {
         return res.status(200).json(response);
     } catch (error) {
         logger.warn(`Request threw an exception: ${error}`, {
-            label: 'GET: /projects/:userid/count: ',
+            label: 'GET: /repos/:userid/count: ',
             });
     return res.status(500).json({ success: false, message: 'Error getting token' });
     }
@@ -76,7 +76,7 @@ reposRouter.get<Record<string, string>, UserReposResponse | BadRequestResponse>(
             return res.status(200).json(response);
         } catch (error) {
             logger.warn(`Request threw an exception: ${error}`, {
-                label: 'GET: /projects/:userid/count: ',
+                label: 'GET: /repos/:userid: ',
                 });
         return res.status(500).json({ success: false, message: 'Error getting token' });
         }

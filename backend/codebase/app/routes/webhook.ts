@@ -85,6 +85,9 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
             const user: User|null = await prisma.user.findUnique({
                 where: {
                     githubID: GitHubUserID
+                },
+                omit: {
+                    ghuToken: false
                 }
             })
             console.log('user', user)
@@ -157,8 +160,8 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
             res.status(400).json({success: false, message: 'Invalid webhook request' });
         }
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
-                label: 'GET: /projects/:userid/count: ',
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
+                label: 'POST: /webhooks/github: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
         }

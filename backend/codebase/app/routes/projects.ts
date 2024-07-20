@@ -328,7 +328,7 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
             }
         } catch (error) {
             logger.warn(`Request threw an exception: ${error}`, {
-                label: 'GET: /projects/:userid/count: ',
+                label: 'POST: /projects ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
         }
@@ -363,7 +363,7 @@ projectsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestRe
             res.status(200).json(searchResults);
         } catch (error) {
             logger.warn(`Request threw an exception: ${error}`, {
-                label: 'GET: /projects/:userid/count: ',
+                label: 'GET: /search ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
         }
