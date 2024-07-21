@@ -35,7 +35,7 @@ authRouter.get<Record<string, string>, string | BadRequestResponse>(
             console.log("ghuTokenEnc", ghuTokenEnc)
             res.status(200).json({ success: true, message: "Not implemented yet" });
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'GET: /auth/getGhuToken: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -120,7 +120,7 @@ authRouter.post<Record<string, string>, JWTBodyResponse | BadRequestResponse>(
 
             }
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'POST: /auth/v1/jwt: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -173,7 +173,7 @@ authRouter.get<Record<string, string>, CheckAuthResponse | BadRequestResponse>(
 
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'GET: /auth/gitUserToken: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -230,7 +230,7 @@ authRouter.post<Record<string, string>, OkResponse | BadRequestResponse>(
 
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'POST: /auth/gitUserToken: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });

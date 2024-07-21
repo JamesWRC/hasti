@@ -56,7 +56,7 @@ app.prepare().then(async () => {
         });
       });
 
-}).catch((err) => {
-    logger.error(err.stack);
-    process.exit(1);
+}).catch((error) => {
+  logger.error(`Error starting server: ${(error as Error).message} - ${(error as Error).stack}`)
+  process.exit(1);
   });

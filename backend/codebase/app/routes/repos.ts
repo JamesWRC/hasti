@@ -75,7 +75,7 @@ reposRouter.get<Record<string, string>, UserReposResponse | BadRequestResponse>(
             }
             return res.status(200).json(response);
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'GET: /repos/:userid: ',
                 });
         return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -119,7 +119,7 @@ reposRouter.put<Record<string, string>, RefreshRepoDataRequest | BadRequestRespo
             return res.status(404).json({ success: false, message: 'Unknown repoID' });
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'PUT: /:repoID ',
                 });
         return res.status(500).json({ success: false, message: 'Error updating repo data' });
@@ -176,7 +176,7 @@ reposRouter.get<Record<string, string>, FileExistsRequest | BadRequestResponse>(
             return res.status(404).json({ success: false, message: 'Unknown repoID' });
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'PUT: /:repoID ',
                 });
         return res.status(500).json({ success: false, message: 'Error updating repo data' });

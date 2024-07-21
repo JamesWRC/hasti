@@ -62,7 +62,7 @@ projectsRouter.get<Record<string, string>, UserProjectCountResponse | BadRequest
 
             return res.status(200).json(response);
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'GET: /projects/:userid/count: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -113,7 +113,7 @@ projectsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestRe
             // Return the search results as the API response
             res.status(200).json(searchResults);
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'GET: /api/v1/Project/search: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -327,7 +327,7 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
                 return res.status(204).json(response);
             }
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'POST: /projects ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -362,7 +362,7 @@ projectsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestRe
             // Return the search results as the API response
             res.status(200).json(searchResults);
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'GET: /search ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -425,6 +425,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
 
                         console.log("files", files)
                         console.log("fields", fields)
+                        console.log("user", user)
 
                         // Handle invalid form field types & missing fields
                         const addMethod: string | null = fields.addMethod ? fields.addMethod[0] : null;
@@ -819,7 +820,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
 
         } catch (error) {
 
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'POST: /projects/',
             });
             return res.status(500).json({ success: false, message: 'Error creating Project' });
@@ -1086,7 +1087,7 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
             return res.status(code).json(json)
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'PUT: /projects/ ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -1148,7 +1149,7 @@ projectsRouter.delete<Record<string, string>, DeleteProjectResponse | BadRequest
             }
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'DELETE: /projects/:projectID: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -1244,7 +1245,7 @@ projectsRouter.put<Record<string, string>, ChangeProjectOwnershipResponse | BadR
             }
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'DELETE: /projects/:projectID: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -1312,7 +1313,7 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
             return res.status(404).json({ success: false, message: 'Project not found.' });
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'DELETE: /projects/:projectID: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -1386,7 +1387,7 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
                 return res.status(204).json({ success: false, message: 'Project not found.' });
     
             } catch (error) {
-                logger.warn(`Request threw an exception: ${error}`, {
+                logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                     label: 'GET: /:projectID/content/:contentSHA ',
                 });
                 return res.status(500).json({ success: false, message: 'Error getting token' });

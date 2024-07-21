@@ -1,8 +1,8 @@
 # Builder stage
 FROM node:20.5.0-alpine AS builder
 
-ENV NODE_ENV=production
-ENV PORT=3000
+ENV NODE_ENV production
+ENV PORT 3001
 
 # Use /app as the CWD
 WORKDIR /app            

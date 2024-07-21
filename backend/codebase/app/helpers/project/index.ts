@@ -46,6 +46,9 @@ export async function updateContent(repoID: string, projectID: string, userID: s
     const user = await prisma.user.findUnique({
         where: {
             id: userID
+        },
+        omit: {
+            ghuToken: false
         }
     })
     console.log("user", user)
@@ -581,7 +584,8 @@ export async function getGitHubRepoData(user: User, owner: string, repo: string)
         });
         return resp
     } catch (error) {
-        logger.error(`Error getting repo data: ${error}`);
+        logger.warn(`Error getting repo data: ${(error as Error).message} - ${(error as Error).stack}`)
+
         return null;
     }
 }

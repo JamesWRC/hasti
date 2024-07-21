@@ -90,8 +90,9 @@ export default async function addOrUpdateRepo(repoData: RepositoryData, user: Us
       })
       
     
-    }catch(e){
-      logger.error(`Error adding repo: ${e}`)
+    }catch(error){
+      logger.warn(`Error adding repo: ${(error as Error).message} - ${(error as Error).stack}`)
+
       return null
     }
   }
@@ -191,8 +192,9 @@ export async function updateRepoData(repo: Repo, user: User){
 
             }
           })
-        }catch(e){
-          logger.error(`Error adding collaborator: ${e}`)
+        }catch(error){
+          logger.error(`Error adding collaborator: ${(error as Error).message} - ${(error as Error).stack}`)
+
           return null
         }
       }
@@ -289,10 +291,44 @@ export async function getRepoTopics(username: string, repo: string){
 
 
 export async function deleteRepo(id: string){
-    await prisma.repo.delete({
-        where: {
-            id: id
-        }
-    })
-    return true
+  // Find all projects that reference the repo
+  const projects = await prisma.project.findMany({
+      where: {
+          repoID: id
+      }
+  });
+
+  // Delete or update the projects
+  for (const project of projects) {
+      await prisma.project.delete({
+          where: {
+              id: project.id
+          }
+      });
+  }
+
+  // Find all collaborators that reference the repo
+  const collaborators = await prisma.collaborator.findMany({
+      where: {
+          repoID: id
+      }
+  });
+
+  // Delete or update the collaborators
+  for (const collaborator of collaborators) {
+      await prisma.collaborator.delete({
+          where: {
+              id: collaborator.id
+          }
+      });
+  }
+
+  // Now you can delete the repo
+  await prisma.repo.delete({
+      where: {
+          id: id
+      }
+  });
+
+  return true;
 }

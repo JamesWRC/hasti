@@ -43,7 +43,7 @@ const NOTIFICATION_MAX_TAKE = 100
             })
             res.status(200).json({ success: true, count: notificationCount });
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'GET: /notifications/count: ',
               });
         return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -161,7 +161,7 @@ const NOTIFICATION_MAX_TAKE = 100
 
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'POST: /notifications: ',
               });
             return res.status(500).json({success:false, message: 'Error' });

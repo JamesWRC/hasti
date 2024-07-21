@@ -125,7 +125,6 @@ export async function createTempUser(newUserGitHubID:number, newUserGithubNodeID
           image: newUserImage,
           type: UserType.TEMP,
           ghuToken: addedByUser.ghuToken // Use the authenticated Users token for the temp user.
-
       }
   })
 
