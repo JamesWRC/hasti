@@ -55,9 +55,9 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
             repositories_removed: payload.repositories_removed
         }
 
-        // console.log('body', payload)
-        console.log('signature', signature)
-        console.log('payload', payload)
+        // logger.info('body', payload)
+        logger.info('signature', signature)
+        logger.info('payload', payload)
         // Verify the signature and event type
         if (verifySignature(signature, payload)) {
 
@@ -81,7 +81,7 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
 
             const GitHubUserID = gitHubRepoRequest.sender.id;
             const GitHubUsername = gitHubRepoRequest.sender.login;
-            console.log('GitHubUserID', GitHubUserID)
+            logger.info('GitHubUserID', GitHubUserID)
             const user: User|null = await prisma.user.findUnique({
                 where: {
                     githubID: GitHubUserID
@@ -90,13 +90,13 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
                     ghuToken: false
                 }
             })
-            console.log('user', user)
+            logger.info('user', user)
 
             if(user){
-                console.log('user', user)
+                logger.info('user', user)
                 if(event === 'installation_repositories'){
-                    console.log('event', event)
-                    console.log('action', action)
+                    logger.info('event', event)
+                    logger.info('action', action)
                     // Add repos
                     const dbPromises: Promise<Repo | boolean | null>[] = []
 
@@ -111,7 +111,7 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
                                 full_name: repo.full_name,
                                 private: repo.private,
                             }
-                            console.log('del repo', addedRemoved)
+                            logger.info('del repo', addedRemoved)
                             const hasAccess: boolean = false
                             const dbActions = setGitAppHasAccess(addedRemoved, hasAccess)
                             dbPromises.push(dbActions)
@@ -119,7 +119,7 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
                     }
 
                     if(action === 'added'){
-                        console.log('payload.repositoriesAdded', payload.repositories_added)
+                        logger.info('payload.repositoriesAdded', payload.repositories_added)
 
                         for (const repo of gitHubRepoRequest.repositories_added) {
                             console.log(repo)
@@ -131,7 +131,7 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
                                 private: repo.private,
                                
                             }
-                            console.log('add repo', addedRepo)     
+                            logger.info('add repo', addedRepo)     
                             
                            const dbActions = addOrUpdateRepo(addedRepo, user, sender.id, installation.account.id, installation.account.type)
                            dbPromises.push(dbActions)
@@ -145,7 +145,7 @@ webhookRouter.post<Record<string, string>, OkResponse | BadRequestResponse, any>
             }else{
                 return res.status(400).json({success: false, message: 'User not found. Cannot add repository. User making request must have already signed up.' });
             }
-            console.log('eventExists', deliveryUID)
+            logger.info('eventExists', deliveryUID)
             await prisma.webhookEvents.create({
                 data: {
                     webhookId: deliveryUID,

@@ -16,6 +16,9 @@ RUN yarn install --production --prefer-offline
 # Copy the rest of the code
 COPY ./codebase/ .                
 
+# SET noEmit to false
+RUN sed -i 's/"noEmit": true/"noEmit": false/g' tsconfig.json
+
 # Invoke the build script to transpile ts code to js
 RUN npm run build    
 

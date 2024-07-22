@@ -21,7 +21,7 @@ tagsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestRespon
         try {
             // Extract the search query from the request query parameters
             const query = req.query;
-            console.log('query', query);
+            logger.info('query', query);
 
             let searchParameters = {
                 'q': query.q as string,
@@ -29,7 +29,7 @@ tagsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestRespon
                 ...query
             }
 
-            console.log('searchParameters', searchParameters);
+            logger.info('searchParameters', searchParameters);
 
 
             const searchOptions = {

@@ -16,7 +16,6 @@ const getTokenFromAPIServer = async (provider: string, user: any) => {
         provider,
         user,
     }
-    console.log("JWTBodyRequest req", JWTBodyRequest)
 
     const imageResponse = await axios({
         url: `${process.env.API_URL}/api/v1/auth/jwt`,
@@ -30,7 +29,6 @@ const getTokenFromAPIServer = async (provider: string, user: any) => {
       })
 
     const data:JWTBodyResponse = imageResponse.data;
-    console.log("JWTBodyRequest resp", data)
     return data;
 
 }

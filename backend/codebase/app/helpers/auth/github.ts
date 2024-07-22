@@ -78,7 +78,8 @@ export async function getGitHubUserAuth(user:User):Promise<Octokit> {
     let encryptedGHUToken:string = user.ghuToken
     console.log('encryptedGHUToken', encryptedGHUToken)
 
-    if(!encryptedGHUToken){
+    if(user.ghuToken === undefined || encryptedGHUToken.length <= 0){
+        console.log('No token found in user object')
         // if not, get the token from the database
         encryptedGHUToken = await prisma.user.findUnique({
             where: {
@@ -89,15 +90,17 @@ export async function getGitHubUserAuth(user:User):Promise<Octokit> {
             }
         }).then((u) => {
             if(u){
+                console.log('u.ghuToken', u.ghuToken)
                 return u.ghuToken
             }
+            console.log('No token found in database')
             return ''
         })
     }
 
     console.log('encryptedGHUToken', encryptedGHUToken)
   
-    const ghuToken:string = await getGitHubUserToken(encryptedGHUToken)
+    const ghuToken:string = getGitHubUserToken(encryptedGHUToken)
     return constructUserOctoKitAuth(ghuToken)
 
 }

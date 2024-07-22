@@ -54,7 +54,7 @@ reposRouter.get<Record<string, string>, UserReposResponse | BadRequestResponse>(
     isAuthenticated,
     async (req, res) => {
         try {
-            console.log('req:', req.params.userID)
+            logger.info('req:', req.params.userID)
             const user: User | undefined = req.user;
             if (!user) {
                 return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
@@ -111,7 +111,7 @@ reposRouter.put<Record<string, string>, RefreshRepoDataRequest | BadRequestRespo
 
                 if(ownerUser){
                     // Update the repo data
-                    await updateRepoData(repo, ownerUser)
+                    await updateRepoData(repo, ownerUser, ownerUser.githubID)
                     return res.status(200).json({ success: true, message: 'Repo data updated' });
                 }
             }
@@ -135,7 +135,7 @@ reposRouter.get<Record<string, string>, FileExistsRequest | BadRequestResponse>(
         try {
             const repoID:string = req.params.repoID
             const filePath:string = req.query.path as string
-            console.log('filePath:', filePath)
+            logger.info('filePath:', filePath)
 
             const user: User | undefined = req.user;
             if (!user) {

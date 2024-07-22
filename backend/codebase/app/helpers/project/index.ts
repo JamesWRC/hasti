@@ -599,7 +599,7 @@ export async function deleteProject(projectID: string) {
 }
 
 export default function isValidProjectName(name: string): boolean {
-    const regex = /^[a-zA-Z0-9]+(-[a-zA-Z0-9]+)*(_[a-zA-Z0-9]+)*$/;
+    const regex = /^(?!-)[A-Za-z0-9_-]{1,100}$/;
     return regex.test(name);
 }
 
