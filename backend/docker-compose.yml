@@ -26,7 +26,7 @@ services:
     volumes:
       - ./codebase/PROD_GitHub_app.pem:/home/node/app/PROD_GitHub_app.pem
     ports:
-      - 3117:3000
+      - 3117:3001
     networks:
       - traefik_default_network
       - hastinet
@@ -40,7 +40,7 @@ services:
       - "traefik.http.routers.hastibackend.entrypoints=websecure"
       - "traefik.http.routers.hastibackend.tls=true"
       # Tell Treafik to route to a specific port
-      - "traefik.http.services.hastibackend.loadbalancer.server.port=3000"
+      - "traefik.http.services.hastibackend.loadbalancer.server.port=3001"
       - "traefik.docker.network=traefik_default_network"
 
   #################################################
