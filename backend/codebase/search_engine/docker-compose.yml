@@ -11,4 +11,4 @@ services:
       - ${TYPESENSE_HOST_PATH}:/data
     env_file:
       - .env
-    command: '--data-dir /data --api-key=${TYPESENSE_KEY} --enable-cors'
+    command: '--data-dir /data --api-key=${TYPESENSE_API_KEY} --enable-cors'
