@@ -593,7 +593,7 @@ export default function Search() {
           onKeyDown={handleEnterToSearch}
           rightSectionPointerEvents="all"
           leftSectionPointerEvents="all"
-          className='z-20 shadow-lg block w-full p-2 ps-10 text-sm text-white rounded-2xl bg-dark focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+          className='z-20 shadow-lg block w-full p-2 ps-10 text-sm text-white rounded-2xl bg-dark focus:ring-blue-500 focus:border-blue-500 dark:placeholder-gray-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
           styles={{ input: { paddingLeft: '0px', border: '0px', backgroundColor: 'rgb(38 40 43 / var(--tw-bg-opacity))', color: 'white' } }}
           rightSection={
             <div className='flex -ml-6'>
@@ -702,18 +702,18 @@ export default function Search() {
                     value={popularity} onChange={setPopularity} onChangeEnd={handlePopularity} marks={marks} />
                 </div>
               </div>
-              <div className='col-span-3 grid grid-cols-2 pt-5 gap-x-3 pb-4'>
+              <div className='col-span-2 grid grid-cols-2 pt-5 gap-x-3 pb-4'>
                 <Button
 
                   onClick={() => clearFilters()}
-                  className={`min-w-full transition duration-200 bg-gray-200 text-gray-800 hover:bg-red-400 hover:text-white rounded-lg py-2 px-4`}
+                  className={`col-span-1 transition duration-200 bg-gray-200 text-gray-800 hover:bg-red-400 hover:text-white rounded-lg py-2 px-4`}
                 >
                   Clear filters
                 </Button>
                 <Button
 
                   onClick={() => handleSearchButtonClick()}
-                  className={`min-w-full transition duration-200  text-gray-800 bg-cyan-400 hover:text-white rounded-lg py-2 px-4`}
+                  className={`col-span-1 transition duration-200  text-gray-800 bg-cyan-400 hover:text-white rounded-lg py-2 px-4`}
                 >
                   Search
                 </Button>
