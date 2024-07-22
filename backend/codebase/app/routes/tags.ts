@@ -21,7 +21,7 @@ tagsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestRespon
         try {
             // Extract the search query from the request query parameters
             const query = req.query;
-            console.log('query', query);
+            logger.info('query', query);
 
             let searchParameters = {
                 'q': query.q as string,
@@ -29,7 +29,7 @@ tagsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestRespon
                 ...query
             }
 
-            console.log('searchParameters', searchParameters);
+            logger.info('searchParameters', searchParameters);
 
 
             const searchOptions = {
@@ -43,7 +43,7 @@ tagsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestRespon
             // Return the search results as the API response
             res.status(200).json(searchResults);
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'GET: /api/v1/tags/search: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -117,7 +117,7 @@ tagsRouter.get<Record<string, string>, PopularTagResponse | BadRequestResponse, 
             res.status(200).json(formattedTags);
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'GET: /api/v1/tags/search: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });

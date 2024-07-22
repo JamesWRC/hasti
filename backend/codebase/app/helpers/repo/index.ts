@@ -10,7 +10,6 @@ import { OctokitResponse } from "@octokit/types"
 import { getGitHubRepoData } from "@/backend/helpers/project"
 import { getCollaboratorType } from "@/backend/interfaces/collaborator"
 
-
 /**
  * ## Adds a repository to the database if it does not exist.
  * If it does exist, it will update the owner details if the user is the owner.
@@ -90,25 +89,50 @@ export default async function addOrUpdateRepo(repoData: RepositoryData, user: Us
       })
       
     
-    }catch(e){
-      logger.error(`Error adding repo: ${e}`)
+    }catch(error){
+      logger.warn(`Error adding repo: ${(error as Error).message} - ${(error as Error).stack}`)
+
       return null
     }
   }
 
 
-  await updateRepoData(repo, user)
+  await updateRepoData(repo, user, addedByGitHubID)
 
 
   return repo
 }
 
 
-export async function updateRepoData(repo: Repo, user: User){
+/**
+ * ## Updates the repository data.
+ * - This includes updating the collaborators and the repo metadata.
+ * @param repo 
+ * @param user 
+ * @param addedByGitHubID // The GitHub ID of the user who added the repo. Will be used to determine if the user is the owner. Will be the same as the owner if the user is the owner.
+ */
+export async function updateRepoData(repo: Repo, user: User, addedByGitHubID: number){
   const owner: string = repo.fullName.split('/')[0]
   const repoName: string = repo.fullName.split('/')[1]
 
-  const gitHubUserRequest = await getGitHubUserAuth(user)
+  let authUser:User|null = user;
+  if(addedByGitHubID !== user.githubID){
+    authUser = await prisma.user.findUnique({
+      where: {
+        githubID: addedByGitHubID
+      },
+      omit: {
+        ghuToken: false
+      }
+    })
+  }
+
+  if(authUser === null){
+    logger.warn(`Failed to get user for getGitHubUserAuth()`)
+    return null
+  }
+
+  const gitHubUserRequest = await getGitHubUserAuth(authUser)
 
 
   // update collaborators
@@ -191,8 +215,9 @@ export async function updateRepoData(repo: Repo, user: User){
 
             }
           })
-        }catch(e){
-          logger.error(`Error adding collaborator: ${e}`)
+        }catch(error){
+          logger.error(`Error adding collaborator: ${(error as Error).message} - ${(error as Error).stack}`)
+
           return null
         }
       }
@@ -289,10 +314,44 @@ export async function getRepoTopics(username: string, repo: string){
 
 
 export async function deleteRepo(id: string){
-    await prisma.repo.delete({
-        where: {
-            id: id
-        }
-    })
-    return true
+  // Find all projects that reference the repo
+  const projects = await prisma.project.findMany({
+      where: {
+          repoID: id
+      }
+  });
+
+  // Delete or update the projects
+  for (const project of projects) {
+      await prisma.project.delete({
+          where: {
+              id: project.id
+          }
+      });
+  }
+
+  // Find all collaborators that reference the repo
+  const collaborators = await prisma.collaborator.findMany({
+      where: {
+          repoID: id
+      }
+  });
+
+  // Delete or update the collaborators
+  for (const collaborator of collaborators) {
+      await prisma.collaborator.delete({
+          where: {
+              id: collaborator.id
+          }
+      });
+  }
+
+  // Now you can delete the repo
+  await prisma.repo.delete({
+      where: {
+          id: id
+      }
+  });
+
+  return true;
 }

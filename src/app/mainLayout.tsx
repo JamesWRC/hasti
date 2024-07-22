@@ -183,6 +183,14 @@ export default function  MainLayout({
                   <span className="sr-only">Your profile</span>
                   <span aria-hidden="true">Tom Cook</span>
                 </a> */}
+                      {/* // Show this is a beta version. */}
+          
+        <div className="pr-0 pl-0 bg-amber-200 rounded-2xl w-full font-bold py-2 mb-2 flex items-center">
+            <div className='mx-auto px-4'>Beta Version. This is not the final version. Many things are still in the works.
+            Report any issues/bugs <a href='https://github.com/JamesWRC/hasti/issues' className='underline font-extrabold'>here.</a></div>
+          </div>
+
+          {/* end beta banner */}
                 <LoginBtn />
                 {/* md+ footer section */}
                 {/* Used for small footer content */}
@@ -258,16 +266,12 @@ export default function  MainLayout({
 
 
         <main className="md:pl-72 bg-dark h-full md:h-screen p-2 ">
-          {/* // Show this is a beta version. */}
-          
-          <div className="pr-0 pl-0 bg-amber-200 rounded-2xl w-full font-bold py-2 mb-2 flex items-center">
-            <div className='mx-auto px-4'>Beta Version. This is not the final version. Many things are still in the works.
-            Report any issues/bugs <a href='https://github.com/JamesWRC/hasti/issues' className='underline font-extrabold'>here.</a></div>
-          </div>
 
-          {/* end beta banner */}
           <div className="pr-0 pl-0 bg-white rounded-2xl w-full h-full md:h-full overflow-y-scroll overflow-x-hidden scrollbar">
+                                           
+          
             {children}
+
           </div>
         </main>
 

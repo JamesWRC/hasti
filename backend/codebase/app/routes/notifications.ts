@@ -26,7 +26,7 @@ const NOTIFICATION_MAX_TAKE = 100
     isAuthenticated,
     async (req, res) => {
         try {
-            console.log('req:', req.params.userID)
+            logger.info('req:', req.params.userID)
             const user: User | undefined = req.user;
             if (!user) {
                 return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
@@ -43,7 +43,7 @@ const NOTIFICATION_MAX_TAKE = 100
             })
             res.status(200).json({ success: true, count: notificationCount });
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'GET: /notifications/count: ',
               });
         return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -144,11 +144,11 @@ const NOTIFICATION_MAX_TAKE = 100
             // }
 
             // const users:ProjectWithUser = await prisma.project.findMany({ include: { user: true } })
-            console.log('query:', query)
+            logger.info('query:', query)
 
 
             const notification: Notification[] = await prisma.notification.findMany(query)
-            console.log('projects:', notification)
+            logger.info('projects:', notification)
             const response: GetNotificationsResponse = {
                 success: true,
                 notifications: notification
@@ -161,7 +161,7 @@ const NOTIFICATION_MAX_TAKE = 100
 
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'POST: /notifications: ',
               });
             return res.status(500).json({success:false, message: 'Error' });

@@ -30,6 +30,12 @@
         "./app/*"
       ]
     },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "noEmit": false
   },
   "include": [
     "next-env.d.ts",

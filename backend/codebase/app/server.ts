@@ -11,13 +11,12 @@ const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
 const port = Number(process.env.PORT) || 3001;
-const FRONTEND_URL:string = process.env.NODE_ENV === 'production' ? 'https://api.hasti.app' : 'http://localhost:3000'
+const FRONTEND_URL:string = process.env.NODE_ENV === 'production' ? 'https://hasti.app' : '*'
 
 app.prepare().then(async () => {
     const server = express();
     // Set corse
     server.use(function(req, res, next) {
-      console.log('req.headers',  FRONTEND_URL)
       res.header("Access-Control-Allow-Origin", FRONTEND_URL);
       res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
       res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
@@ -56,7 +55,7 @@ app.prepare().then(async () => {
         });
       });
 
-}).catch((err) => {
-    logger.error(err.stack);
-    process.exit(1);
+}).catch((error) => {
+  logger.error(`Error starting server: ${(error as Error).message} - ${(error as Error).stack}`)
+  process.exit(1);
   });

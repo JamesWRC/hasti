@@ -11,41 +11,41 @@ import { getGitHubUserAuth } from "../auth/github";
 
 
 
-export default async function addOrUpdateUser(user: JWTBodyRequest): Promise<User|null> {
+export default async function addOrUpdateUser(user: JWTBodyRequest): Promise<User | null> {
 
   // Check if user is valid
-  if(!user.user || !user.user.id || !user.user.username || !user.user.image){
+  if (!user.user || !user.user.id || !user.user.username || !user.user.image) {
     return null
   }
 
   // Add user to database
-  let currUser:User|null = await prisma.user.findUnique({
+  let currUser: User | null = await prisma.user.findUnique({
     where: {
       githubID: user.user.id
     }
   })
-  
-  // Already exists.
-  if(currUser){
-      // Update user type if needed. Temp users are now users.
-      let userType: UserType = getUserType(currUser.type)
-      if(userType === UserType.TEMP){
-        userType = UserType.USER
-      }
 
-      await prisma.user.update({
-        where: {
-          githubID: user.user.id
-        },
-        data: {
-          image: user.user.image,
-          type: userType
-        }
-      })
-    
-  }else{
+  // Already exists.
+  if (currUser) {
+    // Update user type if needed. Temp users are now users.
+    let userType: UserType = getUserType(currUser.type)
+    if (userType === UserType.TEMP) {
+      userType = UserType.USER
+    }
+
+    await prisma.user.update({
+      where: {
+        githubID: user.user.id
+      },
+      data: {
+        image: user.user.image,
+        type: userType
+      }
+    })
+
+  } else {
     // Else if user does not exist, create a new user
-    try{
+    try {
       currUser = await prisma.user.create({
         data: {
           githubID: user.user.id,
@@ -58,13 +58,13 @@ export default async function addOrUpdateUser(user: JWTBodyRequest): Promise<Use
         }
       })
 
-    }catch(e){
+    } catch (e) {
       return null
     }
   }
   console.log('currUser', currUser)
   // Update the GitHub user token if it has changed.
-  if(!currUser.ghuToken || getGitHubUserToken(currUser.ghuToken) !== user.user.ghu_token){
+  if (!currUser.ghuToken || currUser.ghuToken.length === 0 || getGitHubUserToken(currUser.ghuToken) !== user.user.ghu_token) {
     await updateGitHubUserToken(user.user.ghu_token, currUser)
   }
 
@@ -73,9 +73,13 @@ export default async function addOrUpdateUser(user: JWTBodyRequest): Promise<Use
 }
 
 
-export async function updateGitHubUserToken(token:string, user: User){
+export async function updateGitHubUserToken(token: string, user: User) {
+  console.log('updateGitHubUserToken', token, user)
+  // Check if token is empty, if so return the user.
+  if (token.length <= 0) return user
+
   const encryptedToken = encrypt(token)
-  const updatedUser:User = await prisma.user.update({
+  const updatedUser: User = await prisma.user.update({
     where: {
       id: user.id
     },
@@ -88,11 +92,11 @@ export async function updateGitHubUserToken(token:string, user: User){
 }
 
 
-export function getGitHubUserToken(encryptedToken: string){
+export function getGitHubUserToken(encryptedToken: string) {
   let token = ''
 
   // Decrypt the token. decrypt() will error if the token is empty.
-  if(encryptedToken.length > 0){
+  if (encryptedToken.length > 0) {
     token = decrypt(encryptedToken)
   }
 
@@ -112,30 +116,45 @@ export function getGitHubUserToken(encryptedToken: string){
  * @param repoName - The name of the repo.
  * @returns The temp user that was created.
  */
-export async function createTempUser(newUserGitHubID:number, newUserGithubNodeID:string, newUserUsername:string, newUserImage:string, addedByUser: User, repoName: string): Promise<User>{
-    const projectOwnerUser:User = await prisma.user.create({
-      data: {
-          githubID: newUserGitHubID,    
-          githubNodeID: newUserGithubNodeID,
-          username: newUserUsername,     
-          image: newUserImage,
-          type: UserType.TEMP,
-          ghuToken: addedByUser.ghuToken // Use the authenticated Users token for the temp user.
+export async function createTempUser(newUserGitHubID: number, newUserGithubNodeID: string, newUserUsername: string, newUserImage: string, addedByUser: User, repoName: string): Promise<User> {
 
-      }
+  // get the ghuToken of the user who added the project to HASTI
+  const encryptedGHUToken: string = await prisma.user.findUnique({
+    where: {
+      id: addedByUser.id
+    },
+    select: {
+      ghuToken: true
+    },
+  }).then((u) => {
+    if (u) {
+      return u.ghuToken
+    }
+    return ''
+  })
+
+  const projectOwnerUser: User = await prisma.user.create({
+    data: {
+      githubID: newUserGitHubID,
+      githubNodeID: newUserGithubNodeID,
+      username: newUserUsername,
+      image: newUserImage,
+      type: UserType.TEMP,
+      ghuToken: encryptedGHUToken // Use the authenticated Users token for the temp user.
+    }
   })
 
   // Notify the owner of the repo that a temp user has been created. And someone added a project to HASTI
   await prisma.notification.create({
-      data: {
-          type: NotificationType.SUCCESS,
-          title: projectOwnerUser.username,
-          message: `Temporary user created, as the user: '${addedByUser.username}' added a project to HASTI using a repo you own / are a collaborator of, called: '${repoName}'.`,
-          about: NotificationAbout.USER,
-          read: false,
-          userID: projectOwnerUser.id,
+    data: {
+      type: NotificationType.SUCCESS,
+      title: projectOwnerUser.username,
+      message: `Temporary user created, as the user: '${addedByUser.username}' added a project to HASTI using a repo you own / are a collaborator of, called: '${repoName}'.`,
+      about: NotificationAbout.USER,
+      read: false,
+      userID: projectOwnerUser.id,
 
-      }
+    }
   });
 
   return projectOwnerUser
@@ -170,21 +189,21 @@ async function fetchUserGitHubData(user: User): Promise<UserData> {
   let starsCount = 0;
   let forksCount = 0;
   let contributorsCount = 0;
-  if(reposData){
+  if (reposData) {
     for (const repo of reposData) {
       // console.log("repo++", repo)
-        if(repo && repo.stargazers_count && repo.forks_count && repo.contributors_url){
-          starsCount += repo.stargazers_count;
-          forksCount += repo.forks_count;
-          // console.log("++", repo.contributors_url)
-          // const contributorsResponse = await axios.get(repo.contributors_url);
-          const contributorsResponse = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/contributors', {
-            owner: user.username,
-            repo: repo.name
-          });
-          
-          contributorsCount += contributorsResponse.data.length;
-        }
+      if (repo && repo.stargazers_count && repo.forks_count && repo.contributors_url) {
+        starsCount += repo.stargazers_count;
+        forksCount += repo.forks_count;
+        // console.log("++", repo.contributors_url)
+        // const contributorsResponse = await axios.get(repo.contributors_url);
+        const contributorsResponse = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/contributors', {
+          owner: user.username,
+          repo: repo.name
+        });
+
+        contributorsCount += contributorsResponse.data.length;
+      }
     }
 
     console.log('userData.events_url', userData.events_url)
@@ -194,15 +213,15 @@ async function fetchUserGitHubData(user: User): Promise<UserData> {
     const recentActivityCount = eventsResponse.data.length;
 
     return {
-        followers: userData.followers,
-        publicRepos: userData.public_repos,
-        createdAt: userData.created_at,
-        recentActivityCount,
-        starsCount,
-        forksCount,
-        contributorsCount
+      followers: userData.followers,
+      publicRepos: userData.public_repos,
+      createdAt: userData.created_at,
+      recentActivityCount,
+      starsCount,
+      forksCount,
+      contributorsCount
     };
-  }else{
+  } else {
     return {
       followers: 0,
       publicRepos: 0,
@@ -212,7 +231,7 @@ async function fetchUserGitHubData(user: User): Promise<UserData> {
       forksCount: 0,
       contributorsCount: 0
     };
-  
+
   }
 
 }
@@ -231,7 +250,7 @@ function calculateTrustworthinessRating(userData: UserData): number {
   const contributorsScore = Math.min(contributorsCount / 100, 1) * 10;
 
   const totalScore = followerScore + repoScore + ageScore + activityScore + starsScore + forksScore + contributorsScore;
-  
+
   return Math.min(Math.round(totalScore), 100);
 }
 

@@ -32,11 +32,11 @@ authRouter.get<Record<string, string>, string | BadRequestResponse>(
             }
             const ghuTokenEnc: string = user.ghuToken
 
-            console.log("ghuTokenEnc", ghuTokenEnc)
+            logger.info("ghuTokenEnc", ghuTokenEnc)
             res.status(200).json({ success: true, message: "Not implemented yet" });
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
-                label: 'GET: /projects/:userid/count: ',
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
+                label: 'GET: /auth/getGhuToken: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
         }
@@ -57,11 +57,11 @@ authRouter.post<Record<string, string>, JWTBodyResponse | BadRequestResponse>(
                 id: ''
             }
 
-            console.log('body', body)
-            console.log('body.user', body.user)
+            logger.info('body', body)
+            logger.info('body.user', body.user)
 
             const ghu_token: string = body.user.ghu_token
-            console.log('ghu_token', ghu_token)
+            logger.info('ghu_token', ghu_token)
             // Check if the ghu_token is valid
             if (!ghu_token || ghu_token.length <= 0 || !ghu_token.startsWith('ghu_')) {
                 return res.status(400).json({ success: false, message: 'No ghu_token provided. Or is not valid' });
@@ -69,7 +69,7 @@ authRouter.post<Record<string, string>, JWTBodyResponse | BadRequestResponse>(
 
             // If the token is valid
             const gitHubUserRequest = await constructUserOctoKitAuth(ghu_token)
-            console.log('ghu_token 1', ghu_token)
+            logger.info('ghu_token 1', ghu_token)
 
             // Check if the token is valid.
             gitHubUserRequest.request("GET /users/{username}", {
@@ -79,12 +79,12 @@ authRouter.post<Record<string, string>, JWTBodyResponse | BadRequestResponse>(
                 return res.status(400).json({ success: false, message: 'Error testing user auth' });
             });
 
-            console.log('ghu_token 2', ghu_token)
+            logger.info('ghu_token 2', ghu_token)
 
             const user: User | null = await addOrUpdateUser(body)
 
             if (user) {
-                console.log('user', user)
+                logger.info('user', user)
                 // Create JWT payload
                 const payload: UserJWTPayload = {
                     provider: body.provider,
@@ -120,7 +120,7 @@ authRouter.post<Record<string, string>, JWTBodyResponse | BadRequestResponse>(
 
             }
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'POST: /auth/v1/jwt: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -173,8 +173,8 @@ authRouter.get<Record<string, string>, CheckAuthResponse | BadRequestResponse>(
 
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
-                label: 'GET: /projects/:userid/count: ',
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
+                label: 'GET: /auth/gitUserToken: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
         }
@@ -230,8 +230,8 @@ authRouter.post<Record<string, string>, OkResponse | BadRequestResponse>(
 
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
-                label: 'GET: /projects/:userid/count: ',
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
+                label: 'POST: /auth/gitUserToken: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
         }

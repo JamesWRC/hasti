@@ -44,7 +44,7 @@ projectsRouter.get<Record<string, string>, UserProjectCountResponse | BadRequest
     isAuthenticated,
     async (req, res) => {
         try {
-            // console.log('req:', req.params.userID)
+            // logger.info('req:', req.params.userID)
             const user: User | undefined = req.user;
             if (!user) {
                 return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
@@ -62,7 +62,7 @@ projectsRouter.get<Record<string, string>, UserProjectCountResponse | BadRequest
 
             return res.status(200).json(response);
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'GET: /projects/:userid/count: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -75,7 +75,7 @@ projectsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestRe
         try {
             // Extract the search query from the request query parameters
             const query = req.query;
-            console.log('query', query);
+            logger.info('query', query);
 
             let searchParameters = {
                 'q': query.q as string,
@@ -83,7 +83,7 @@ projectsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestRe
                 ...query
             }
 
-            console.log('searchParameters', searchParameters);
+            logger.info('searchParameters', searchParameters);
 
 
             const searchOptions = {
@@ -113,7 +113,7 @@ projectsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestRe
             // Return the search results as the API response
             res.status(200).json(searchResults);
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'GET: /api/v1/Project/search: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -134,7 +134,7 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
             // parse query params
             const queryParams: GetProjectsQueryParams = req.query
             let query: Prisma.ProjectFindManyArgs = {}
-            console.log("----------queryParams: ", queryParams)
+            logger.info("----------queryParams: ", queryParams)
             // Set the request amount to a default fo 10, and a max of 50
             let requestAmt = 10
             if (Number(queryParams.limit)) {
@@ -256,8 +256,8 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
                 }
 
             }
-            console.log('where user:', user);
-            console.log('where:', where);
+            logger.info('where user:', user);
+            logger.info('where:', where);
             // Assign the dynamically built where clause to the query object
             query.where = where;
 
@@ -307,7 +307,7 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
                 },
             }
 
-            console.log('query:', query);
+            logger.info('query:', query);
             let projects: ProjectWithUser[] | ProjectAllInfo[] = []
 
             // Check if any where conditions are set
@@ -315,7 +315,7 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
                 projects = await prisma.project.findMany({ ...query, include })
             }
 
-            console.log('projects:', projects);
+            logger.info('projects:', projects);
             const response: GetProjectsResponse = {
                 success: true,
                 userProjects: projects
@@ -327,47 +327,47 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
                 return res.status(204).json(response);
             }
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
-                label: 'GET: /projects/:userid/count: ',
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
+                label: 'POST: /projects ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
         }
     });
 
-projectsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestResponse, any>(
-    '/search',
-    async (req, res) => {
-        try {
-            // Extract the search query from the request query parameters
-            const query = req.query;
-            console.log('query', query);
+// projectsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestResponse, any>(
+//     '/search',
+//     async (req, res) => {
+//         try {
+//             // Extract the search query from the request query parameters
+//             const query = req.query;
+//             logger.info('query', query);
 
-            let searchParameters = {
-                'q': query.q as string,
-                'query_by': query.query_by as string,
-                ...query
-            }
+//             let searchParameters = {
+//                 'q': query.q as string,
+//                 'query_by': query.query_by as string,
+//                 ...query
+//             }
 
-            console.log('searchParameters', searchParameters);
+//             logger.info('searchParameters', searchParameters);
 
 
-            const searchOptions = {
-                cacheSearchResultsForSeconds: 60
+//             const searchOptions = {
+//                 cacheSearchResultsForSeconds: 60
 
-            }
+//             }
 
-            // Perform the search using the Typesense client
-            const searchResults = await tsClient.collections('Project').documents().search(searchParameters, searchOptions);
+//             // Perform the search using the Typesense client
+//             const searchResults = await tsClient.collections('Project').documents().search(searchParameters, searchOptions);
 
-            // Return the search results as the API response
-            res.status(200).json(searchResults);
-        } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
-                label: 'GET: /projects/:userid/count: ',
-            });
-            return res.status(500).json({ success: false, message: 'Error getting token' });
-        }
-    });
+//             // Return the search results as the API response
+//             res.status(200).json(searchResults);
+//         } catch (error) {
+//             logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
+//                 label: 'GET: /search ',
+//             });
+//             return res.status(500).json({ success: false, message: 'Error getting token' });
+//         }
+//     });
 
 projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestResponse>(
     '/',
@@ -423,8 +423,9 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                             return resolve({ code: 400, json: response });
                         }
 
-                        console.log("files", files)
-                        console.log("fields", fields)
+                        logger.info("files", files)
+                        logger.info("fields", fields)
+                        logger.info("user", user)
 
                         // Handle invalid form field types & missing fields
                         const addMethod: string | null = fields.addMethod ? fields.addMethod[0] : null;
@@ -461,7 +462,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
 
                             repoData = await getGitHubRepoData(user, repoOwner, repoName)
 
-                            console.log('repoData', repoData)
+                            logger.info('repoData', repoData)
                             if (repoData) {
                                 const repoID: number = repoData.data.id
                                 const userOwnsRepo: boolean = repoData.data.owner.login === user.username // add to db
@@ -473,7 +474,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                 const newUserGitHubNodeID: string = repoData.data.owner.node_id
                                 const newUserUsername: string = repoData.data.owner.login
                                 const newUserImage: string = repoData.data.owner.avatar_url
-                                console.log('createdRepo repoID', repoID)
+                                logger.info('createdRepo repoID', repoID)
 
                                 // Create a 'temp' user if the user doesnt exist.
                                 if (!userOwnsRepo) {
@@ -497,8 +498,8 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                     }
                                 })
 
-                                console.log('createdRepo1', createdRepo)
-                                console.log('projectOwnerUser', projectOwnerUser)
+                                logger.info('createdRepo1', createdRepo)
+                                logger.info('projectOwnerUser', projectOwnerUser)
                                 // If the repo doesn't exist, AND the user owns it, create it
                                 if (!createdRepo && projectOwnerUser) {
 
@@ -511,7 +512,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                         full_name: repoData.data.full_name,
                                         private: repoData.data.private,
                                     }
-                                    console.log("addOrUpdateRepo", newRepoData, projectOwnerUser, addedByGitHubID, repoOwnerGitHubID, repoOwnerType)
+                                    logger.info("addOrUpdateRepo", newRepoData, projectOwnerUser, addedByGitHubID, repoOwnerGitHubID, repoOwnerType)
                                     createdRepo = await addOrUpdateRepo(newRepoData, projectOwnerUser, addedByGitHubID, repoOwnerGitHubID, repoOwnerType);
 
                                 } else if (!userOwnsRepo) {
@@ -530,7 +531,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                         } else if (getProjectAddMethod(addMethod) === ProjectAddMethod.REPO_SELECT) {
 
                             if (!(fields.repositoryID instanceof Array)) {
-                                console.log("not array")
+                                logger.info("not array")
                                 createdProject ? await deleteProject(createdProject.id) : null
                                 createdRepo ? await deleteRepo(createdRepo.id) : null
                                 return resolve({ code: 400, json: badFormResponse });
@@ -545,7 +546,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                         /**
                          * Contains logic for all project add methods
                          */
-                        console.log('createdRepo', createdRepo)
+                        logger.info('createdRepo', createdRepo)
 
                         // Get the repository ID
                         let repositoryID: string = ''
@@ -557,7 +558,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
 
                         // Get the repo data if it doesn't exist
                         if (!repoData) {
-                            console.log('repositoryID', repositoryID)
+                            logger.info('repositoryID', repositoryID)
                             const savedRepoData = await prisma.repo.findFirst({
                                 select: {
                                     fullName: true,
@@ -767,8 +768,8 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                                     message: `Failed to add project content. ${updateResponse.message}`,
                                 }
                                 // Clean up any created project or repo
-                                console.log('issue deleting project', createdProject)
-                                console.log('issue deleting repo', createdRepo)
+                                logger.info('issue deleting project', createdProject)
+                                logger.info('issue deleting repo', createdRepo)
                                 createdProject ? await deleteProject(createdProject.id) : null
                                 createdRepo ? await deleteRepo(createdRepo.id) : null
                                 return resolve({ code: 500, json: response });
@@ -819,7 +820,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
 
         } catch (error) {
 
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'POST: /projects/',
             });
             return res.status(500).json({ success: false, message: 'Error creating Project' });
@@ -895,8 +896,8 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
                             const HAVersion: string = fields.HAVersion[0];
                             const IoTClassification: string = fields.IoTClassification[0];
 
-                            console.log('fields', fields)
-                            console.log('contentFile', contentFile)
+                            logger.info('fields', fields)
+                            logger.info('contentFile', contentFile)
                             let repo: Repo | null = await prisma.repo.findFirst({
                                 where: {
                                     id: repositoryID
@@ -1086,7 +1087,7 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
             return res.status(code).json(json)
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'PUT: /projects/ ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -1098,7 +1099,7 @@ projectsRouter.delete<Record<string, string>, DeleteProjectResponse | BadRequest
     isAuthenticated,
     async (req, res) => {
         try {
-            console.log('req:', req.params.projectID)
+            logger.info('req:', req.params.projectID)
             const user: User | undefined = req.user;
             if (!user) {
                 return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
@@ -1148,7 +1149,7 @@ projectsRouter.delete<Record<string, string>, DeleteProjectResponse | BadRequest
             }
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'DELETE: /projects/:projectID: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -1162,7 +1163,7 @@ projectsRouter.put<Record<string, string>, ChangeProjectOwnershipResponse | BadR
     isAuthenticated,
     async (req, res) => {
         try {
-            console.log('req:', req.params.projectID)
+            logger.info('req:', req.params.projectID)
             const user: User | undefined = req.user;
             if (!user) {
                 return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
@@ -1244,7 +1245,7 @@ projectsRouter.put<Record<string, string>, ChangeProjectOwnershipResponse | BadR
             }
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'DELETE: /projects/:projectID: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -1257,8 +1258,8 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
     isAuthenticated,
     async (req, res) => {
         try {
-            console.log('req:', req.params.projectID)
-            console.log('file:', req.query.updateContentFile)
+            logger.info('req:', req.params.projectID)
+            logger.info('file:', req.query.updateContentFile)
             const projectID: string = req.params.projectID
             const updateContentFile: string = req.query.updateContentFile as string
             const user: User | undefined = req.user;
@@ -1312,7 +1313,7 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
             return res.status(404).json({ success: false, message: 'Project not found.' });
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'DELETE: /projects/:projectID: ',
             });
             return res.status(500).json({ success: false, message: 'Error getting token' });
@@ -1330,7 +1331,7 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
         '/:projectID/content/:contentSHA',
         async (req, res) => {
             try {
-                console.log('req:', req.params.projectID)
+                logger.info('req:', req.params.projectID)
 
                 const projectID: string = req.params.projectID
 
@@ -1356,7 +1357,7 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
                 if(project){
                     const contentSHA:string = project.contentSHA
                     const filePath:string = './temp/projects/' + projectID + '/' + contentSHA + '/content.md'
-                    console.log('filePath:', filePath)
+                    logger.info('filePath:', filePath)
                     // Get the content from the file system
                     const cachedContent:string|null = await readFileIfExists(filePath)
                     if(cachedContent){
@@ -1370,7 +1371,7 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
                         }
                         await updateContent(project.repoID, project.id, project.userID, contentFile, true)
                         const content = await readFileIfExists(filePath)
-                        console.log('content:', content)
+                        logger.info('content:', content)
                         if(content){
                             return res.status(200).json({ success: true, sha: contentSHA, content: stringToBase64(content)});
                         }else{
@@ -1386,7 +1387,7 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
                 return res.status(204).json({ success: false, message: 'Project not found.' });
     
             } catch (error) {
-                logger.warn(`Request threw an exception: ${error}`, {
+                logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                     label: 'GET: /:projectID/content/:contentSHA ',
                 });
                 return res.status(500).json({ success: false, message: 'Error getting token' });

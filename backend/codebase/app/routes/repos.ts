@@ -41,7 +41,7 @@ async (req, res) => {
         return res.status(200).json(response);
     } catch (error) {
         logger.warn(`Request threw an exception: ${error}`, {
-            label: 'GET: /projects/:userid/count: ',
+            label: 'GET: /repos/:userid/count: ',
             });
     return res.status(500).json({ success: false, message: 'Error getting token' });
     }
@@ -54,7 +54,7 @@ reposRouter.get<Record<string, string>, UserReposResponse | BadRequestResponse>(
     isAuthenticated,
     async (req, res) => {
         try {
-            console.log('req:', req.params.userID)
+            logger.info('req:', req.params.userID)
             const user: User | undefined = req.user;
             if (!user) {
                 return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
@@ -75,8 +75,8 @@ reposRouter.get<Record<string, string>, UserReposResponse | BadRequestResponse>(
             }
             return res.status(200).json(response);
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
-                label: 'GET: /projects/:userid/count: ',
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
+                label: 'GET: /repos/:userid: ',
                 });
         return res.status(500).json({ success: false, message: 'Error getting token' });
         }
@@ -111,7 +111,7 @@ reposRouter.put<Record<string, string>, RefreshRepoDataRequest | BadRequestRespo
 
                 if(ownerUser){
                     // Update the repo data
-                    await updateRepoData(repo, ownerUser)
+                    await updateRepoData(repo, ownerUser, ownerUser.githubID)
                     return res.status(200).json({ success: true, message: 'Repo data updated' });
                 }
             }
@@ -119,7 +119,7 @@ reposRouter.put<Record<string, string>, RefreshRepoDataRequest | BadRequestRespo
             return res.status(404).json({ success: false, message: 'Unknown repoID' });
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'PUT: /:repoID ',
                 });
         return res.status(500).json({ success: false, message: 'Error updating repo data' });
@@ -135,7 +135,7 @@ reposRouter.get<Record<string, string>, FileExistsRequest | BadRequestResponse>(
         try {
             const repoID:string = req.params.repoID
             const filePath:string = req.query.path as string
-            console.log('filePath:', filePath)
+            logger.info('filePath:', filePath)
 
             const user: User | undefined = req.user;
             if (!user) {
@@ -176,7 +176,7 @@ reposRouter.get<Record<string, string>, FileExistsRequest | BadRequestResponse>(
             return res.status(404).json({ success: false, message: 'Unknown repoID' });
 
         } catch (error) {
-            logger.warn(`Request threw an exception: ${error}`, {
+            logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'PUT: /:repoID ',
                 });
         return res.status(500).json({ success: false, message: 'Error updating repo data' });

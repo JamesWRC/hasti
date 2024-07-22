@@ -5,6 +5,7 @@ import fs from 'fs';
 import 'dotenv/config'
 import { getGitHubUserToken } from "@/backend/helpers/user";
 import { User } from "@/backend/interfaces/user";
+import prisma from "@/backend/clients/prisma/client";
 
 
 const AUTH_GITHUB_APP_ID = process.env.NODE_ENV === 'production' ? process.env.AUTH_GITHUB_APP_ID : process.env.DEV_AUTH_GITHUB_APP_ID;
@@ -73,7 +74,33 @@ export async function constructUserOctoKitAuth(token:string):Promise<Octokit>{
 }
   
 export async function getGitHubUserAuth(user:User):Promise<Octokit> {
-    const ghuToken:string = await getGitHubUserToken(user.ghuToken)
+    // check if the user object has a ghuToken
+    let encryptedGHUToken:string = user.ghuToken
+    console.log('encryptedGHUToken', encryptedGHUToken)
+
+    if(user.ghuToken === undefined || encryptedGHUToken.length <= 0){
+        console.log('No token found in user object')
+        // if not, get the token from the database
+        encryptedGHUToken = await prisma.user.findUnique({
+            where: {
+                githubID: user.githubID
+            },
+            select: {
+                ghuToken: true
+            }
+        }).then((u) => {
+            if(u){
+                console.log('u.ghuToken', u.ghuToken)
+                return u.ghuToken
+            }
+            console.log('No token found in database')
+            return ''
+        })
+    }
+
+    console.log('encryptedGHUToken', encryptedGHUToken)
+  
+    const ghuToken:string = getGitHubUserToken(encryptedGHUToken)
     return constructUserOctoKitAuth(ghuToken)
 
 }

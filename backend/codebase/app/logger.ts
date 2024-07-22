@@ -46,6 +46,7 @@ const logger = winston.createLogger({
     winston.format.timestamp(),
     hformat
   ),
+  level: process.env.NODE_ENV === 'production' ? process.env.LOG_LEVEL : 'debug'
 });
 
 export default logger;
