@@ -63,3 +63,8 @@ details > *:not(summary) {
   --tw-bg-opacity: 1;
   background-color: rgb(1, 22, 39); /* Dark background color for the code block */
 }
+
+p {
+  padding: 0.5rem;
+  color: #26282B;
+}
