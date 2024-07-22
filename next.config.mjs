@@ -15,7 +15,7 @@ const nextConfig = {
     serverActions: true,
   },
   env: {
-    API_URL: process.env.NODE_ENV === 'production' ? 'https://api.hasti.app' : 'http://localhost:3001',
+    API_URL: process.env.NODE_ENV === 'production' ? 'https://api.hasti.app' : 'http://192.168.0.231:3001',
     USER_CONTENT_URL: process.env.CLOUDFLARE_R2_PUBLIC_URL
   },
   webpack: (config, { isServer }) => {

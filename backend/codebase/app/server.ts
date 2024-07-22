@@ -11,7 +11,7 @@ const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
 const handle = app.getRequestHandler();
 const port = Number(process.env.PORT) || 3001;
-const FRONTEND_URL:string = process.env.NODE_ENV === 'production' ? 'https://hasti.app' : 'http://localhost:3000'
+const FRONTEND_URL:string = process.env.NODE_ENV === 'production' ? 'https://hasti.app' : '*'
 
 app.prepare().then(async () => {
     const server = express();

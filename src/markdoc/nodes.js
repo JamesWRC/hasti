@@ -9,6 +9,10 @@ import { ExclamationTriangleIcon, HandRaisedIcon, InformationCircleIcon, LightBu
 
 let documentSlugifyMap = new Map()
 
+function classNames(...classes) {
+  return classes.filter(Boolean).join(' ')
+}
+
 const nodes = {
   document: {
     ...defaultNodes.document,
@@ -42,6 +46,15 @@ const nodes = {
       )
     },
   },
+  table: {
+    render: ({ children }) => {
+      return <div className="min-w-full bg-slate-50 rounded-2xl -mx-3 p-3 shadow-inner overflow-x-auto text-black">
+        <table className="">
+          {children}
+          </table>
+      </div>
+    }
+  },
   th: {
     ...defaultNodes.th,
     attributes: {
@@ -51,6 +64,9 @@ const nodes = {
         default: 'col',
       },
     },
+    render: ({ children, attributes }) => {
+      return <th className="px-6 py-3 text-left text-md font-bold text-black uppercase tracking-wider">{children}</th>
+    }
   },
   item: {
     render: ({ children }) => {
@@ -70,7 +86,7 @@ const nodes = {
         <br/>
         </>
       }else{
-        return <li>{children}</li>
+        return <li className=''>{children}</li>
       }    
     }
   },
@@ -192,7 +208,8 @@ const nodes = {
       
       console.log('href2', href)
 
-      return <div className='flex items-center group'>
+      return <>
+      <div className='flex items-center group'>
       <a 
         className="no-underline hover:underline opacity-0 group-hover:opacity-100 transition-opacity duration-300 -ml-4" 
         aria-label="Permalink: Documentation" 
@@ -205,11 +222,13 @@ const nodes = {
       <h1 
         id={href}
         name={href}
-        className={`${level} text-2xl font-bold mt-8 mb-4`}
+        className={classNames(level === 1 ? 'font-black text-3xl bold' : level === 2 ? 'font-bold text-2xl' : level === 3 ? 'font-semibold text-xl' : level === 4 ? 'font-medium text-2xl' : 'font-normal text-2xl', `mt-8 mb-4 font-sans text-gray-900`)}
       >
         {children}
       </h1>
     </div>
+    <hr className={level <= 2 ? "h-px -mt-3 bg-gray-300 border-0 dark:bg-gray-700" : "hidden"}/>
+    </>
     },
   },
 }

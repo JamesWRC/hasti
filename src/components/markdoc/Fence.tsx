@@ -27,13 +27,13 @@ function unEscapeTags(line: string):string {
 return retString
 }
 
+function classNames(...classes: string[]) {
+  return classes.filter(Boolean).join(' ')
+}
+
 export function Fence({ children, language }: { children: string, language: string }) {
 
-  console.log("PRISM")
-  console.log("PRISM lang", language)
-  console.log("PRISM children", children)
   const code:string = unEscapeTags(children)
-  console.log("PRISM children replaced", children)
 
   try{
     return (
@@ -56,9 +56,11 @@ export function Fence({ children, language }: { children: string, language: stri
             {tokens.map((line, i) => (
               <div key={i} {...getLineProps({ line })}>
                 {/* Make span unselectable */}
-                <span className='select-none'>{getSpaces(i+1, tokens.length)}{i + 1}&nbsp; </span>
+                <span className='select-none leading-3'>{getSpaces(i+1, tokens.length)}{i + 1}&nbsp; </span>
                 {line.map((token:Token, key:number) => (
-                  <span key={key} {...getTokenProps({token})} />
+                  <span key={key} className={classNames(getTokenProps({token}).className, 'text-xs md:text-base')} style={getTokenProps({token}).style}>
+                    {getTokenProps({token}).children}
+                    </span>
                 ))}
               </div>
             ))}

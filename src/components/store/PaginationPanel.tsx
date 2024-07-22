@@ -396,9 +396,9 @@ export default function PaginationPanel() {
             const result: ProjectWithUser = searchResults[i]
             if (result) {
                 const authLink = result.user ? `/users/${result.user.username}` : ''
-                const authorImg = `https://avatars.githubusercontent.com/u/${result.user.githubID}?v=4`
+                const authorImg = `https://avatars.githubusercontent.com/u/${result?.user?.githubID}?v=4`
                 const backgroundImage = result.backgroundImage
-                tempPageContent.push(<DescriptionItem title={result.title} description={result.description} author={result.user.username} authorImageUrl={authorImg} authorLink={authLink} loaded={true} backgroundImage={backgroundImage} id={result.id} animateDelayCount={delay} />);
+                tempPageContent.push(<DescriptionItem title={result.title} description={result.description} author={result.user?.username} authorImageUrl={authorImg} authorLink={authLink} loaded={true} backgroundImage={backgroundImage} id={result.id} animateDelayCount={delay} />);
             }
         }
         console.log("searchResults tempPageContent: ", tempPageContent)
