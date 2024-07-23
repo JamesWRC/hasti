@@ -747,15 +747,15 @@ export default function Search() {
                   </div>
                   <a className="ml-4 flex-auto w-full z-40 overflow-hidden py-1" >
                     <a className={classNames(project && project.title.length > 30 ? 'text-xs font-bold' : 'text-lg font-medium', ' w-full line-clamp-1 overflow-ellipsis text-gray-700 cursor-pointer')}
-                      href={`${project?.projectType}/${project?.user.username}/${project?.title}`}>
+                      href={`${getProjectTypePath(project?.projectType)}/${project?.user.username}/${project?.title}`}>
                       <HighlightText text={project ? project.title : ""} type={"title"} />
                     </a>
                     <a className={classNames('text-sm w-full line-clamp-5 overflow-ellipsis', 'text-gray-500')}
-                      href={`${project?.projectType}/${project?.user.username}/${project?.title}`}>
+                      href={`${getProjectTypePath(project?.projectType)}/${project?.user.username}/${project?.title}`}>
                       <HighlightText text={project ? project.description : ""} type={"title"} />
                     </a>
                     <p className={classNames('text-sm w-full line-clamp-2 relative flex overflow-auto scrollbar pt-2', 'text-gray-500')}>
-                      {project?.tagNames.map((tag) => (
+                      {project?.tagNames.map((tag:string) => (
                         <span key={tag}
                           onClick={(e) => {
                             handleSelectedTags(tag, true);
