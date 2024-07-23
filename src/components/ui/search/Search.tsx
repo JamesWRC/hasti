@@ -611,7 +611,7 @@ export default function Search() {
           leftSection={<AdjustmentsVerticalIcon onClick={() => setShowAdvancedSearch(!showAdvancedSearch)} className={classNames('h-5 w-5 cursor-pointer my-1 ml-2', usingAdvancedSearch() ? 'text-cyan-400' : 'text-white')} />}
         />
         <div className={search || showAdvancedSearch ? 'max-w-lg 2xl:max-w-2xl w-full grid grid-cols-1 z-10 pt-14 rounded-2xl absolute' : 'hidden'}>
-          <div className='rounded-2xl bg-white shadow-4xl -mt-10 pt-12 px-4 mx-3 overflow-y-scroll max-h-[90vh] scrollbar overscroll-contain'>
+          <div className='rounded-2xl bg-white shadow-4xl -mt-10 pt-12 px-4 mx-3 overflow-y-scroll max-h-[80vh] lg:max-h-[90vh] scrollbar overscroll-contain'>
             <div className={showAdvancedSearch ? 'px-4 rounded-b-2xl bg-gray-50 pt-4' : 'hidden'}>
               <div className='grid grid-cols-3 gap-4'>
                 {/* Get Types */}
