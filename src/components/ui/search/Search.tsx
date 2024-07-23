@@ -611,7 +611,7 @@ export default function Search() {
           leftSection={<AdjustmentsVerticalIcon onClick={() => setShowAdvancedSearch(!showAdvancedSearch)} className={classNames('h-5 w-5 cursor-pointer my-1 ml-2', usingAdvancedSearch() ? 'text-cyan-400' : 'text-white')} />}
         />
         <div className={search || showAdvancedSearch ? 'max-w-lg 2xl:max-w-2xl w-full grid grid-cols-1 z-10 pt-14 rounded-2xl absolute' : 'hidden'}>
-          <div className='rounded-2xl bg-white shadow-4xl -mt-10 pt-12 px-4 mx-3 overflow-y-scroll max-h-[90vh] scrollbar overscroll-contain'>
+          <div className='rounded-2xl bg-white shadow-4xl -mt-10 pt-12 px-4 mx-3 overflow-y-scroll max-h-[80vh] lg:max-h-[90vh] scrollbar overscroll-contain'>
             <div className={showAdvancedSearch ? 'px-4 rounded-b-2xl bg-gray-50 pt-4' : 'hidden'}>
               <div className='grid grid-cols-3 gap-4'>
                 {/* Get Types */}
@@ -747,15 +747,15 @@ export default function Search() {
                   </div>
                   <a className="ml-4 flex-auto w-full z-40 overflow-hidden py-1" >
                     <a className={classNames(project && project.title.length > 30 ? 'text-xs font-bold' : 'text-lg font-medium', ' w-full line-clamp-1 overflow-ellipsis text-gray-700 cursor-pointer')}
-                      href={`${project?.projectType}/${project?.user.username}/${project?.title}`}>
+                      href={`${getProjectTypePath(project?.projectType)}/${project?.user.username}/${project?.title}`}>
                       <HighlightText text={project ? project.title : ""} type={"title"} />
                     </a>
                     <a className={classNames('text-sm w-full line-clamp-5 overflow-ellipsis', 'text-gray-500')}
-                      href={`${project?.projectType}/${project?.user.username}/${project?.title}`}>
+                      href={`${getProjectTypePath(project?.projectType)}/${project?.user.username}/${project?.title}`}>
                       <HighlightText text={project ? project.description : ""} type={"title"} />
                     </a>
                     <p className={classNames('text-sm w-full line-clamp-2 relative flex overflow-auto scrollbar pt-2', 'text-gray-500')}>
-                      {project?.tagNames.map((tag) => (
+                      {project?.tagNames.map((tag:string) => (
                         <span key={tag}
                           onClick={(e) => {
                             handleSelectedTags(tag, true);
