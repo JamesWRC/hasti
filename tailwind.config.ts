@@ -49,6 +49,7 @@ module.exports = {
             'dark-text': '#000000',
         },
         screens: {
+          '2xs': '330px',
           'xs': '530px',
           '3xl': '1850px',
           '4xl': '2100px',

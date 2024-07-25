@@ -165,7 +165,10 @@ export default function Notifications() {
 
   return (
     <div className='h-full max-h-[97vh] overflow-y-scroll scrollbar overflow-x-hidden grid' ref={scrollRef} >
-      <ul role="list" className="space-y-6 px-4 justify-self-center" >
+              <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl py-4">Notifications</h2>
+        </div>
+      <ul role="list" className="space-y-6 justify-self-center" >
         {notifications.length > 0 ? notifications.map((notification: Notification, notificationIndex: number) => (
           <li 
             key={notification.id} 
@@ -229,7 +232,7 @@ export default function Notifications() {
           </li>
 
         )) : (notifications.length === 0 && loadedNotifications && loadedNotifications.length !== 0) ? loadedNotifications.map((notification: Notification, notificationIndex: number) => ( 
-          <li key={`notif-skeleton-${notification.id}`} className="relative flex gap-x-4 first:pt-4 md:first:pt-8 last:pb-24 md:last:pb-12 pl-12">
+          <li key={`notif-skeleton-${notification.id}`} className="relative flex gap-x-1 lg:gap-4 first:pt-4 md:first:pt-8 last:pb-24 md:last:pb-12 pl-12">
                         <div
               className={classNames(
                 '-bottom-6 absolute left-0 top-0 flex w-6 justify-center pl-4'

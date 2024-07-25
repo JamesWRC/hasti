@@ -50,8 +50,8 @@ const Navigation: React.FC<NavigationProps> = (props) => {
     const [selectedNav, setSelectedNav] = useState<string>(navigation.filter((item) =>  pathname?.toUpperCase().includes(item.name.toUpperCase()) ?? '')[0]?.name ?? 'Store')
 
     return (
-      <>
-              <div className="min-h-full block md:hidden">
+      <> 
+        <div className="min-h-full block md:hidden">
           <Disclosure as="nav" className=" bg-dark">
             {({ open }) => (
               <>
@@ -62,7 +62,7 @@ const Navigation: React.FC<NavigationProps> = (props) => {
                         <img
                           className="h-[4rem] w-auto pt-2"
                           src="/white_ha_cube_RIGHT_hasti_splled_out_op4.png"
-                          alt="Your Company"
+                          alt="Hasti"
                         />
                       </div>
                       {/* <div className="flex space-x-4 snap-x overflow--x-scroll overflow-y-hidden scroll-ml-4 scrollbar parent">
