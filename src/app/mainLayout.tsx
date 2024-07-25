@@ -194,7 +194,7 @@ export default function  MainLayout({
                 <LoginBtn />
                 {/* md+ footer section */}
                 {/* Used for small footer content */}
-                <div className="mt-2 -ml-1 bg-white w-full flex justify-around  rounded-t-2xl p-0.5 pt-1 pb-2">
+                <div className="mt-2 -ml-1 bg-white w-full flex justify-around  rounded-2xl p-0.5 pt-1 pb-2">
                     {footerNavigation.main.map((item) => (
                       <a key={item.name} className="text-sm font-semibold leading-6 text-dark first:pl-2 pt-1" href={item.href}>{item.name}</a>
                     ))}
@@ -205,6 +205,7 @@ export default function  MainLayout({
                       </a>
                     ))}
                   </div>
+                  
                 {/* COMMENTED OUT TILL MORE FOOTER CONTENT EXISTS */}
                 {/* <>
                 <Box  ref={ref} maw={400} className='mt-10 mx-6 -mb-2 bg-white w-full flex justify-around  rounded-t-2xl'>
@@ -256,7 +257,11 @@ export default function  MainLayout({
                 </Box>
 
                 </> */}
+                              <div className="mx-auto text-center center text-white">
+              Made with ❤️ from Australia.
+            </div>
               </div>
+
             </div>
           </div>
         </div>

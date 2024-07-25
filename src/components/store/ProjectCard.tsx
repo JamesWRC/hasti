@@ -25,44 +25,6 @@ function classNames(...classes: String[]) {
     return classes.filter(Boolean).join(' ')
 }
 
-// function rngAvatarBackground(projectID: string|undefined) {
-
-//     const seededRand = require('random-seed').create(projectID)
-
-//     const random = Math.floor(seededRand.random() * 3) + 1;
-
-//     const randRotate = seededRand.intBetween(0, 360)
-//     const randTranslateX = seededRand.intBetween(0, 30)
-//     const randTranslateY = seededRand.intBetween(0, 30)
-//     if( random === 1) {
-
-//     return createAvatar(botttsNeutral, {
-//         size: 50,
-//         seed: projectID,
-//         rotate: randRotate,
-//         translateX: randTranslateX,
-//         translateY: randTranslateY
-//         }).toDataUriSync()
-//     } else if (random === 2) {
-//         return createAvatar(funEmoji, {
-//             size: 50,
-//             seed: projectID,
-//             rotate: randRotate,
-//             translateX: randTranslateX,
-//             translateY: randTranslateY
-
-//             }).toDataUriSync()
-//     } else {
-//         return createAvatar(shapes, {
-//             size: 50,
-//             seed: projectID,
-//             rotate: randRotate,
-//             translateX: randTranslateX,
-//             translateY: randTranslateY
-
-//             }).toDataUriSync()
-//     }
-// }
 
 export default function ProjectCard({ userProject, style, loaded }: { userProject: ProjectWithUser, style: string, loaded: boolean }) {
 

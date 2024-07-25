@@ -40,11 +40,11 @@ export default function Page() {
 
   return (
     <div className="bg-white py-24 sm:py-28 w-full">
-      <div className="mx-auto max-w-[150%] px-6 lg:px-2">
+      <div className="mx-auto max-w-[150%] pr-2 lg:px-2">
         <div className="mx-auto max-w-2xl text-center">
           <h2 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl py-4">Your Projects</h2>
         </div>
-        <div className=" w-full h-full">
+        <div className=" w-full h-full px-2">
           <div key={`create-new-project`} className="mx-auto col-span-1 relative isolate flex flex-col justify-end overflow-hidden rounded-2xl py-8 my-4 min-w-[10.5rem] sm:max-h-none max-h-[15rem]">
             <button
               type="button"

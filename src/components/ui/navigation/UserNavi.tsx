@@ -57,7 +57,7 @@ const UserNavi: React.FC<UserNaviProps> = (props) => {
             selectedNav === item.name
               ? 'border-cyan-500 text-gray-50'
               : 'border-transparent text-gray-50 hover:border-gray-300 hover:text-gray-400',
-            `inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium first:ml-10 last:mr-10`,
+            `inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium first:ml-2 last:mr-10`,
           )}
           aria-current={selectedNav === item.name ? 'page' : undefined}
           onClick={() => setSelectedNav(item.name)}
