@@ -79,7 +79,7 @@ export default function SidePanelTagsContent({ tags, loaded, tagBaseURL }: { tag
             <Table.Td>
               <div className='text-white mx-0'>Tags</div></Table.Td>
             <Table.Td >
-                <Tags tags={tags} searchParamKey={'tags'} tagBaseURL={tagBaseURL} loaded={loaded} />
+                <Tags tags={tags} searchParamKey={'hasTags'} tagBaseURL={tagBaseURL} loaded={loaded} />
             </Table.Td>
           </Table.Tr>
         </Table.Tbody>

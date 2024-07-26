@@ -523,6 +523,11 @@ export default function Search() {
   }
 
 
+  function stripMarkTags(text: string | undefined) {
+    if (!text) return ''
+    return text.replaceAll(/<mark>/g, '').replaceAll(/<\/mark>/g, '')
+  }
+
   useEffect(() => {
     function handleClickOutside(ev: MouseEvent) {
       // console.log("searchRef: ", searchRef.current)
@@ -593,7 +598,7 @@ export default function Search() {
           onKeyDown={handleEnterToSearch}
           rightSectionPointerEvents="all"
           leftSectionPointerEvents="all"
-          className='z-20 shadow-lg block w-full p-2 ps-10 text-sm text-white rounded-2xl bg-dark focus:ring-blue-500 focus:border-blue-500 dark:placeholder-gray-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
+          className='z-20 shadow-lg block w-full p-2 ps-10 text-[16px] text-white rounded-2xl bg-dark focus:ring-blue-500 focus:border-blue-500 dark:placeholder-gray-200 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
           styles={{ input: { paddingLeft: '0px', border: '0px', backgroundColor: 'rgb(38 40 43 / var(--tw-bg-opacity))', color: 'white' } }}
           rightSection={
             <div className='flex -ml-6'>
@@ -747,11 +752,11 @@ export default function Search() {
                   </div>
                   <a className="ml-4 flex-auto w-full z-40 overflow-hidden py-1" >
                     <a className={classNames(project && project.title.length > 30 ? 'text-xs font-bold' : 'text-lg font-medium', ' w-full line-clamp-1 overflow-ellipsis text-gray-700 cursor-pointer')}
-                      href={`${getProjectTypePath(getProjectType(project?.projectType as string))}/${project?.user.username}/${project?.title}`}>
+                      href={`${getProjectTypePath(getProjectType(project?.projectType as string))}/${project?.user.username}/${stripMarkTags(project?.title)}`}>
                       <HighlightText text={project ? project.title : ""} type={"title"} />
                     </a>
                     <a className={classNames('text-sm w-full line-clamp-5 overflow-ellipsis', 'text-gray-500')}
-                      href={`${getProjectTypePath(getProjectType(project?.projectType as string))}/${project?.user.username}/${project?.title}`}>
+                      href={`${getProjectTypePath(getProjectType(project?.projectType as string))}/${project?.user.username}/${stripMarkTags(project?.title)}`}>
                       <HighlightText text={project ? project.description : ""} type={"title"} />
                     </a>
                     <p className={classNames('text-sm w-full line-clamp-2 relative flex overflow-auto scrollbar pt-2', 'text-gray-500')}>
@@ -774,8 +779,8 @@ export default function Search() {
                 </a>
               )) : <div className='text-center py-5 flex place-content-center'>
                 {/* Search icon */}
-                <FaceFrownIcon className='h-8 w-8 text-gray-500 mx-2' />
-                <p className='text-gray-500 text-lg py-0.5'>No results found</p>
+                {/* <FaceFrownIcon className='h-8 w-8 text-gray-500 mx-2' /> */}
+                <p className='text-gray-500 text-lg py-0.5'>No results found...</p>
               </div> : null}
             </div>
           </div>

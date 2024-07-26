@@ -48,8 +48,8 @@ const nodes = {
   },
   table: {
     render: ({ children }) => {
-      return <div className="min-w-full bg-slate-50 rounded-2xl -mx-3 p-3 shadow-inner overflow-x-auto text-black">
-        <table className="">
+      return <div className="min-w-full rounded-2xl -ml-3 p-3 overflow-x-auto text-black">
+        <table className="rounded-t-2xl">
           {children}
           </table>
       </div>
@@ -65,7 +65,16 @@ const nodes = {
       },
     },
     render: ({ children, attributes }) => {
-      return <th className="px-6 py-3 text-left text-md font-bold text-black uppercase tracking-wider">{children}</th>
+      return <th className="px-6 py-3 text-left text-md font-bold text-black uppercase tracking-wider bg-gray-200 first:rounded-tl-xl last:rounded-tr-xl">{children}</th>
+    }
+  },
+  tr: {
+    ...defaultNodes.tr,
+    attributes: {
+      ...defaultNodes.tr.attributes,
+    },
+    render: ({ children }) => {
+      return <tr className="odd:bg-white even:bg-gray-100">{children}</tr>
     }
   },
   item: {
