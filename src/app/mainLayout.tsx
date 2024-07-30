@@ -276,8 +276,15 @@ export default function  MainLayout({
             {children}
 
           </div>
-          <div className="mx-auto text-center center text-white text-3xs">
-              Made with ❤️ from Australia.
+          <div className="mx-auto flex place-content-between text-white text-3xs px-7">
+          <div></div>
+          <div className='-mr-10'>Made with ❤️ from Australia.</div>
+          <div className='relative flex'>
+            <span className="motion-safe:animate-ping absolute inline-flex rounded-full bg-green-500 opacity-75 h-1.5 w-1.5 -ml-4 "></span>
+            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-200 -ml-4"></span>
+        <a  href="https://status.hasti.app" target="_blank"  className="pl-0.5">services & status</a>
+        </div>
+
             </div>
         </main>
 
