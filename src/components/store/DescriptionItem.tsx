@@ -42,12 +42,12 @@ export default function DescriptionItem({title, description, author, authorImage
                       <div className='border-dark rounded-lg border flex'>
                         <img src={backgroundImage && backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL + '/' + backgroundImage : rngAvatarBackground(id)} alt="" className={classNames("flex h-14 w-24 items-center justify-center rounded-lg object-cover -mr-28 ", !backgroundImage ? `blur-[5px]` : "")} />
 
-                        <img src={backgroundImage && backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL + '/' + backgroundImage : rngAvatarBackground(id)} alt="" className={classNames("flex h-12 w-12 items-center justify-center rounded-lg object-cover", !backgroundImage ? `blur-[50px]` : "")} />
-                        <img src={backgroundImage && backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL + '/' + backgroundImage : rngAvatarBackground(id)} alt="" className={classNames("flex h-12 w-12 items-center justify-center rounded-lg object-cover", !backgroundImage ? `blur-[50px]` : "")} />
+                        <img src={backgroundImage && backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL + '/' + backgroundImage : rngAvatarBackground(id)} alt="" className={classNames("flex h-8 w-8 items-center justify-center rounded-lg object-cover", !backgroundImage ? `blur-[75px]` : "")} />
+                        <img src={backgroundImage && backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL + '/' + backgroundImage : rngAvatarBackground(id)} alt="" className={classNames("flex h-12 w-12 items-center justify-center rounded-lg object-cover", !backgroundImage ? `blur-[75px]` : "")} />
 
                       </div>
                       :
-                      <img src={backgroundImage && backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL + '/' + backgroundImage : rngAvatarBackground(id)} alt="" className={classNames("flex h-max w-max items-center justify-center rounded-lg object-cover", !backgroundImage ? `blur-[50px]` : "")} />
+                      <img src={backgroundImage && backgroundImage != "SKELETON" ? process.env.USER_CONTENT_URL + '/' + backgroundImage : rngAvatarBackground(id)} alt="" className={classNames("flex h-max w-max items-center justify-center rounded-lg object-cover", !backgroundImage ? `blur-[75px]` : "")} />
                     }
 
                   </div>

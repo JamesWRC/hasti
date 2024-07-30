@@ -112,6 +112,12 @@ export function getIoTClassificationType(classification: string): IoTClassificat
         return 'themes';
       case ProjectType.INTEGRATION:
         return 'integrations';
+      case ProjectType.SCRIPT:
+        return 'scripts';
+      case ProjectType.SENSOR:
+        return 'sensors';
+      case ProjectType.DIY:
+        return 'diys';
       default:
         return 'other';
     }
