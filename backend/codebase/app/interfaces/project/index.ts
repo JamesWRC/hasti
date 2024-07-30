@@ -6,6 +6,9 @@ export type {ProjectWithUser, ProjectAllInfo} from '@/backend/clients/prisma/cli
 export enum ProjectType {
     THEME = "theme",
     INTEGRATION = "integration",
+    SCRIPT = "script",
+    SENSOR = "sensor",
+    DIY = "diy",
     OTHER = "other"
   }
 
