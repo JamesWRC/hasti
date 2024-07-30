@@ -21,6 +21,8 @@ import {
     RectangleGroupIcon,
     SquaresPlusIcon,
     SwatchIcon,
+    CodeBracketIcon,
+    BeakerIcon,
   
   } from '@heroicons/react/24/outline'
   import { Dialog, Disclosure, Menu, Transition } from '@headlessui/react'
@@ -31,11 +33,10 @@ const navigation = [
     { name: 'Store', href: '/', icon: HomeIcon},
     { name: 'Themes', href: '/themes', icon: SwatchIcon},
     { name: 'Integrations', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'adfag', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'vdsv', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'bbb', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'hdshdddsd', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'aaa', href: '/integrations', icon: SquaresPlusIcon},
+    { name: 'Scripts', href: '/scripts', icon: CodeBracketIcon},
+    { name: 'Sensors', href: '/sensor', icon: RectangleGroupIcon},
+    { name: 'DIYs', href: '/diy', icon: FolderIcon},
+    { name: 'Other', href: '/other', icon: BeakerIcon},
     
   ]
 

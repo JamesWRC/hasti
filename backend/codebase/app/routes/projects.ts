@@ -92,17 +92,27 @@ projectsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestRe
             }
 
             // Perform the search using the Typesense client
-            const searchResults: SearchResponse<object> = await tsClient.collections('Project').documents().search(searchParameters, searchOptions);
+            const searchResults: SearchResponse<object>|null = await tsClient.collections('Project').documents().search(searchParameters, searchOptions).catch((error) => {
+                logger.warn(`Request threw an exception getting error from tsClient: ${(error as Error).message} - ${(error as Error).stack}`, {
+                    label: 'GET: /api/v1/Project/search: ',
+                    });
+                    return null
+            });
 
             // Get Author of the projects and add to the search results
-            if (searchResults.hits) {
+            if (searchResults && searchResults.hits) {
                 for (let i = 0; i < searchResults.hits.length; i++) {
                     const document = searchResults.hits[i].document as DocumentWithUser;
                     const user = await prisma.user.findFirst({
                         where: {
                             id: document.userID
                         }
-                    })
+                    }).catch((error) => {
+                        logger.warn(`Request threw an exception getting error from prisma.user.findFirst: ${(error as Error).message} - ${(error as Error).stack}`, {
+                            label: 'GET: /api/v1/Project/search: ',
+                        });
+                        return null
+                });
                     document.user = user
 
                     searchResults.hits[i].document = document
@@ -111,7 +121,7 @@ projectsRouter.get<Record<string, string>, SearchResponse<object> | BadRequestRe
             }
 
             // Return the search results as the API response
-            res.status(200).json(searchResults);
+            res.status(200).json(searchResults? searchResults : {success: false, message: 'Error getting search results'});
         } catch (error) {
             logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
                 label: 'GET: /api/v1/Project/search: ',

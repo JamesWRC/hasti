@@ -22,6 +22,8 @@ import {
     RectangleGroupIcon,
     SquaresPlusIcon,
     SwatchIcon,
+    CodeBracketIcon,
+    BeakerIcon,
   
   } from '@heroicons/react/24/outline'
 import { ProjectType, getProjectTypePath } from '@/backend/interfaces/project';
@@ -29,8 +31,10 @@ const navigation = [
     { name: 'Store', href: '/', icon: HomeIcon},
     { name: 'Themes', href: `/${getProjectTypePath(ProjectType.THEME)}`, icon: SwatchIcon, projectType: ProjectType.THEME},
     { name: 'Integrations', href: `/${getProjectTypePath(ProjectType.INTEGRATION)}`, icon: SquaresPlusIcon, projectType: ProjectType.INTEGRATION},
-    { name: 'Other', href: `/${getProjectTypePath(ProjectType.OTHER)}`, icon: SquaresPlusIcon, projectType: ProjectType.INTEGRATION},
-    
+    { name: 'Scripts', href: `/${getProjectTypePath(ProjectType.SCRIPT)}`, icon: CodeBracketIcon, projectType: ProjectType.SCRIPT},
+    { name: 'Sensors', href: `/${getProjectTypePath(ProjectType.SENSOR)}`, icon: RectangleGroupIcon, projectType: ProjectType.SENSOR},
+    { name: 'DIYs', href: `/${getProjectTypePath(ProjectType.DIY)}`, icon: FolderIcon, projectType: ProjectType.DIY},
+    { name: 'Other', href: `/${getProjectTypePath(ProjectType.OTHER)}`, icon: BeakerIcon, projectType: ProjectType.OTHER},
   ]
 
   function classNames(...classes: String[]) {

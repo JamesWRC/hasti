@@ -21,18 +21,18 @@ import {
     RectangleGroupIcon,
     SquaresPlusIcon,
     SwatchIcon,
+    CodeBracketIcon,
+    BeakerIcon,
   
   } from '@heroicons/react/24/outline'
 const navigation = [
-    { name: 'Store', href: '/', icon: HomeIcon},
-    { name: 'Themes', href: '/themes', icon: SwatchIcon},
-    { name: 'Integrations', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'adfag', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'vvv', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'dsds', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'qwqq', href: '/integrations', icon: SquaresPlusIcon},
-    { name: 'hdshbsd', href: '/integrations', icon: SquaresPlusIcon},
-    
+  { name: 'Store', href: '/', icon: HomeIcon},
+  { name: 'Themes', href: '/themes', icon: SwatchIcon},
+  { name: 'Integrations', href: '/integrations', icon: SquaresPlusIcon},
+  { name: 'Scripts', href: '/scripts', icon: CodeBracketIcon},
+  { name: 'Sensors', href: '/sensor', icon: RectangleGroupIcon},
+  { name: 'DIYs', href: '/diy', icon: FolderIcon},
+  { name: 'Other', href: '/other', icon: BeakerIcon},
   ]
 
   function classNames(...classes: String[]) {
