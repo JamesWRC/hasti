@@ -40,7 +40,7 @@ export default function Search() {
   const [search, setSearch] = useState(initParams.get('search') || '');
   const [debounceValue, setDebounceValue] = useDebouncedState(search, 750);
   // Tags
-  const { tags, reqStatus, setSearchProps } = useTags({ limit: '50' });
+  const { tags, reqStatus: tagReqStatus, setSearchProps } = useTags({ limit: '50' });
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const searchRef = useRef(null);
   const [isSearchActive, setIsSearchActive] = useState(false);
@@ -634,7 +634,7 @@ export default function Search() {
                   <div className='text-md mr-2 block text-sm font-medium leading-6 text-gray-900'>Popular {projectTypeSelected !== undefined ? projectTypeSelected : null} Tags</div>
                   <div className='overflow-y-auto h-40 mt-2 scrollbar'>
                     <div className='flex flex-wrap'>
-                      {reqStatus === 'success' && tags ?
+                      {tagReqStatus === 'success' && tags ?
                         tags.tags.map((tag: TagWithCount) => {
                           return <button key={tag.name} onClick={(e) => { handleSelectedTags(tag.name, false) }} className={
                             classNames('border border-gray-700 text-gray-800 hover:bg-blue-400 hover:text-white rounded-lg m-0.5 px-2 text-xs font-semibold p-0.5 cursor-pointer ', hasTags.includes(tag.name) ? 'bg-cyan-400' : notTags.includes(tag.name) ? 'bg-red-400' : '')}>{`${tag.name}`}<span className='text-4xs pl-1 font-thin'>{`(${tag.count})`}</span></button>

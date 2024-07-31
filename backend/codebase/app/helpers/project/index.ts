@@ -380,10 +380,9 @@ function handleHTMLinMarkDown(markdown: string) {
     const contentWithEscapedHTML = sanitizeHtml(markdown, {
         allowedTags: allowedContentHTMLTags,
         allowedAttributes: {
-            'a': ['href', 'name', 'target', 'rel'], // Attributes allowed on <a>
             'img': ['src', 'alt', 'title', 'width', 'height', 'align'], // Attributes allowed on <img>
             'div': ['class'], // Attributes allowed on <div>
-            '*': ['style'] // Allowing styles universally, but can be restricted further
+            '*': ['style', 'href', 'name', 'target', 'rel', 'align', 'dir'] // Allowing styles universally, but can be restricted further
         },
         selfClosing: ['img', 'br', 'hr'], // Self-closing tags
         allowProtocolRelative: true,
