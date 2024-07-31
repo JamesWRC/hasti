@@ -240,6 +240,19 @@ const nodes = {
     </>
     },
   },
+  paragraph: {
+    ...defaultNodes.paragraph,
+    render: ({ children }) => {
+      console.log('pchildren', children)
+      for (let i = 0; i < children?.length; i++) {
+        // console.log('pchildren[i]', children[i])
+        if (children[i].type === "a" && children[i]?.props?.children?.type === "img") {
+          return <div className="flex justify-center space-x-2">{children}</div>
+        }
+      }
+      return <p className="text-gray-900 m-0 p-0">{children}</p>
+    }
+  },
 }
 
 export default nodes

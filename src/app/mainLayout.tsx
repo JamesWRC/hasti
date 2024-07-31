@@ -128,7 +128,7 @@ export default function  MainLayout({
                   <img
                     className="h-28 w-auto"
                     src="/white_ha_cube_RIGHT_hasti_splled_out_op4.png"
-                    alt="Your Company"
+                    alt="Hasti"
                   />
                   <div className="mt-4 max-w-[36rem] text-5xl font-extrabold tracking-tight text-white xl:max-w-[43.5rem]">
                     HASTI

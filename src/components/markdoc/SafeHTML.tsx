@@ -24,6 +24,20 @@ function centerDivStyle(doc:Document) {
   return doc
 }
 
+function centerPStyle(doc:Document) {
+  const centeredDivs = doc.querySelectorAll<HTMLDivElement>('p[align="center"]')
+
+  centeredDivs.forEach((div) => {
+    // update the class for the div
+    div.classList.add('flex'); 
+    div.classList.add('justify-center');
+    div.classList.add('gap-4');
+    div.classList.add('no-underline');
+  })
+
+  return doc
+}
+
 function htmlDecode(input:string) {
     var doc = new DOMParser().parseFromString(input, "text/html");
    
@@ -45,6 +59,7 @@ export function SafeHTML({children}: SafeHTMLProps) {
 
       // Update any divs to work with tailwindcss
       doc = centerDivStyle(doc);
+      doc = centerPStyle(doc);
 
       // MUST always sanitize as the last step before rendering
       const safeHTML = DOMPurify.sanitize(doc.documentElement.innerHTML);
