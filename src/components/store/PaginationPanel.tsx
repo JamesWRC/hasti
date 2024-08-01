@@ -23,7 +23,7 @@ function classNames(...classes: String[]) {
 }
 
 
-export default function PaginationPanel() {
+export default function PaginationPanel({projectType}: {projectType: ProjectType}) {
     const MAX_ITEMS_PER_PAGE = 30; // Number of items to show on all other pages that doesnt have a featured section
     const MAX_ITEMS_PER_PAGE_FIRST_PAGE = 20; // Number of items to show for first page
 
@@ -72,7 +72,7 @@ export default function PaginationPanel() {
 
 
             // ****** Make sure the stays up to date with  components/ui/search****** //
-            const projectTypeSelected: ProjectType | undefined = initParams.get('type') ? getProjectType(initParams.get('type') as string) : undefined
+            const projectTypeSelected: ProjectType | undefined = initParams.get('type') ? getProjectType(initParams.get('type') as string) : projectType
 
             // Results has tags
             const hasTags: string[] = initParams.get('hasTags')?.split(',') || [];

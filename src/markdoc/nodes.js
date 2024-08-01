@@ -77,6 +77,15 @@ const nodes = {
       return <tr className="odd:bg-white even:bg-gray-100">{children}</tr>
     }
   },
+  td: {
+    ...defaultNodes.td,
+    attributes: {
+      ...defaultNodes.td.attributes,
+    },
+    render: ({ children }) => {
+      return <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{children}</td>
+    }
+  },
   item: {
     render: ({ children }) => {
       const checkBoxLabel = children.toString().replace('[x]', '').replace('[ ]', '')
@@ -95,7 +104,7 @@ const nodes = {
         <br/>
         </>
       }else{
-        return <li className=''>{children}</li>
+        return <li className='text-dark'>{children}</li>
       }    
     }
   },
@@ -250,7 +259,7 @@ const nodes = {
           return <div className="flex justify-center space-x-2">{children}</div>
         }
       }
-      return <p className="text-gray-900 m-0 p-0">{children}</p>
+      return <p className="text-dark m-0 p-0">{children}</p>
     }
   },
 }
