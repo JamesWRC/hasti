@@ -13,12 +13,13 @@ import { FeaturedGroup } from '@/frontend/interfaces/ui';
 
 
 export default function FeaturedGroupSection({...props}: FeaturedGroup) {
-
+    console.log('FeaturedGroupSection props', props)
     const {projects, reqStatus} = useProjects({...props});
 
     
+    console.log('FeaturedGroupSection props', props, projects, reqStatus)
 
-    if (projects && reqStatus === 'success' && projects.length < 10 ) {
+    if (projects && reqStatus === 'success' && projects.length < 5 ) {
         return null
     }
 

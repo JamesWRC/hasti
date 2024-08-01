@@ -103,6 +103,9 @@ export default function Search() {
   }
   // ****** END search params ****** //
 
+  const [searchTime, setSearchTime] = useState<number>(0);
+  const [projectsMatchSearch, setProjectsMatchSearch] = useState<number>(0);
+
   const tagSearchParams: SearchParams = {
     q: '*',
     query_by: 'name',
@@ -150,15 +153,17 @@ export default function Search() {
   function usingAdvancedSearch() {
     let retValue: boolean = false
 
-    if (projectTypeSelected) retValue = true
+    // if (projectTypeSelected) retValue = true
 
     if (hasTags.length > 0) retValue = true
     if (notTags.length > 0) retValue = true
 
     if (worksWithHAVersion) retValue = true
     if (IoTClassification) retValue = true
-
+    console.log("retValue: ", retValue)
     if (haInstallTypes.length > 0 && haInstallTypes[0] !== HAInstallType.ANY) retValue = true
+    console.log("retValue: ", retValue)
+
     if (rating[0] != 10 || rating[1] != 100) retValue = true
 
     if (activity[0] != 10 || activity[1] != 100) retValue = true
@@ -267,6 +272,8 @@ export default function Search() {
         })
 
         const tagSearchResponse: TagSearchResponse = res.data;
+        setSearchTime(tagSearchResponse.search_time_ms)
+        setProjectsMatchSearch(tagSearchResponse.found)
         const retProjects: ProjectWithUser[] = []
         for (const hit of tagSearchResponse.hits) {
           const project: ProjectWithUser | null = hit.document as unknown as ProjectWithUser | null
@@ -392,7 +399,7 @@ export default function Search() {
   // Update URL for Install Types
   useEffect(() => {
 
-    if (haInstallTypes) {
+    if (haInstallTypes && haInstallTypes[0] !== HAInstallType.ANY) {
       setURLParams('haInsTypes', haInstallTypes.join(','), 'set')
     } else {
       setURLParams('haInsTypes', '', 'delete')
@@ -724,11 +731,12 @@ export default function Search() {
                 </Button>
               </div>
             </div>
-            <div className={classNames(!showAdvancedSearch && isSearchActive && usingAdvancedSearch() ? 'flex center py-4' : 'hidden')}>
+            <div className={classNames(!showAdvancedSearch && isSearchActive && usingAdvancedSearch() ? 'flex center pt-4' : 'hidden')}>
               <span className='font-bold text-center text-gray-500 text-sm'>Results filtered. Using&nbsp;</span>
               <span onClick={() => setShowAdvancedSearch(!showAdvancedSearch)} className='font-bold text-center text-gray-500 text-sm underline hover:text-cyan-500 cursor-pointer'>advanced search</span>
               <MagnifyingGlassIcon className={classNames('text-dark h-4 w-4 text-center mt-0.5')} />
             </div>
+            <span className='text-center text-gray-500 text-sm'>Found {projectsMatchSearch} projects, in: {searchTime}ms</span>
             <div className=''>
               {!showAdvancedSearch && isSearchActive ? searchResults.length > 0 ? searchResults.map((project) => (
                 <a key={project?.id} className='flex select-none rounded-xl p-3 pr-0 items-center hover:bg-gray-200 first:mt-3 last:mb-3'>
@@ -752,11 +760,11 @@ export default function Search() {
                   </div>
                   <a className="ml-4 flex-auto w-full z-40 overflow-hidden py-1" >
                     <a className={classNames(project && project.title.length > 30 ? 'text-xs font-bold' : 'text-lg font-medium', ' w-full line-clamp-1 overflow-ellipsis text-gray-700 cursor-pointer')}
-                      href={`${getProjectTypePath(getProjectType(project?.projectType as string))}/${project?.user.username}/${stripMarkTags(project?.title)}`}>
+                      href={`${getProjectTypePath(getProjectType(project?.projectType as string))}/${project?.user?.username}/${stripMarkTags(project?.title)}`}>
                       <HighlightText text={project ? project.title : ""} type={"title"} />
                     </a>
                     <a className={classNames('text-sm w-full line-clamp-5 overflow-ellipsis', 'text-gray-500')}
-                      href={`${getProjectTypePath(getProjectType(project?.projectType as string))}/${project?.user.username}/${stripMarkTags(project?.title)}`}>
+                      href={`${getProjectTypePath(getProjectType(project?.projectType as string))}/${project?.user?.username}/${stripMarkTags(project?.title)}`}>
                       <HighlightText text={project ? project.description : ""} type={"title"} />
                     </a>
                     <p className={classNames('text-sm w-full line-clamp-2 relative flex overflow-auto scrollbar pt-2', 'text-gray-500')}>
