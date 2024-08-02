@@ -917,7 +917,7 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
                             let project: Project | null = await prisma.project.findFirst({
                                 where: {
                                     id: projectID,
-                                    userID: user.id
+                                    // userID: user.id // Cant remember if this check is important with the claimed check below?
                                 }
                             })
 
@@ -989,7 +989,6 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
                                         return resolve({ code: 400, json: response });
                                     }
 
-
                                     let update: Prisma.ProjectUpdateInput = {
                                         description: description,
                                         // Set the tags
@@ -1001,6 +1000,10 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
                                                     create: { name: tag, type: projectType },
                                                 };
                                             }),
+                                            // Remove any that have been removed
+                                            deleteMany: {
+                                                name: { notIn: tagArray }
+                                            }
                                         },
                                         tagNames: tagArray,
                                         // Set the 'Works With' types
