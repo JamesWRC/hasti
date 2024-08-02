@@ -917,10 +917,13 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
                             let project: Project | null = await prisma.project.findFirst({
                                 where: {
                                     id: projectID,
-                                    userID: user.id
+                                    // userID: user.id // Cant remember if this check is important with the claimed check below?
                                 }
                             })
-
+                            console.log('projectID', projectID)
+                            console.log('user.id', user.id)
+                            console.log('repo', repo)
+                            console.log('project', project)
                             if (repo && project) {
 
                                 // Check if user has permission to update project
@@ -989,7 +992,7 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
                                         return resolve({ code: 400, json: response });
                                     }
 
-
+                                    console.log('tagArray', tagArray)
                                     let update: Prisma.ProjectUpdateInput = {
                                         description: description,
                                         // Set the tags
@@ -1001,6 +1004,10 @@ projectsRouter.put<Record<string, string>, AddProjectResponse | BadRequestRespon
                                                     create: { name: tag, type: projectType },
                                                 };
                                             }),
+                                            // Remove any that have been removed
+                                            deleteMany: {
+                                                name: { notIn: tagArray }
+                                            }
                                         },
                                         tagNames: tagArray,
                                         // Set the 'Works With' types

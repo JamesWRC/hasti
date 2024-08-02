@@ -1,6 +1,6 @@
 // Used for differentiating between theme and integration projects and other projects in the future
 
-import { ProjectType } from "@/backend/interfaces/project";
+import { ProjectType, getProjectType, getProjectTypePath } from "@/backend/interfaces/project";
 import type { Project } from  '@/backend/interfaces/project';
 import { ProjectWithUser, ProjectAllInfo } from "@/backend/clients/prisma/client";
 import { GetProjectsQueryParams } from "@/backend/interfaces/project/request";
@@ -22,12 +22,7 @@ export interface LoadProjects {
 export function getProjectTypeURL(project: Project | ProjectWithUser | ProjectAllInfo | null) {
   if(project === null) return '/404';
 
-  let typePrefix = '';
-  if (project?.projectType === ProjectType.THEME) {
-    typePrefix = '/themes'
-  } else if (project?.projectType === ProjectType.INTEGRATION) {
-    typePrefix = '/integrations'
-  }
+  let typePrefix = '/' + getProjectTypePath(getProjectType(project.projectType));
 
   return typePrefix;
 }
