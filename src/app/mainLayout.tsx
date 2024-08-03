@@ -74,7 +74,7 @@ const footerNavigation = {
   social: [
     {
       name: 'GitHub',
-      href: '#',
+      href: 'https://github.com/JamesWRC/hasti',
       icon: (props:any) => (
           <svg fill="currentColor" viewBox="0 0 24 24" {...props}>
           <path
