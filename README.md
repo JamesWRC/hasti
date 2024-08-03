@@ -28,7 +28,7 @@ Feel Free! The reasone why i open sourced this project was for the longevity of 
 ## Example
 ### Customize your project
 *Using [Home-Assistant-Carelink](https://github.com/yo-han/Home-Assistant-Carelink) by [yo-han](https://github.com/yo-han) as a demo.*
-![Project setting example](images\ProjectSettingsExample.png)
+![Project setting example](https://github.com/JamesWRC/hasti/blob/main/images/ProjectSettingsExample.png?raw=true)
 
 #### Customizations
 - Thumbnail image
@@ -48,4 +48,4 @@ Feel Free! The reasone why i open sourced this project was for the longevity of 
 
 ### Display your project
 *Using [Home-Assistant-Carelink](https://github.com/yo-han/Home-Assistant-Carelink) by [yo-han](https://github.com/yo-han) as a demo.*
-![Rendered example](images\ProjectRenderExample.png)
+![Rendered example](https://github.com/JamesWRC/hasti/blob/main/images/ProjectRenderExample.png?raw=true)
