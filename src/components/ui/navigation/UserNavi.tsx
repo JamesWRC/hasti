@@ -33,6 +33,11 @@ const navigation = [
   { name: 'Sensors', href: '/sensor', icon: RectangleGroupIcon},
   { name: 'DIYs', href: '/diy', icon: FolderIcon},
   { name: 'Other', href: '/other', icon: BeakerIcon},
+
+  // Footer links go here
+  { name: 'About', href: '/about' },
+  { name: 'Support', href: 'https://github.com/JamesWRC/hasti/discussions/categories/q-a' },
+  { name: 'F.A.Q.', href: 'https://github.com/JamesWRC/hasti/discussions' },
   ]
 
   function classNames(...classes: String[]) {
