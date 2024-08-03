@@ -67,9 +67,9 @@ const userNavigation = [
 
 const footerNavigation = {
   main: [
-    { name: 'About', href: '#' },
-    { name: 'Support', href: '#' },
-    { name: 'F.A.Q.', href: '#' },
+    { name: 'About', href: '/about' },
+    { name: 'Support', href: 'https://github.com/JamesWRC/hasti/discussions/categories/q-a' },
+    { name: 'F.A.Q.', href: 'https://github.com/JamesWRC/hasti/discussions' },
   ],
   social: [
     {
@@ -186,17 +186,17 @@ export default function  MainLayout({
                 </a> */}
               {/* // Show this is a beta version. */}
               <SiteMessage/>
-              
+
           {/* end beta banner */}
                 <LoginBtn />
                 {/* md+ footer section */}
                 {/* Used for small footer content */}
                 <div className="mt-2 -ml-1 bg-white w-full flex justify-around  rounded-t-2xl p-0.5 pt-1 pb-2">
                     {footerNavigation.main.map((item) => (
-                      <a key={item.name} className="text-sm font-semibold leading-6 text-dark first:pl-2 pt-1" href={item.href}>{item.name}</a>
+                      <a key={item.name} className="text-sm font-semibold leading-6 text-dark first:pl-2 pt-1" href={item.href} target="_blank">{item.name}</a>
                     ))}
                     {footerNavigation.social.map((item) => (
-                      <a key={item.name} href={item.href} className="text-gray-500 hover:text-gray-400 px-1 pt-1">
+                      <a key={item.name} href={item.href} className="text-gray-500 hover:text-gray-400 px-1 pt-1" target="_blank">
                         <span className="sr-only">{item.name}</span>
                         <item.icon className="h-6 w-6" aria-hidden="true" />
                       </a>
