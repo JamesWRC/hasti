@@ -1,5 +1,5 @@
 import { StyledComboBoxItems } from '@/frontend/components/ui/StyledComboBox';
-import { ArrowDownOnSquareIcon, ArrowUpOnSquareIcon, CloudArrowDownIcon, CloudArrowUpIcon, QuestionMarkCircleIcon, SquaresPlusIcon, SwatchIcon } from '@heroicons/react/24/outline';
+import { ArrowDownOnSquareIcon, ArrowUpOnSquareIcon, CloudArrowDownIcon, CloudArrowUpIcon, CodeBracketIcon, QuestionMarkCircleIcon, SquaresPlusIcon, SwatchIcon, RectangleGroupIcon, FolderIcon } from '@heroicons/react/24/outline';
 import { ProjectAllInfo, ProjectWithUser, getAllIoTClassificationTypes } from '@/backend/interfaces/project';
 import { createAvatar } from '@dicebear/core';
 import { botttsNeutral, funEmoji, shapes, bottts  } from '@dicebear/collection';
@@ -85,6 +85,12 @@ export function getProjectIcon(project: ProjectAllInfo | ProjectWithUser, props:
             return <SquaresPlusIcon {...props} />
         case ProjectType.THEME:
             return <SwatchIcon {...props} />
+        case ProjectType.SCRIPT:
+            return <CodeBracketIcon {...props} />
+        case ProjectType.SENSOR:
+            return <RectangleGroupIcon {...props} />
+        case ProjectType.DIY:
+            return <FolderIcon {...props} />
         default:
             return <QuestionIcon {...props} />
     }

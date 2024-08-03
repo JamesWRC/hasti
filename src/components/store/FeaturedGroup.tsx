@@ -5,7 +5,7 @@ import {
 
 } from '@heroicons/react/24/outline'
 
-import type { Project } from  '@/backend/interfaces/project';
+import { getProjectTypePath, type Project } from  '@/backend/interfaces/project';
 import PackageCard from './ProjectCard';
 import type { ProjectWithUser } from '@/backend/clients/prisma/client';
 import useProjects from '@/frontend/components/project'
@@ -34,11 +34,10 @@ export default function FeaturedGroupSection({...props}: FeaturedGroup) {
                     </div>
                     <div className="ml-6 flex items-center">
                         <div className="flex space-x-1 rounded-lg bg-slate-100 p-0.5" role="tablist" aria-orientation="horizontal">
-                            <button className="flex items-center rounded-md py-[0.4375rem] pl-2 pr-2 text-sm font-semibold lg:pr-3" id="headlessui-tabs-tab-11" role="tab" type="button" aria-selected="false" tabIndex={-1} data-headlessui-state="" aria-controls="headlessui-tabs-panel-13" control-id="ControlID-13">
+                            <a href={`/${getProjectTypePath(props.type)}`} className="cursor-pointer flex items-center rounded-md py-[0.4375rem] pl-2 pr-2 text-sm font-semibold lg:pr-3" id="headlessui-tabs-tab-11" role="tab" type="button" aria-selected="false" tabIndex={-1} data-headlessui-state="" aria-controls="headlessui-tabs-panel-13" control-id="ControlID-13">
                                 <span className="sr-only lg:not-sr-only lg:ml-2 text-slate-600">more</span>
                                 <ArrowRightIcon className="ml-2 h-4 w-4 text-slate-600" aria-hidden="true" />
-
-                            </button>
+                            </a>
                         </div>
                     </div>
                     <div className="col-span-2 row-start-2 min-w-0">
