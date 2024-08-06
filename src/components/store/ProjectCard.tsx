@@ -72,7 +72,7 @@ export default function ProjectCard({ userProject, style, loaded }: { userProjec
                     <a href={getProjectLink(userProject)}>
                         {/* <span className="absolute inset-0" /> */}
                         <span className={"inset-0"} />
-                        {loaded ? userProject?.title : <DynamicSkeletonTitle max={5} min={3} maxWidth={100} />}
+                        {loaded ? userProject?.title.replaceAll('-', ' ').replaceAll('_', ' ') : <DynamicSkeletonTitle max={5} min={3} maxWidth={100} />}
                     </a>
                 </h3>
                 <a className="mt-2 text-base text-gray-300 line-clamp-5 -mb-4" href={getProjectLink(userProject)}>{loaded ? userProject?.description : <DynamicSkeletonText max={10} min={4} />}</a>
