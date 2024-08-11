@@ -44,7 +44,7 @@ function Tags({ tags, searchParamKey, tagBaseURL, loaded }: { tags: Tag[], searc
       m={2}
     >
       <a href={`${tagBaseURL}?${handleQueryParams(tag.name, searchParamKey)}`} className='px-1 pb-1 truncate'>
-        {loaded ? tag.name : DynamicSkeletonText({max:1, min:1}) }
+        {loaded ? tag.name : DynamicSkeletonText({max:1, min:1, maxWidth: 10}) }
       </a>
     </Button>
   ));

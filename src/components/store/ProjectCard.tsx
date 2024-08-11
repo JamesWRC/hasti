@@ -75,11 +75,11 @@ export default function ProjectCard({ userProject, style, loaded }: { userProjec
                         {loaded ? userProject?.title : <DynamicSkeletonTitle max={5} min={3} maxWidth={100} />}
                     </a>
                 </h3>
-                <a className="mt-2 text-base text-gray-300 line-clamp-5 -mb-4" href={getProjectLink(userProject)}>{loaded ? userProject?.description : <DynamicSkeletonText max={10} min={4} />}</a>
+                <a className="mt-2 text-base text-gray-300 line-clamp-5 -mb-4" href={getProjectLink(userProject)}>{loaded ? userProject?.description : <DynamicSkeletonText min={4} max={10} maxWidth={60}/>}</a>
                 <div className="pt-6 -mb-4 flex justify-end">
                     {/* <span className="text-gray-300 text-sm mr-2">•</span> */}
                     {getProjectIcon(userProject, { className: "text-white w-6 h-6" })}
-                    {loaded ? <span className="text-gray-300 text-sm ml-2 mt-0.5">{userProject?.projectType}</span> : <DynamicSkeletonText max={10} min={4} />}
+                    {loaded ? <span className="text-gray-300 text-sm ml-2 mt-0.5">{userProject?.projectType}</span> : <DynamicSkeletonText min={2} max={3} maxWidth={40}/>}
                     {/* <span className="text-gray-300 text-sm ml-2">•</span> */}
                 </div>
             </div>

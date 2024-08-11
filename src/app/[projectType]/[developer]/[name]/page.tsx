@@ -58,7 +58,6 @@ export default function Page({ params }: { params: { developer: string, name: st
   ]);
 
   const fetchProjects: GetProjectsQueryParams = {
-
     limit: 1,
     projectTitle: params.name,
     username: params.developer,
@@ -70,25 +69,25 @@ export default function Page({ params }: { params: { developer: string, name: st
 
   // Handle anchor snapping on page load
   useEffect(() => {
-    const handleRouteChange = (url:string) => {
-        const hash = url.split('#')[1];
-        if (hash) {
-          setTimeout(() => {
-            const element = document.getElementById(hash);
+    const handleRouteChange = (url: string) => {
+      const hash = url.split('#')[1];
+      if (hash) {
+        setTimeout(() => {
+          const element = document.getElementById(hash);
 
-            if (element) {
-                element.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
-            }
-          }, 1500);
-        }
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth", block: "start", inline: "nearest" });
+          }
+        }, 1500);
+      }
     };
 
     console.log('projectContentRendered', projectContentRendered)
     // If the page is loaded with a hash directly
     if (window.location.hash && projectContentRendered) {
-        handleRouteChange(window.location.href);
+      handleRouteChange(window.location.href);
     }
-    
+
   }, [projectContentRendered]);
 
 
@@ -176,9 +175,6 @@ export default function Page({ params }: { params: { developer: string, name: st
 
   }, [projectPublishedDebounce])
 
-  function classNames(...classes: String[]) {
-    return classes.filter(Boolean).join(' ')
-  }
 
   useEffect(() => {
     const handleScroll = () => {
@@ -193,8 +189,12 @@ export default function Page({ params }: { params: { developer: string, name: st
   }, []);
 
 
+  function classNames(...classes: String[]) {
+    return classes.filter(Boolean).join(' ')
+  }
 
-  function RenderDetails({ loadProjects }: {loadProjects: LoadProjects | undefined}) {
+
+  function RenderDetails({ loadProjects }: { loadProjects: LoadProjects | undefined }) {
     // const repoAnalytics: RepoAnalytics | null = projectInfo?.repo?.repoAnalytics?.at(0) || null;
 
     const projectData: ProjectAllInfo | null = loadProjects ? loadProjects.projects?.at(0) as ProjectAllInfo : null
@@ -256,60 +256,60 @@ export default function Page({ params }: { params: { developer: string, name: st
     // activityRating = 80
     // popularityRating = 100
     return (
-<aside className="transition-all duration-700 xl:w-72">
-  <div className="bg-gray-900 rounded-3xl mb-4 top-0 z-10 ">
-    <div className="mx-auto max-w-7xl">
-      <div className="bg-gray-900 py-10 rounded-3xl min-w-full">
-        <div className="px-2">
-          <Stack spacing={1} sx={{ flexGrow: 1 }} className='px-4'>
-            <div className="flex justify-between">
-              <div className='text-white font-bold'>Rating</div>
-              {
-                projectContentRendered ? 
-                  <div className='text-white font-bold flex'>{overallRating}<div className='text-white font-thin pl-1'>/100</div></div>
-                : 
-                <Skeleton height={10} mt={6} radius="xl" width={30} className="mr-1.5 opacity-75"/>
-              }
-            </div>
-            <OverallRatingBar variant="determinate" value={overallRating} />
-          </Stack>
+      <aside className="transition-all duration-700 xl:w-72">
+        <div className="bg-gray-900 rounded-3xl mb-4 top-0 z-10 ">
+          <div className="mx-auto max-w-7xl">
+            <div className="bg-gray-900 py-10 rounded-3xl min-w-full">
+              <div className="px-2">
+                <Stack spacing={1} sx={{ flexGrow: 1 }} className='px-4'>
+                  <div className="flex justify-between">
+                    <div className='text-white font-bold'>Rating</div>
+                    {
+                      projectContentRendered ?
+                        <div className='text-white font-bold flex'>{overallRating}<div className='text-white font-thin pl-1'>/100</div></div>
+                        :
+                        <Skeleton height={10} mt={6} radius="xl" width={30} className="mr-1.5 opacity-75" />
+                    }
+                  </div>
+                  <OverallRatingBar variant="determinate" value={overallRating} />
+                </Stack>
 
-          <Stack spacing={1} sx={{ flexGrow: 1 }} className='pt-6 px-8'>
-            <div className="flex justify-between">
-              <div className='text-white font'>Activity</div>
-              { 
-                projectContentRendered ? 
-                  <div className='text-white font'>{activityRating}</div>
-                :
-                  <Skeleton height={10} mt={6} radius="xl" width={20} className="mr-1.5 opacity-75"/>
-              }
+                <Stack spacing={1} sx={{ flexGrow: 1 }} className='pt-6 px-8'>
+                  <div className="flex justify-between">
+                    <div className='text-white font'>Activity</div>
+                    {
+                      projectContentRendered ?
+                        <div className='text-white font'>{activityRating}</div>
+                        :
+                        <Skeleton height={10} mt={6} radius="xl" width={20} className="mr-1.5 opacity-75" />
+                    }
+                  </div>
+
+                  <ActivityBar variant="determinate" value={activityRating} />
+                </Stack>
+
+                <Stack spacing={1} sx={{ flexGrow: 1 }} className='pt-2 px-8'>
+                  <div className="flex justify-between">
+                    <div className='text-white'>Popularity</div>
+                    {
+                      projectContentRendered ?
+                        <div className='text-white font'>{popularityRating}</div>
+                        :
+                        <Skeleton height={10} mt={6} radius="xl" width={20} className="mr-1.5 opacity-75" />
+                    }
+                  </div>
+                  <PopularityBar variant="determinate" value={popularityRating} />
+                </Stack>
+              </div>
+
             </div>
 
-            <ActivityBar variant="determinate" value={activityRating} />
-          </Stack>
-
-          <Stack spacing={1} sx={{ flexGrow: 1 }} className='pt-2 px-8'>
-            <div className="flex justify-between">
-              <div className='text-white'>Popularity</div>
-              {
-                projectContentRendered ? 
-                  <div className='text-white font'>{popularityRating}</div>
-                :
-                  <Skeleton height={10} mt={6} radius="xl" width={20} className="mr-1.5 opacity-75"/>
-              }
-            </div>
-            <PopularityBar variant="determinate" value={popularityRating}/>
-          </Stack>
+          </div>
         </div>
-
-      </div>
-
-    </div>
-  </div>
-  <div className="bg-gray-900 rounded-3xl mb-4 sticky z-20">
-    <Details loadedProject={loadedProject} reqStatus={reqStatus} />
-  </div>
-</aside>
+        <div className="bg-gray-900 rounded-3xl mb-4 sticky z-20">
+          <Details loadedProject={loadedProject} reqStatus={reqStatus} />
+        </div>
+      </aside>
 
     )
   }
@@ -322,32 +322,32 @@ export default function Page({ params }: { params: { developer: string, name: st
     return (
       <>
         <div className={classNames("flex flex-col", Math.floor(Math.random() * 10) + 1 > 7 ? " items-center justify-center" : "")}>
-          {DynamicSkeletonTitle({ max: 10, min: 4 })}
+          {DynamicSkeletonTitle({ max: 10, min: 4, maxWidth: 40})}
           {shouldShowTopImage ? <div className={`mx-auto py-10 max-w-fit`}>{DynamicSkeletonImage({ height: 300, width: typeof window !== 'undefined' ? window.innerHeight : 0 })} </div> : null}
 
         </div>
         <div className="pt-3 pb-10 text-left">
-          {DynamicSkeletonText({ max: 500, min: 40 })}
+          {DynamicSkeletonText({ max: 500, min: 40, maxWidth: 80 })}
         </div>
         <div className={classNames("flex flex-col", Math.floor(Math.random() * 10) + 1 > 7 ? " items-center justify-center" : "")}>
           {DynamicSkeletonTitle({ max: 10, min: 4 })}
         </div>
         <div className="pt-3 pb-10 text-left">
-          {DynamicSkeletonText({ max: 500, min: 40 })}
+          {DynamicSkeletonText({ max: 500, min: 40, maxWidth: 80 })}
           {shouldShowTopImage2 ? <div className={`mx-auto py-10 max-w-fit`}>{DynamicSkeletonImage({ height: 400, width: typeof window !== 'undefined' ? window.innerHeight : 2 / 2 })} </div> : null}
 
         </div>
         <div className={classNames("flex flex-col", Math.floor(Math.random() * 10) + 1 > 7 ? " items-center justify-center" : "")}>
-          {DynamicSkeletonTitle({ max: 10, min: 4 })}
+          {DynamicSkeletonTitle({ max: 10, min: 4, maxWidth: 80 })}
         </div>
         <div className="pt-3 pb-10 text-left">
-          {DynamicSkeletonText({ max: 500, min: 40 })}
+          {DynamicSkeletonText({ max: 500, min: 40, maxWidth: 80 })}
         </div>
         <div className={classNames("flex flex-col", Math.floor(Math.random() * 10) + 1 > 7 ? " items-center justify-center" : "")}>
           {DynamicSkeletonTitle({ max: 10, min: 4 })}
         </div>
         <div className="pt-3 pb-10 text-left">
-          {DynamicSkeletonText({ max: 500, min: 40 })}
+          {DynamicSkeletonText({ max: 500, min: 40, maxWidth: 80 })}
           {shouldShowTopImage3 ? <div className={`mx-auto py-10 max-w-fit`}>{DynamicSkeletonImage({ height: 400, width: typeof window !== 'undefined' ? window.innerHeight : 2 / 2 })} </div> : null}
 
         </div>
@@ -355,7 +355,7 @@ export default function Page({ params }: { params: { developer: string, name: st
           {DynamicSkeletonTitle({ max: 10, min: 4 })}
         </div>
         <div className="pt-3 pb-10 text-left">
-          {DynamicSkeletonText({ max: 500, min: 40 })}
+          {DynamicSkeletonText({ max: 500, min: 40, maxWidth: 80 })}
         </div>
       </>
 
@@ -420,10 +420,15 @@ export default function Page({ params }: { params: { developer: string, name: st
                     >
                       {stat.change}
                     </dd>
-                    {reqStatus === 'success' && projects && projects[0] ?
+
+                    {reqStatus !== 'success' ? 
+                    <DynamicSkeletonText max={1} min={1} maxWidth={40}/> 
+                    :
+                    (projects && projects[0] &&
                       <dd className="w-full flex-none text-xl font-medium leading-10 tracking-tight text-gray-900 text-center">
                         {stat.value}
-                      </dd> : <DynamicSkeletonText max={1} min={1} />}
+                      </dd>)
+                    }
                   </div>
                 ))}
 
@@ -434,11 +439,6 @@ export default function Page({ params }: { params: { developer: string, name: st
           </div>
         </div>
 
-        {/* // Square image of package header */}
-        {/* <div className='bg-white h-16 w-16 md:h-24 md:w-24 ml-7 2xl:ml-28 -mt-16 md:-mt-20 z-20 relative rounded-2xl transition-all duration-700 '> */}
-        {/* <div className='bg-white h-16 w-16 md:h-24 md:w-24 ml-7 md:ml-6 2xl:ml-20 -mt-6 sm:-mt-2 md:-mt-20 z-20 relative rounded-2xl transition-all duration-700'>
-          <img src="https://www.freepnglogos.com/uploads/512x512-logo/512x512-transparent-instagram-logo-icon-5.png" alt="Theme Icon" className="h-16 w-16 md:h-24 md:w-24 p-1" />
-        </div> */}
 
 
       </div>
@@ -449,18 +449,18 @@ export default function Page({ params }: { params: { developer: string, name: st
 
           <Prose>
             {
-              reqStatus === 'success' && loadedProject && loadedProject.projects && content.success ? 
-                <UGCDocument source={content.content} setProjectContentRendered={setProjectContentRendered}></UGCDocument> 
-              :
+              reqStatus === 'success' && loadedProject && loadedProject.projects && content.success ?
+                <UGCDocument source={content.content} setProjectContentRendered={setProjectContentRendered}></UGCDocument>
+                :
                 <RenderDynamicPlaceholderContent />
             }
           </Prose>
           <div className='block xl:hidden'>
-              <RenderDetails loadProjects={loadedProject}/>
-            </div>
+            <RenderDetails loadProjects={loadedProject} />
+          </div>
         </main>
         <div className='hidden xl:block top-8 sticky'>
-          <RenderDetails loadProjects={loadedProject}/>
+          <RenderDetails loadProjects={loadedProject} />
         </div>
 
       </div>
@@ -470,29 +470,4 @@ export default function Page({ params }: { params: { developer: string, name: st
     </div>
 
   )
-
-
-  // return (
-  //   <button
-  //     type="button"
-  //     className="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
-  //   >
-  //     <svg
-  //       className="mx-auto h-12 w-12 text-gray-400"
-  //       stroke="currentColor"
-  //       fill="none"
-  //       viewBox="0 0 48 48"
-  //       aria-hidden="true"
-  //     >
-  //       <path
-  //         strokeLinecap="round"
-  //         strokeLinejoin="round"
-  //         strokeWidth={2}
-  //         d="M8 14v20c0 4.418 7.163 8 16 8 1.381 0 2.721-.087 4-.252M8 14c0 4.418 7.163 8 16 8s16-3.582 16-8M8 14c0-4.418 7.163-8 16-8s16 3.582 16 8m0 0v14m0-4c0 4.418-7.163 8-16 8S8 28.418 8 24m32 10v6m0 0v6m0-6h6m-6 0h-6"
-  //       />
-  //     </svg>
-
-  //     <span className="mt-2 block text-sm font-semibold text-gray-900">Create a new database for {params.name}</span>
-  //   </button>
-  // )
 }

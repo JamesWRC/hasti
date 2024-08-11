@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 import { useSession } from 'next-auth/react'
 import { LoadProjects } from '@/frontend/interfaces/project';
@@ -14,107 +14,113 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
   const [reqStatus, setReqStatus] = useState('idle'); // idle, loading, success, error
   
   const { data: session, status } = useSession()
-  useEffect(() => {
-    const fetchData = async () => {
-        setReqStatus('loading');
-      try {
-        console.log("useProjects props: ", searchProps)
-        //Build query string
-        // Set the limit of the number of notifications to fetch
-        let queryStr = searchProps.limit ? `?limit=${searchProps.limit}` : '';
+  const initialRender = useRef(true);
 
-        // set the projectID
-        if (searchProps.projectID) queryStr += `${queryStr ? '&' : '?'}projectID=${searchProps.projectID}`;
+  const fetchData = async () => {
+    setReqStatus('loading');
+  try {
+    console.log("useProjects props: ", searchProps)
+    //Build query string
+    // Set the limit of the number of notifications to fetch
+    let queryStr = searchProps.limit ? `?limit=${searchProps.limit}` : '';
 
-        // set the project type
-        if (searchProps.type) queryStr += `${queryStr ? '&' : '?'}type=${searchProps.type}`;
+    // set the projectID
+    if (searchProps.projectID) queryStr += `${queryStr ? '&' : '?'}projectID=${searchProps.projectID}`;
 
-        // Set the cursor to the next 'page' of notifications
-        if (searchProps.cursor) queryStr += `${queryStr ? '&' : '?'}cursor=${searchProps.cursor}`;
+    // set the project type
+    if (searchProps.type) queryStr += `${queryStr ? '&' : '?'}type=${searchProps.type}`;
 
-        // Set the userID
-        if (searchProps.userID) queryStr += `${queryStr ? '&' : '?'}userID=${searchProps.userID}`;
+    // Set the cursor to the next 'page' of notifications
+    if (searchProps.cursor) queryStr += `${queryStr ? '&' : '?'}cursor=${searchProps.cursor}`;
 
-        // Set the username 
-        if (searchProps.username) queryStr += `${queryStr ? '&' : '?'}username=${searchProps.username}`;
+    // Set the userID
+    if (searchProps.userID) queryStr += `${queryStr ? '&' : '?'}userID=${searchProps.userID}`;
 
-        // Set the github userID
-        if (searchProps.githubUserID) queryStr += `${queryStr ? '&' : '?'}githubUserID=${searchProps.githubUserID}`;
+    // Set the username 
+    if (searchProps.username) queryStr += `${queryStr ? '&' : '?'}username=${searchProps.username}`;
 
-        // Set the ownedByGithubUserID
-        if (searchProps.checkImported) queryStr += `${queryStr ? '&' : '?'}checkImported=${searchProps.checkImported}`;
+    // Set the github userID
+    if (searchProps.githubUserID) queryStr += `${queryStr ? '&' : '?'}githubUserID=${searchProps.githubUserID}`;
 
-        // Set the ownedOrImported
-        if (searchProps.ownedOrImported) queryStr += `${queryStr ? '&' : '?'}ownedOrImported=${searchProps.ownedOrImported}`;
+    // Set the ownedByGithubUserID
+    if (searchProps.checkImported) queryStr += `${queryStr ? '&' : '?'}checkImported=${searchProps.checkImported}`;
 
-        // Set the orderBy
-        if (searchProps.orderBy) queryStr += `${queryStr ? '&' : '?'}orderBy=${searchProps.orderBy}`;
+    // Set the ownedOrImported
+    if (searchProps.ownedOrImported) queryStr += `${queryStr ? '&' : '?'}ownedOrImported=${searchProps.ownedOrImported}`;
 
-        // Set the orderDirection
-        if (searchProps.orderDirection) queryStr += `${queryStr ? '&' : '?'}orderDirection=${searchProps.orderDirection}`;
+    // Set the orderBy
+    if (searchProps.orderBy) queryStr += `${queryStr ? '&' : '?'}orderBy=${searchProps.orderBy}`;
 
-        // Set the projectTitle
-        if (searchProps.projectTitle) queryStr += `${queryStr ? '&' : '?'}projectTitle=${searchProps.projectTitle}`;
+    // Set the orderDirection
+    if (searchProps.orderDirection) queryStr += `${queryStr ? '&' : '?'}orderDirection=${searchProps.orderDirection}`;
 
-        // Set the allContent
-        if (searchProps.allContent) queryStr += `${queryStr ? '&' : '?'}allContent=${searchProps.allContent}`;
+    // Set the projectTitle
+    if (searchProps.projectTitle) queryStr += `${queryStr ? '&' : '?'}projectTitle=${searchProps.projectTitle}`;
 
-        console.log("searchProps server: ", searchProps)
-        console.log("queryStr: ", queryStr)
+    // Set the allContent
+    if (searchProps.allContent) queryStr += `${queryStr ? '&' : '?'}allContent=${searchProps.allContent}`;
 
-        const emptyProjectsResponse:GetProjectsResponse = {
-          success: true,
-          userProjects: []
-        }
+    console.log("searchProps server: ", searchProps)
+    console.log("queryStr: ", queryStr)
 
-        // If there are no search parameters, return success with empty projects.
-        if(queryStr === ''){
-          setReqStatus('success');
-          setProjects(emptyProjectsResponse);
+    const emptyProjectsResponse:GetProjectsResponse = {
+      success: true,
+      userProjects: []
+    }
 
-        
-        }else{
-          // Only fetch data if there are search parameters.
-          
-          // sleep for 2 seconds to simulate a slow network
-          // await new Promise((resolve) => setTimeout(resolve, 4000));
+    // If there are no search parameters, return success with empty projects.
+    if(queryStr === ''){
+      setReqStatus('success');
+      setProjects(emptyProjectsResponse);
 
-          const response = await axios({
-            url: `${process.env.API_URL}/api/v1/projects` + queryStr,
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${session?.user.jwt}`
-            },
+    
+    }else{
+      // Only fetch data if there are search parameters.
+      
+      // sleep for 2 seconds to simulate a slow network
+      // await new Promise((resolve) => setTimeout(resolve, 4000));
 
-            timeout: 10000,
-            timeoutErrorMessage: 'Request timed out. Please try again.',
-          })
+      const response = await axios({
+        url: `${process.env.API_URL}/api/v1/projects` + queryStr,
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.user.jwt}`
+        },
+
+        timeout: 10000,
+        timeoutErrorMessage: 'Request timed out. Please try again.',
+      })
 
 
-          // return the projects found.
-          if(response.status === 200){
-            const jsonData:GetProjectsResponse = response.data;
-            console.log("jsonData: ", jsonData)
-            setProjects(jsonData);
-            setReqStatus('success');
-          // If HTTP 204, return success, with empty projects. As there are no projects to return.
-          }else if(response.status === 204){
-            setProjects(emptyProjectsResponse);
-            setReqStatus('success');
-          }
-        }
-      } catch (error) {
-        setReqStatus('error');
-        console.error('Error fetching data:', error); 
+      // return the projects found.
+      if(response.status === 200){
+        const jsonData:GetProjectsResponse = response.data;
+        console.log("jsonData: ", jsonData)
+        setProjects(jsonData);
+        setReqStatus('success');
+      // If HTTP 204, return success, with empty projects. As there are no projects to return.
+      }else if(response.status === 204){
+        setProjects(emptyProjectsResponse);
+        setReqStatus('success');
       }
-    };
+    }
+  } catch (error) {
+    setReqStatus('error');
+    console.error('Error fetching data:', error); 
+  }
+  };
 
+  // fetchData();
+
+  useEffect(() => {
+    if (initialRender.current) {
+      initialRender.current = false;
+    } else {
+      fetchData();
+    }
     fetchData();
 
-    return () => {
-      // Cleanup function
-    };
   }, [searchProps]);
 
 
