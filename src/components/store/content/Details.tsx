@@ -37,31 +37,31 @@ export default function Details({ loadedProject, reqStatus }: { loadedProject: L
             <div className="sm:flex sm:items-center">
               <div className="sm:flex-auto">
                 <h1 className="text-base leading-6 text-white font-bold">
-                  {loaded ? projectData?.title : DynamicSkeletonText({ max: 3, min: 1 })}
+                  {loaded ? projectData?.title : DynamicSkeletonText({ max: 3, min: 1, maxWidth: 40})}
                 </h1>
                 {/* Project Description */}
                 <hr className="mt-2 mb-2 border-gray-700" />
                 <span className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0'>Description</span>
                 <div className={`mt-2 text-sm text-gray-300 overflow-hidden cursor-pointer ${isExpanded ? '' : 'line-clamp-3'}`} onClick={() => setIsExpanded(!isExpanded)}>
-                  {loaded ? projectData?.description : DynamicSkeletonText({ max: 30, min: 10 })}
+                  {loaded ? projectData?.description : DynamicSkeletonText({ max: 30, min: 10, maxWidth: 40})}
                 </div>
                 {/* Project Type */}
                 <hr className="mt-2 mb-2 border-gray-700" />
                 <span className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0'>Type</span>
                 <div className="mt-2 text-sm text-gray-300 text-ellipsis overflow-hidden">
-                  {loaded ? projectData?.projectType : DynamicSkeletonText({ max: 30, min: 10 })}
+                  {loaded ? projectData?.projectType : DynamicSkeletonText({ max: 2, min: 1, maxWidth: 40  })}
                 </div>
                 {/* Project Activity */}
                 <hr className="mt-2 mb-2 border-gray-700" />
                 <span className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0'>Activity</span>
                 <div className="mt-2 text-sm text-gray-300 text-ellipsis overflow-hidden">
-                  {loaded ? getProjectActivity(projectRepoAnalytics, projectData) : DynamicSkeletonText({ max: 30, min: 10 })}
+                  {loaded ? getProjectActivity(projectRepoAnalytics, projectData) : DynamicSkeletonText({ max: 2, min: 1, maxWidth: 40 })}
                 </div>
                 {/* Project Compatibility */}
                 <hr className="mt-2 mb-2 border-gray-700" />
                 <span className='whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-white sm:pl-0'>Compatibility</span>
                 <div className="mt-2 text-sm text-gray-300 text-ellipsis overflow-hidden">
-                  {loaded ? getProjectWorksWithList(projectData).join(', ') : DynamicSkeletonText({ max: 30, min: 10 })}
+                  {loaded ? getProjectWorksWithList(projectData).join(', ') : DynamicSkeletonText({ max: 2, min: 1, maxWidth: 40 })}
                 </div>
                 <hr className="mt-2 mb-2 border-gray-700" />
                 <div className='line-clamp-1'>
@@ -109,7 +109,7 @@ export default function Details({ loadedProject, reqStatus }: { loadedProject: L
                     {moment(projectData.updatedAt).fromNow()}
                   </time>
                   :
-                  DynamicSkeletonText({ max: 30, min: 10 })}
+                  DynamicSkeletonText({ max: 2, min: 1, maxWidth: 40 })}
               </div>
             </div>
           </div>

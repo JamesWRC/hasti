@@ -59,7 +59,7 @@ export default function DescriptionItem({title, description, author, authorImage
 
           {loaded ? <a href={projectURl} className="mt-1 line-clamp-3 text-xs xl:text-base min-h-fit text-gray-800 max-w-xs 3xl:max-w-2xl">
             {description}
-          </a> : < DynamicSkeletonText min={5} max={10}/>}
+          </a> : < DynamicSkeletonText min={10} max={20} maxWidth={20}/>}
 
           <div className={loaded ? "pt-1 -ml-4" : "rounded-xl pt-1 -ml-4 mt-2 w-fit"}>
             <AuthorDescription name={author} imageUrl={authorImageUrl} link={authorLink} loaded={loaded}/>
