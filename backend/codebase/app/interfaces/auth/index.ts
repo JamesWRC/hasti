@@ -1,3 +1,4 @@
+import { User } from "@/backend/interfaces/user";
 
 export enum AuthCheckType {
     USER_OK = "user_ok",
@@ -35,5 +36,12 @@ export function getAllAuthCheckTypes(caseSensitive:Boolean=true): string[] {
 export interface CheckAuthResponse {
     success: boolean;
     message: string;
+    check: AuthCheckType;
+}
+
+export interface ReAuthenticateUserResponse {
+    success: boolean;
+    user: User;
+    jwt: string;
     check: AuthCheckType;
 }

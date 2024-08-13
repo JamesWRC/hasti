@@ -4,6 +4,8 @@
 
 // import { Repo } from "@/backend/interfaces/repo/index";
 import { Project, Repo, Notification } from "@prisma/client";
+import { User, UserType } from '@/backend/interfaces/user';
+
 // Used to set up the JWT on initial login.
 export interface JWTBodyRequest {
     provider: string,
@@ -32,6 +34,7 @@ export interface JWTBodyResponse {
     success: boolean;
     jwt: string;
     id: string;
+    type: UserType;
 }
 
 export interface  GitHubUserTokenRequest {
@@ -64,4 +67,14 @@ export interface UserNotificationCountResponse {
 export interface UserNotificationsResponse {
     success: boolean;
     notifications: Notification[];
+}
+
+export interface ReAuthenticateRequest {
+    userID: string;
+}
+
+// Admin routes
+export interface AdminGetUsersResponse {
+    success: boolean;
+    users: User[] | null;
 }

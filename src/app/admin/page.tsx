@@ -10,6 +10,7 @@ export default async function Example() {
     const session = await auth()
 
 
+
   return (
     <div className='px-4 md:px-10 w-full'>
       <div className="px-4 sm:px-0">

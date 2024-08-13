@@ -6,8 +6,7 @@ import { usePathname } from 'next/navigation'
 import {
   FolderIcon,
   UsersIcon,
-  BellIcon,
-  FingerPrintIcon
+  BellIcon
 } from '@heroicons/react/24/outline'
 import { useSession } from 'next-auth/react';
 import axios from 'axios';
@@ -22,13 +21,10 @@ const UserNavigation: React.FC = () => {
     const [repoCount, setRepoCount] = useState(0)
     const [notificationCount, setNotificationCount] = useState(0)
 
-    const allUserTypes = [UserType.USER, UserType.ADMIN]
-
     const navigation = [
-        { name: 'Account', href: '/user/account', icon: UsersIcon, current: pathname === '/user/account', userTypeAllowed: allUserTypes },
-        { name: 'Projects', href: '/user/projects', icon: FolderIcon, count: repoCount, current: pathname === '/user/projects', userTypeAllowed: allUserTypes },
-        { name: 'Notifications', href: '/user/notifications', icon: BellIcon, count: notificationCount, current: pathname === '/user/notifications', userTypeAllowed: allUserTypes },
-        { name: 'Admin Settings', href: '/admin', icon: FingerPrintIcon, current: pathname === '/admin', userTypeAllowed: [UserType.ADMIN] },
+        { name: 'Accounts', href: '/admin/accounts', icon: UsersIcon, current: pathname === '/admin/accounts', userTypeAllowed: [UserType.ADMIN] },
+        { name: 'Projects', href: '/admin/projects', icon: FolderIcon, count: repoCount, current: pathname === '/admin/projects', userTypeAllowed: [UserType.ADMIN] },
+        { name: 'Notifications', href: '/admin/notifications', icon: BellIcon, count: notificationCount, current: pathname === '/admin/notifications', userTypeAllowed: [UserType.ADMIN] },
       ]
 
       function classNames(...classes: string[]) {
