@@ -648,7 +648,7 @@ export default function Search() {
                       {tagReqStatus === 'success' && tags ?
                         tags.tags.map((tag: TagWithCount) => {
                           return <button key={tag.name} onClick={(e) => { handleSelectedTags(tag.name, false) }} className={
-                            classNames('border border-gray-700 text-gray-800 hover:bg-blue-400 hover:text-white rounded-lg m-0.5 px-2 text-xs font-semibold p-0.5 cursor-pointer ', hasTags.includes(tag.name) ? 'bg-cyan-400' : notTags.includes(tag.name) ? 'bg-red-400' : '')}>{`${tag.name}`}<span className='text-4xs pl-1 font-thin'>{`(${tag.count})`}</span></button>
+                            classNames('border border-gray-700 text-gray-800 hover:bg-blue-400 hover:text-white rounded-lg m-0.5 px-2 text-xs font-semibold p-0.5 cursor-pointer ', hasTags.includes(tag.name) ? 'bg-cyan-400' : notTags.includes(tag.name) ? 'bg-red-400' : '')}>{`${tag.name}`}<span className='text-2xs pl-1 font-thin'>{`(${tag.count})`}</span></button>
                         })
                         : tags && tags.tags.map((tag: TagWithCount) => {
                           return <button key={tag.name} className='border border-gray-700 bg-gray-100 text-gray-800 hover:bg-blue-400 hover:text-white rounded-lg m-1 px-2 text-xs font-semibold p-1'><DynamicSkeletonTitle min={1} max={1} maxWidth={75} /></button>
