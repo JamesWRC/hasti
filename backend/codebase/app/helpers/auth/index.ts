@@ -1,4 +1,4 @@
-import { User, UserJWT } from '@/backend/interfaces/user';
+import { User, UserJWT, UserType, getUserType, getUserTypePermissions } from '@/backend/interfaces/user';
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from 'crypto';
 import { jwtVerify } from "jose";
 import prisma from "@/backend/clients/prisma/client";
@@ -15,26 +15,18 @@ if(DB_ENCRYPTION_KEY === undefined){
 const key = Buffer.from(DB_ENCRYPTION_KEY, 'utf-8');
 // Generate an initialization vector
 
-const JWT_SECRET__KEY = process.env.JWT_SECRET_KEY as string
+const JWT_SECRET_KEY = process.env.JWT_SECRET_KEY as string
 
 
     export function encrypt(text: string): string {
-        console.log('begin decrypt')
 
         const iv = randomBytes(16);
-        console.log('iv:', iv)
         const cipher = createCipheriv(algorithm, key, iv);
-        console.log('cipher:', cipher)
-
         let encrypted = cipher.update(text, 'utf8', 'hex');
-        console.log('encrypted:', encrypted)
-
         encrypted += cipher.final('hex');
-        console.log('encrypted 2 :', encrypted)
 
         // Return the iv and the encrypted message
         const encryptedMessage = iv.toString('hex') + encrypted;
-        console.log('encryptedMessage:', encryptedMessage)
 
         return encryptedMessage;
     }
@@ -72,7 +64,8 @@ const JWT_SECRET__KEY = process.env.JWT_SECRET_KEY as string
 export type JWTResult<T, E> = { success: true; user: User } | { success: false; message: string };
 export async function handleUserJWTPayload(token: string): Promise<JWTResult<User, string>>{
     try{
-        const payload:UserJWT = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET__KEY));
+
+        const payload:UserJWT = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET_KEY));
         const user:User|null = await prisma.user.findUnique({
                 where: {
                         id: payload.payload.payload.user.id
@@ -114,3 +107,22 @@ export const isAuthenticated: Middleware = async (req: Request, res: Response, n
                 next();
         }
     };
+
+    export const isAuthorised = (minUserType: UserType): Middleware => {
+        return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+            
+            // Check if user is valid
+            if (req.user && req.user.type) {
+                const userType = getUserType(req.user.type);
+                // Check if user is authorised
+                if (getUserTypePermissions(userType) >= getUserTypePermissions(minUserType)) {
+                    return next();
+                }else{
+                    res.status(403).json({ success: false, message: 'Unauthorized. User not authorised.' });
+                }
+                
+            } else {
+                res.status(403).json({ success: false, message: 'Unauthorized. User not authorised.' });
+            }
+        };
+      };

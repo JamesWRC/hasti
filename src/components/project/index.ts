@@ -21,7 +21,7 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
   try {
     console.log("useProjects props: ", searchProps)
     //Build query string
-    // Set the limit of the number of notifications to fetch
+    // Set the limit of the number of projects to fetch
     let queryStr = searchProps.limit ? `?limit=${searchProps.limit}` : '';
 
     // set the projectID

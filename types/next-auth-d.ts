@@ -1,3 +1,4 @@
+import { UserType } from "@/backend/interfaces/user";
 import NextAuth from "next-auth"
 
 declare module "next-auth" {
@@ -7,6 +8,7 @@ declare module "next-auth" {
   interface User{
     githubID: number
     jwt: string;
+    type: UserType
 
   }
 

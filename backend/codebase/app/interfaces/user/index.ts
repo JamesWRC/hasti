@@ -10,6 +10,12 @@ export enum UserType {
     ADMIN = 'admin',
 }
 
+export enum UserTypePermissions {
+    TEMP = -1, 
+    USER = 25,
+    ADMIN = 100,
+}
+
 export function getUserType(type: string): UserType {
     const values = Object.values(UserType);
     for(const t in values){
@@ -18,6 +24,10 @@ export function getUserType(type: string): UserType {
         }
     }
     return UserType.USER
+}
+
+export function getUserTypePermissions(type: UserType): number {
+    return UserTypePermissions[type.toUpperCase() as keyof typeof UserTypePermissions];
 }
 
 
@@ -43,6 +53,7 @@ export interface UserJWTPayload {
         username: string;
         image: string;
         githubID: number;
+        type: UserType;
     };
 }
 

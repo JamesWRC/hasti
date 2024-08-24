@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { JWTBodyRequest, JWTBodyResponse, UserRepoCountResponse, UserReposResponse } from '@/backend/interfaces/user/request';
-import type { User, UserJWT, UserJWTPayload } from '@/backend/interfaces/user';
+import { UserType, getUserType, type User, type UserJWT, type UserJWTPayload } from '@/backend/interfaces/user';
 // import { JWTResult, handleUserJWTPayload } from '@/backend/helpers/user';
 import { BadRequestResponse, OkResponse } from '@/backend/interfaces/request';
 import prisma from '@/backend/clients/prisma/client';
@@ -11,7 +11,7 @@ import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 import addOrUpdateUser, { getGitHubUserToken, updateGitHubUserToken } from '@/backend/helpers/user';
 import axios from 'axios';
 import { isAuthenticated } from '@/backend/helpers/auth';
-import { AuthCheckType, CheckAuthResponse } from '@/backend/interfaces/auth/index';
+import { AuthCheckType, CheckAuthResponse, ReAuthenticateUserResponse } from '@/backend/interfaces/auth/index';
 import { constructUserOctoKitAuth } from '@/backend/helpers/auth/github';
 
 const authRouter = Router();
@@ -32,7 +32,6 @@ authRouter.get<Record<string, string>, string | BadRequestResponse>(
             }
             const ghuTokenEnc: string = user.ghuToken
 
-            logger.info("ghuTokenEnc", ghuTokenEnc)
             res.status(200).json({ success: true, message: "Not implemented yet" });
         } catch (error) {
             logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
@@ -54,14 +53,11 @@ authRouter.post<Record<string, string>, JWTBodyResponse | BadRequestResponse>(
             let response: JWTBodyResponse = {
                 success: false,
                 jwt: '',
-                id: ''
+                id: '',
+                type: UserType.USER // Default to user
             }
 
-            logger.info('body', body)
-            logger.info('body.user', body.user)
-
             const ghu_token: string = body.user.ghu_token
-            logger.info('ghu_token', ghu_token)
             // Check if the ghu_token is valid
             if (!ghu_token || ghu_token.length <= 0 || !ghu_token.startsWith('ghu_')) {
                 return res.status(400).json({ success: false, message: 'No ghu_token provided. Or is not valid' });
@@ -82,8 +78,9 @@ authRouter.post<Record<string, string>, JWTBodyResponse | BadRequestResponse>(
             logger.info('ghu_token 2', ghu_token)
 
             const user: User | null = await addOrUpdateUser(body)
-
             if (user) {
+                const user_type: UserType = getUserType(user.type)
+
                 logger.info('user', user)
                 // Create JWT payload
                 const payload: UserJWTPayload = {
@@ -93,8 +90,8 @@ authRouter.post<Record<string, string>, JWTBodyResponse | BadRequestResponse>(
                         name: body.user.name,
                         username: body.user.username,
                         image: body.user.image,
-                        githubID: user.githubID
-
+                        githubID: user.githubID,
+                        type: user_type
                     },
                 }
 
@@ -114,7 +111,8 @@ authRouter.post<Record<string, string>, JWTBodyResponse | BadRequestResponse>(
                 response = {
                     success: true,
                     jwt: token,
-                    id: user.id
+                    id: user.id,
+                    type: user_type
                 }
                 return res.status(200).json(response);
 
@@ -126,6 +124,32 @@ authRouter.post<Record<string, string>, JWTBodyResponse | BadRequestResponse>(
             return res.status(500).json({ success: false, message: 'Error getting token' });
         }
     });
+
+    authRouter.post<Record<string, string>, ReAuthenticateUserResponse | BadRequestResponse>(
+        '/reAuth',
+        isAuthenticated,
+        async (req, res) => {
+            try {
+                // get jwt header from request
+                const jwt: string = req.headers.authorization as string;
+
+
+                const user: User | undefined = req.user;
+
+                if (!user || !jwt) {
+                    return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.'});
+                }
+
+                return res.status(200).json({ success: true, user: user, jwt:jwt, check: AuthCheckType.ALL_OK });
+    
+    
+            } catch (error) {
+                logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
+                    label: 'GET: /auth/gitUserToken: ',
+                });
+                return res.status(500).json({ success: false, message: 'Error getting token' });
+            }
+        });
 
 // ############################################################################################################
 // ###############                                                                              ###############
@@ -236,5 +260,8 @@ authRouter.post<Record<string, string>, OkResponse | BadRequestResponse>(
             return res.status(500).json({ success: false, message: 'Error getting token' });
         }
     });
+
+
+
 
 export default authRouter;
