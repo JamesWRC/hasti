@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { AdminGetUsersResponse, UserNotificationCountResponse } from '@/backend/interfaces/user/request';
+import { AdminGetUsersResponse, GetUsersQueryParams, UserNotificationCountResponse } from '@/backend/interfaces/user/request';
 import { UserType, type User } from '@/backend/interfaces/user';
 import type { Notification } from '@/backend/interfaces/notification';
 // import { JWTResult, handleUserJWTPayload } from '@/backend/helpers/user';
@@ -18,23 +18,39 @@ const userRouter = Router();
 
 // Get all users with pagination
 userRouter.get<Record<string, string>, AdminGetUsersResponse | BadRequestResponse>(
-    '/all',
+    '/',
     isAuthenticated,
     isAuthorised(UserType.ADMIN),
     async (req, res) => {
         try {
             // get jwt header from request
-
-
             const user: User | undefined = req.user;
             if (!user) {
                 return res.status(401).json({ success: false, message: 'You do not have permissions.' });
             }
 
-            // get all users
-            const users = await prisma.user.findMany()
+            const queryParams: GetUsersQueryParams = req.query
+            let query: Prisma.UserFindManyArgs = {}
 
-            return res.status(200).json({ success: true, users: users});
+            // Set the limit of the number of users to fetch
+            query.take = parseInt(queryParams.limit?.toString() || "10")
+
+            // search by username where name is part of the username in the db
+            if (queryParams.username) query.where = { username: { contains: queryParams.username } }
+
+            // set orderBy if it exists
+            if (queryParams.orderBy) query.orderBy = { [queryParams.orderBy]: queryParams.orderDirection || 'desc' }
+
+            // set the skip to the next 'page' of users
+            if (queryParams.skip) query.skip = parseInt(queryParams.skip?.toString() || "10")
+
+            // get all users
+            const users = await prisma.user.findMany(query)
+
+            // Count the number of users
+            const totalUsers = await prisma.user.count()
+
+            return res.status(200).json({ success: true, users: users, totalUsers: totalUsers });
 
 
         } catch (error) {

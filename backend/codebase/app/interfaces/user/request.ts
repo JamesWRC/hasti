@@ -77,4 +77,19 @@ export interface ReAuthenticateRequest {
 export interface AdminGetUsersResponse {
     success: boolean;
     users: User[] | null;
+    totalUsers: number;
+}
+
+export interface GetUsersQueryParams {
+    limit?: number;
+    skip?: number;
+    username?: string;
+    orderBy?: 'createdAt' | 'updatedAt' | 'username';
+    orderDirection?: 'asc' | 'desc';
+}
+
+export interface GetUsersResponse {
+    success: boolean;
+    users: User[] | null;
+    totalUsers: number;
 }
