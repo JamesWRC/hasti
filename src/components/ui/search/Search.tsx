@@ -47,6 +47,8 @@ export default function Search() {
 
   // Get the project type from the URL
   let projectTypeString = _url.pathname.split('/')[1];
+  console.log("projectTypeString: ", _url.pathname)
+  console.log("projectTypeString: ", projectTypeString)
   if (projectTypeString.endsWith('s')) {
     projectTypeString = projectTypeString.substring(0, projectTypeString.length - 1)
   }
@@ -115,7 +117,8 @@ export default function Search() {
     typo_tokens_threshold: 3,
   }
 
-  if (projectTypeSelected && projectTypeSelected !== undefined) {
+  // Set the project type in the search params if it exists and is not undefined or path is not the root
+  if (projectTypeSelected && projectTypeSelected !== undefined && _url.pathname !== '/') {
     tagSearchParams.filter_by = `type:${projectTypeSelected?.toLowerCase()}`
   }
 
@@ -191,9 +194,10 @@ export default function Search() {
 
       // ########### FILTERS ###########
 
-      // Type
+      // Type filter
+      // If the project type is selected and the path is not the root, set the filter by
       let filterByType = ''
-      if (projectTypeSelected && projectTypeSelected !== undefined) {
+      if (projectTypeSelected && projectTypeSelected !== undefined && _url.pathname !== '/') {
         filterByType = `projectType:${projectTypeSelected?.toLowerCase()}`
       }
 
