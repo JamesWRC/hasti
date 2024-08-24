@@ -33,8 +33,8 @@ export default function Page({ params }: { params: { projectType: string } }) {
   // otherwise we are on the front page and should show the featured group.
   const pageNumber = searchParams?.get('page')
   let isFrontPage = false
-  if(pageNumber){
-    if(parseInt(pageNumber) > 1){
+  if (pageNumber) {
+    if (parseInt(pageNumber) > 1) {
       isFrontPage = false
     } else {
       isFrontPage = true
@@ -52,24 +52,24 @@ export default function Page({ params }: { params: { projectType: string } }) {
   if (projectTypeString === 'other') {
     pageTitle = 'Other Popular Projects'
   }
-  const currProjectType:ProjectType = projectTypeString as ProjectType
+  const currProjectType: ProjectType = projectTypeString as ProjectType
   // check if the project type is valid and if not, redirect to 404. Will check if passed in type is valid or if it is a valid type without the last character
   if (!(getAllProjectTypes(false).includes(params.projectType as ProjectType) || getAllProjectTypes(false).includes(currProjectType))) {
     router.push('/404')
     return null
   }
 
-    return (
-      <div className="mt-24 2xl:mt-8">
-                    <Search/>
+  return (
+    <div className="mt-24 2xl:mt-8">
+      <Search />
 
-        {isFrontPage ? 
+      {isFrontPage ?
         <div className="pl-0">
-          <FeaturedGroup groupTitle={pageTitle} type={currProjectType} /> 
-        </div>: null}
-      
+          <FeaturedGroup groupTitle={pageTitle} type={currProjectType} />
+        </div> : null}
+
       {/* {renderThemesGrid()} */}
-      <PaginationPanel projectType={currProjectType}/>
+      <PaginationPanel projectType={currProjectType} />
       {/* <button
         type="button"
         className="relative block w-full rounded-lg border-2 border-dashed border-gray-300 p-12 text-center hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2"
@@ -91,10 +91,9 @@ export default function Page({ params }: { params: { projectType: string } }) {
         </svg>
         <span className="mt-2 block text-sm font-semibold text-gray-900">WELCOME</span>
       </button> */}
-      </div>
-      
-    )
-  }
-  
+    </div>
 
-  
+  )
+}
+
+
