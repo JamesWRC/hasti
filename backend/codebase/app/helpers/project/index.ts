@@ -22,6 +22,9 @@ import { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods/d
 import { getRepoCommits, getRepoContributors, getRepoDetails, getRepoIssues, getRepoPullRequests, getRepoReleases } from '@/backend/helpers/github';
 import sanitizeHtml from 'sanitize-html';
 
+// My GitHub ID used to initially import projects. Used for any authentication on github APIs for content updates.
+const INITIAL_IMPORT_BY_GUI = 38713144 //JamesWRC
+
 // Init s3
 const s3 = new AWS.S3({
     region: 'auto',
@@ -38,7 +41,8 @@ export async function updateContent(repoID: string, projectID: string, userID: s
             id: repoID as string
         },
         select: {
-            fullName: true
+            fullName: true,
+            addedByGithubID: true,
         }
     })
 
@@ -77,7 +81,20 @@ export async function updateContent(repoID: string, projectID: string, userID: s
     const repoName: string = repo.fullName.split('/')[1]
 
     // Fetch repos readme file (can be any README.xx file)
-    const gitHubUserAuth = await getGitHubUserAuth(user);
+    let gitHubUserAuth = await getGitHubUserAuth(user);
+
+    if(repo.addedByGithubID === INITIAL_IMPORT_BY_GUI) {
+        const initImportedByUser = await prisma.user.findUnique({
+            where: {
+                githubID: INITIAL_IMPORT_BY_GUI
+            }
+        })
+
+        if(!initImportedByUser){
+            return { success: false, message: "Initial import user not found.", prevSHA: "", newSHA: "" }
+        }
+        gitHubUserAuth = await getGitHubUserAuth(initImportedByUser);
+    }
     let gitHubReadmeResponse: OctokitResponse<any, number> | null = null;
     if (contentFile === 'README') {
         gitHubReadmeResponse = await gitHubUserAuth.request('GET /repos/{owner}/{repo}/readme', {
@@ -127,10 +144,10 @@ export async function updateContent(repoID: string, projectID: string, userID: s
             return { success: false, message: "Project not found.", prevSHA: "", newSHA: "" }
         }
 
-        if (project.contentSHA === gitHubReadmeResponse.data.sha && !forceUpdate) {
-            const message = `Content is up-to-date. No changes. SHA: ${project.contentSHA}`
-            return { success: true, message: message, prevSHA: project.contentSHA, newSHA: gitHubReadmeResponse.data.sha }
-        }
+        // if (project.contentSHA === gitHubReadmeResponse.data.sha && !forceUpdate) {
+        //     const message = `Content is up-to-date. No changes. SHA: ${project.contentSHA}`
+        //     return { success: true, message: message, prevSHA: project.contentSHA, newSHA: gitHubReadmeResponse.data.sha }
+        // }
 
         const newContentImages: string[] = []
         // If there are images in the project that are not in the new content, delete them
@@ -291,10 +308,10 @@ function extractImageUrls(markdownContent: string): string[] {
             const githubAssetMatches = line.match(/https:\/\/github\.com\/[^\/]+\/[^\/]+\/(assets\/\d+\/[^\/]+)/gi);
             if (gitHubUserImagesMatches) {
                 for (const gitHubUserImageMatch of gitHubUserImagesMatches) {
-                    let safeImgeUrl = gitHubUserImageMatch.replace('>', '');
-                    safeImgeUrl = safeImgeUrl.replace('\n', '');
-                    if(safeImgeUrl.includes('http://')){
-                        mediaUrls.push(safeImgeUrl)
+                    let validImageUrl = gitHubUserImageMatch.replace('>', '');
+                    validImageUrl = validImageUrl.replace('\n', '');
+                    if(validImageUrl.includes('https://') || validImageUrl.includes('http://')){
+                        mediaUrls.push(validImageUrl)
                     }
                 }
             }
@@ -304,7 +321,7 @@ function extractImageUrls(markdownContent: string): string[] {
                     let safeImgeUrl = githubAssetMatch.replace(')', '');
                     safeImgeUrl = safeImgeUrl.replace('>', '');
                     safeImgeUrl = safeImgeUrl.replace('\n', '');
-                    if(safeImgeUrl.includes('http://')){
+                    if(safeImgeUrl.includes('https://') || safeImgeUrl.includes('http://')){
                         mediaUrls.push(safeImgeUrl)
                     }
                 }
@@ -395,11 +412,11 @@ function handleHTMLinMarkDown(markdown: string) {
     if (document.body.innerHTML.includes('{% safeHTML %}')) {
         return markdown
     }
-    console.log('contentWithEscapedHTML', contentWithEscapedHTML)
-    console.log('----------------------')
-    console.log("document BEFORE", document.body.innerHTML)
+    // console.log('contentWithEscapedHTML', contentWithEscapedHTML)
+    // console.log('----------------------')
+    // console.log("document BEFORE", document.body.innerHTML)
     const blocks = findHtmlBlocks(document.body.innerHTML)
-    console.log("blocks", blocks)
+    // console.log("blocks", blocks)
 
     // convertHtmlToMarkdoc(document.body);
     // console.log("blocks", blocks)
@@ -920,9 +937,24 @@ const calculateActivityScore = (commits:number, releases:number, closedIssuesRat
     return (score / maxScore) * 100 ;
 };
 
-export async function updateRepoAnalytics(user: User, repoName: string, projectID: string, repoID: string): Promise<number|null> {
+export async function updateRepoAnalytics(user: User, repo: Repo, projectID: string, repoID: string): Promise<number|null> {
+    const repoName = repo.name;
 
-    const gitHubUserAuth = await getGitHubUserAuth(user);
+    let gitHubUserAuth = await getGitHubUserAuth(user);
+
+    if(repo.addedByGithubID === INITIAL_IMPORT_BY_GUI) {
+        const initImportedByUser = await prisma.user.findUnique({
+            where: {
+                githubID: INITIAL_IMPORT_BY_GUI
+            }
+        })
+
+        if(!initImportedByUser){
+            return null
+        }
+        gitHubUserAuth = await getGitHubUserAuth(initImportedByUser);
+    }
+
     const owner: string = user.username;
 
     const details = getRepoDetails(gitHubUserAuth, owner, repoName);

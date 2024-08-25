@@ -6,7 +6,7 @@ import {
 } from '@heroicons/react/24/outline'
 
 import { getProjectTypePath, type Project } from  '@/backend/interfaces/project';
-import PackageCard from './ProjectCard';
+import ProjectCard from '@/frontend/components/store/ProjectCard';
 import type { ProjectWithUser } from '@/backend/clients/prisma/client';
 import useProjects from '@/frontend/components/project'
 import { FeaturedGroup } from '@/frontend/interfaces/ui';
@@ -47,7 +47,7 @@ export default function FeaturedGroupSection({...props}: FeaturedGroup) {
                                 <div className="mt-4 pl-3 min-w-[250%] grid grid-cols-10 gap-[11.35rem] sm:gap-[12rem] md:gap-[12rem] lg:gap-[12rem] xl:gap-12">
                                     {projects && projects.length > 0 ? projects.map((project:ProjectWithUser, index:number) => (
                                         <div key={`featured-group-${index}`}>
-                                            <PackageCard userProject={project} style={"featured"} loaded={reqStatus === "success"} />
+                                            <ProjectCard userProject={project} style={"featured"} loaded={reqStatus === "success"} />
                                         </div>)
                                     ): <div className=" mx-auto flex justify-center items-center h-96">
                                         No projects found :(

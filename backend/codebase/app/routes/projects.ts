@@ -770,7 +770,7 @@ projectsRouter.post<Record<string, string>, AddProjectResponse | BadRequestRespo
                             // Update content and images
                             const updateResponse = await updateContent(repositoryID, createdProject.id, user.id, contentFile)
                             if (createdProject && createdRepo){
-                                await updateRepoAnalytics(projectOwnerUser, createdRepo?.name, createdProject.id, createdProject.repoID)
+                                await updateRepoAnalytics(projectOwnerUser, createdRepo, createdProject.id, createdProject.repoID)
                             }
                             if (!updateResponse.success) {
                                 const response: AddProjectResponse = {
@@ -1313,7 +1313,7 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
 
                 if(project?.user){
 
-                    await updateRepoAnalytics(project.user, project.repo.name, project.id, project.repoID)
+                    await updateRepoAnalytics(project.user, project.repo, project.id, project.repoID)
 
                 }
 
