@@ -20,6 +20,7 @@ function classNames(...classes: string[]) {
 
 export default function Accounts() {
   const [limitSearch, setLimitSearch] = useState(20);
+  
   const [newSearchProps, setNewSearchProps] = useState<GetUsersQueryParams>({limit: limitSearch, orderBy: 'username', orderDirection: 'asc'});
   const { users, totalUsers, reqStatus, setSearchProps } = useUsers(newSearchProps);
 
@@ -31,13 +32,13 @@ export default function Accounts() {
 
   useEffect(() => {
     const skip = limitSearch * page;
-    setNewSearchProps({...newSearchProps, limit: limitSearch, skip: skip, username: searchContent});
-    // setSearchProps(newSearchProps);
 
-    // if (searchContent) {
-    //   setNewSearchProps({...newSearchProps, username: searchContent});
-    //   // setSearchProps({...newSearchProps, username: searchContent});
-    // }
+    if (searchContent) {
+      setNewSearchProps({username: searchContent});
+    }else{
+      setNewSearchProps({...newSearchProps, limit: limitSearch, skip: skip, username: searchContent});
+
+    }
     console.log("newSearchProps: ", newSearchProps)
 
   }, [limitSearch, page, searchContent])
