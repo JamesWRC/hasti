@@ -60,6 +60,7 @@ export interface GetProjectsQueryParams{
     orderBy?: 'createdAt' | 'updatedAt' | 'title' | 'author' | 'overallRating';
     orderDirection?: 'asc' | 'desc';
     allContent?: boolean;
+    requiresAuth?: boolean;
 
 }
 

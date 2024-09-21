@@ -61,7 +61,7 @@ export default function Page({ params }: { params: { developer: string, name: st
     limit: 1,
     projectTitle: params.name,
     username: params.developer,
-    allContent: true
+    allContent: true,
   }
 
   const { projects, reqStatus } = useProjects(fetchProjects);

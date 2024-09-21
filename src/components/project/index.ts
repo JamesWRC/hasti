@@ -60,6 +60,15 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
     // Set the allContent
     if (searchProps.allContent) queryStr += `${queryStr ? '&' : '?'}allContent=${searchProps.allContent}`;
 
+    // Set headers
+    const headers = new Headers();
+    headers.append('Content-Type', 'application/json');
+
+    // Set the requiresAuth. If requiresAuth is true, add the JWT token to the headers, else set the Authorization header if the user is logged in.
+    if (searchProps.requiresAuth) {
+      headers.append('Authorization', `Bearer ${session?.user.jwt}`);
+    }
+
     console.log("searchProps server: ", searchProps)
     console.log("queryStr: ", queryStr)
 
@@ -79,15 +88,10 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
       
       // sleep for 2 seconds to simulate a slow network
       // await new Promise((resolve) => setTimeout(resolve, 4000));
-
       const response = await axios({
         url: `${process.env.API_URL}/api/v1/projects` + queryStr,
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.user.jwt}`
-        },
-
+        headers: Object.fromEntries(headers),
         timeout: 10000,
         timeoutErrorMessage: 'Request timed out. Please try again.',
       })
