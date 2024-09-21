@@ -1,16 +1,9 @@
 import React from "react";
 import Markdoc from '@markdoc/markdoc';
-import fs from 'fs';
 
 import nodes from '@/frontend/markdoc/nodes';
 import tags from '@/frontend/markdoc/tags';
-import { Callout } from '@/frontend/components/markdoc/Callout'
-import { QuickLink, QuickLinks } from '@/frontend/components/markdoc/QuickLinks'
-import { type Node, Config } from '@markdoc/markdoc';
 import '@/frontend/app/prism.js'
-import { useEffect, useState } from 'react';
-import DOMPurify from "isomorphic-dompurify";
-import ReactDOMServer from 'react-dom/server';
 import 'src/app/projectCSS.css';
 
 

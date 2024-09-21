@@ -98,7 +98,7 @@ export default function Page({ params }: { params: { developer: string, name: st
     // Set project stats
     let newStats = [];
 
-    if (projects && projects.length > 0) {
+    if (projects && projects.length >= 1 && projects[0] && projects[0].id.length >= 32) {
       const project = projects[0] as ProjectAllInfo;
       const repoAnalytics: RepoAnalytics | null = project?.repo?.repoAnalytics?.at(0) || null;
       if (project) {
@@ -195,6 +195,7 @@ export default function Page({ params }: { params: { developer: string, name: st
 
 
   function RenderDetails({ loadProjects }: { loadProjects: LoadProjects | undefined }) {
+
     // const repoAnalytics: RepoAnalytics | null = projectInfo?.repo?.repoAnalytics?.at(0) || null;
 
     const projectData: ProjectAllInfo | null = loadProjects ? loadProjects.projects?.at(0) as ProjectAllInfo : null

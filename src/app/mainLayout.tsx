@@ -127,6 +127,7 @@ export default function  MainLayout({
 
                 <div className="my-10 -ml-4 flex h-16 shrink-0 items-center">
                   <img
+                    rel='preload'
                     className="h-28 w-auto"
                     src="/white_ha_cube_RIGHT_hasti_splled_out_op4.png"
                     alt="Hasti"

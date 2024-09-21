@@ -27,7 +27,20 @@ const nextConfig = {
     });
 
     return config;
-  }
+  },
+  async headers() {
+    return [
+      {
+        source: '/:all*(svg|jpg|png|webp|gif)', // Change this path if needed
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ]
+  },
 }
 //https://github.com/apps/hasti-bot/installations/new?pkg=abc123
 //https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps
