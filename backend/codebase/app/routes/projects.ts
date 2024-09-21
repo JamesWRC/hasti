@@ -330,11 +330,14 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
                 success: true,
                 userProjects: projects
             }
+            const headers = {
+                CacheControl: 'public, max-age=60, stale-while-revalidate=120'
+            }
             if (projects && projects.length > 0) {
 
-                return res.status(200).json(response);
+                return res.status(200).json(response).setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
             } else {
-                return res.status(204).json(response);
+                return res.status(204).json(response).setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
             }
         } catch (error) {
             logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
