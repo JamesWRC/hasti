@@ -61,7 +61,7 @@ export interface GetProjectsQueryParams{
     orderDirection?: 'asc' | 'desc';
     allContent?: boolean;
     requiresAuth?: boolean;
-
+    skip?: number;
 }
 
 export interface DeleteProjectResponse {

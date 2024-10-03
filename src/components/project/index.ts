@@ -60,6 +60,10 @@ export default function useProjects({...props}: GetProjectsQueryParams):LoadProj
     // Set the allContent
     if (searchProps.allContent) queryStr += `${queryStr ? '&' : '?'}allContent=${searchProps.allContent}`;
 
+    // skip if it exists
+    if (searchProps.skip) queryStr += `${queryStr ? '&' : '?'}skip=${searchProps.skip}`;
+
+
     // Set headers
     const headers = new Headers();
     headers.append('Content-Type', 'application/json');
