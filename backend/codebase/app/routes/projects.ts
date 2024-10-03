@@ -151,6 +151,13 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
                 requestAmt = Number(queryParams.limit) > PROJECT_MAX_TAKE ? PROJECT_MAX_TAKE : Number(queryParams.limit)
             }
 
+            // Set the skip amount if provided
+            let skipAmt = 1
+            if (Number(queryParams.skip)) {
+                skipAmt = Number(queryParams.skip)
+            }
+
+
             let projectUserID: string | null = '';
 
             // get userID from username or githubUserID
@@ -265,6 +272,12 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
                     }
                 }
 
+                if(!queryParams.username && !queryParams.githubUserID && !queryParams.userID){
+                    where.title = {
+                        contains: queryParams.projectTitle
+                    }
+                }
+
             }
             logger.info('where user:', user);
             logger.info('where:', where);
@@ -278,7 +291,7 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
                 query.take = Number(requestAmt)
             } else {
                 query.take = Number(requestAmt)
-                query.skip = 1  // Skip the cursor row.
+                query.skip = skipAmt  // Skip the cursor row.
                 query.cursor = {// set the cursor 'page'
                     id: queryParams.cursor
                 }
@@ -333,11 +346,13 @@ projectsRouter.get<Record<string, string>, GetProjectsResponse | BadRequestRespo
             const headers = {
                 CacheControl: 'public, max-age=60, stale-while-revalidate=120'
             }
+            res.setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+
             if (projects && projects.length > 0) {
 
-                return res.status(200).json(response).setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+                return res.status(200).json(response);
             } else {
-                return res.status(204).json(response).setHeader('Cache-Control', 'public, max-age=60, stale-while-revalidate=120');
+                return res.status(204).json(response);
             }
         } catch (error) {
             logger.warn(`Request threw an exception: ${(error as Error).message} - ${(error as Error).stack}`, {
