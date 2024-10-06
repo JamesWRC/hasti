@@ -911,7 +911,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                             <div className="flex justify-center rounded-lg border border-dashed border-gray-900/25 relative"
                               style={{ backgroundImage: `url(${iconPreview?.toString()})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
 
-                              <div className="text-center z-10 backdrop-blur-sm bg-white/30 rounded-lg h-full w-full flex justify-center items-center">
+                              <div className="text-center backdrop-blur-sm bg-white/30 rounded-lg h-full w-full flex justify-center items-center">
                                 <div className="text-center">
                                   <PhotoIcon className="mx-auto h-12 w-12 text-gray-300" aria-hidden="true" />
                                   <div className="mt-4 flex text-sm leading-6 text-gray-600 justify-center">
@@ -946,7 +946,7 @@ export default function AddorEditProject({ opened, open, close, projectID }: { o
                             <div className="flex justify-center rounded-lg border border-dashed border-gray-900/25 relative"
                               style={{ backgroundImage: `url(${bgImagePreview?.toString()})`, backgroundSize: 'cover', backgroundPosition: 'center' }}>
 
-                              <div className="text-center z-10 backdrop-blur-sm bg-white/30 rounded-lg h-full w-full flex justify-center items-center">
+                              <div className="text-center backdrop-blur-sm bg-white/30 rounded-lg h-full w-full flex justify-center items-center">
                                 <div className="text-center">
                                   <PhotoIcon className="mx-auto h-12 w-12 text-gray-300" aria-hidden="true" />
                                   <div className="mt-4 flex text-sm leading-6 text-gray-600 justify-center">
