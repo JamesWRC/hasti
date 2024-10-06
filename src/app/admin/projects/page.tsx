@@ -84,6 +84,35 @@ export default function Accounts() {
 
   }
 
+  function updateProjectInfo(projectID:string | undefined, usingHastiMD:Boolean | undefined) {
+    if (!session || !usingHastiMD) return;
+    // Update the project repo info
+    let contentFileName = 'README'
+    if (usingHastiMD) {
+      contentFileName = 'HASTI'
+    }
+    axios({
+      url: `${process.env.API_URL}/api/v1/projects/${projectID}/content?updateContentFile=${contentFileName}`,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.user.jwt}`
+      },
+      timeout: 60000,
+      timeoutErrorMessage: 'Request timed out. Please try again.',
+    }).then(response => {
+      const refreshResponse: RefreshRepoDataRequest = response.data
+      alert('Repo data updated successfully')
+
+    }).catch(error => {
+      const refreshResponse: RefreshRepoDataRequest = error.data
+      alert('Error updating repo data')
+      alert(refreshResponse)
+      console.error(`Error with PUT /api/v1/projects/${projectID}/content?updateContentFile=${contentFileName}`, error)
+    });
+
+  }
+
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
@@ -182,8 +211,11 @@ export default function Accounts() {
                         'relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-8 lg:pr-8',
                       )}
                     >
-                      <a href="#" className="text-indigo-600 hover:text-indigo-900" onClick={e => updateProjectRepoInfo(project?.repoID)}>
-                        update<span className="sr-only">, {project?.claimed}</span>
+                      <a href="#" className="text-indigo-600 hover:text-indigo-900 px-1" onClick={e => updateProjectRepoInfo(project?.repoID)}>
+                        update repo<span className="sr-only">, {project?.claimed}</span>
+                      </a>|<a href="#" className="text-indigo-600 hover:text-indigo-900 px-1" onClick={e => updateProjectInfo(project?.id, project?.usingHastiMD)}>
+                        update proj
+                        <span className="sr-only">, {project?.claimed}</span>
                       </a>
                     </td>
                   </tr>

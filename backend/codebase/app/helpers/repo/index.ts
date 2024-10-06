@@ -228,7 +228,7 @@ export async function updateRepoData(repo: Repo, user: User, addedByGitHubID: nu
   // Update repo metadata
   if(updatedRepoData){
 
-
+    
     await prisma.repo.update({
       where: {
         id: repo.id
@@ -247,6 +247,7 @@ export async function updateRepoData(repo: Repo, user: User, addedByGitHubID: nu
         archived: updatedRepoData.data.archived,
       }
     })
+    logger.warn(`Updated repo data for ${repoName} updated`)
   }
 }
 
