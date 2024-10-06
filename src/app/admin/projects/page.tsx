@@ -85,7 +85,7 @@ export default function Accounts() {
   }
 
   function updateProjectInfo(projectID:string | undefined, usingHastiMD:Boolean | undefined) {
-    if (!session || !usingHastiMD) return;
+    if (!session || !projectID) return;
     // Update the project repo info
     let contentFileName = 'README'
     if (usingHastiMD) {
@@ -212,10 +212,10 @@ export default function Accounts() {
                       )}
                     >
                       <a href="#" className="text-indigo-600 hover:text-indigo-900 px-1" onClick={e => updateProjectRepoInfo(project?.repoID)}>
-                        update repo<span className="sr-only">, {project?.claimed}</span>
-                      </a>|<a href="#" className="text-indigo-600 hover:text-indigo-900 px-1" onClick={e => updateProjectInfo(project?.id, project?.usingHastiMD)}>
+                        update repo
+                      </a>|
+                      <a href="#" className="text-indigo-600 hover:text-indigo-900 px-1" onClick={e => updateProjectInfo(project?.id, project?.usingHastiMD)}>
                         update proj
-                        <span className="sr-only">, {project?.claimed}</span>
                       </a>
                     </td>
                   </tr>
