@@ -1295,7 +1295,7 @@ projectsRouter.put<Record<string, string>, RefreshContentResponse | BadRequestRe
             const updateContentFile: string = req.query.updateContentFile as string
             const user: User | undefined = req.user;
             if (!user) {
-                return res.status(401).json({ success: false, message: 'Unauthori zed. No token provided.' });
+                return res.status(401).json({ success: false, message: 'Unauthorized. No token provided.' });
             }
 
             const project = await prisma.project.findFirst({
