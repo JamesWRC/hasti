@@ -1,4 +1,4 @@
-import express, { NextFunction } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import next from 'next';
 
 import v1Router from '@/backend/routes/v1routes';
@@ -14,10 +14,14 @@ const port = Number(process.env.PORT) || 3001;
 const FRONTEND_URL:string = process.env.NODE_ENV === 'production' ? 'https://hasti.app' : '*'
 
 
-// Custom middleware to set Cache-Control headers
-const cacheControlMiddleware = (req, res, next) => {
+// Define the cache control middleware
+const cacheControlMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): void => {
   // Exclude `/api/v1/auth` route
-  if (req.path.startsWith('/api/v1/auth')) {
+  if (req.url.startsWith('/api/v1/auth')) {
     next(); // Skip setting headers for this path
     return;
   }
@@ -55,7 +59,7 @@ app.prepare().then(async () => {
         next();
       
         })
-    server.use(cacheControlMiddleware);
+    server.use((req, res, next) => cacheControlMiddleware(req, res, next));
 
     server.use('/api/v1', v1Router);
 
