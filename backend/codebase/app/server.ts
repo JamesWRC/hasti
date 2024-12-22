@@ -13,6 +13,24 @@ const handle = app.getRequestHandler();
 const port = Number(process.env.PORT) || 3001;
 const FRONTEND_URL:string = process.env.NODE_ENV === 'production' ? 'https://hasti.app' : '*'
 
+
+// Custom middleware to set Cache-Control headers
+const cacheControlMiddleware = (req, res, next) => {
+  // Exclude `/api/v1/auth` route
+  if (req.path.startsWith('/api/v1/auth')) {
+    next(); // Skip setting headers for this path
+    return;
+  }
+
+  // Apply Cache-Control headers to other paths
+  res.set(
+    'Cache-Control',
+    'public, s-maxage=86400, stale-while-revalidate=604800' // Cache for 24 hours, serve stale for 1 week
+  );
+
+  next(); // Continue to the next middleware/route handler
+};
+
 app.prepare().then(async () => {
     const server = express();
     // Set corse
@@ -37,6 +55,8 @@ app.prepare().then(async () => {
         next();
       
         })
+    server.use(cacheControlMiddleware);
+
     server.use('/api/v1', v1Router);
 
     server.use('/health', (_req, res) => {
