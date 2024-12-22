@@ -29,17 +29,21 @@ const nextConfig = {
     return config;
   },
   async headers() {
-    return [
-      {
-        source: '/:all*(svg|jpg|png|webp|gif)', // Change this path if needed
-        headers: [
-          {
-            key: 'Cache-Control',
-            value: 'public, max-age=31536000, immutable',
-          },
-        ],
-      },
-    ]
+    if (process.env.NODE_ENV === 'production') {
+      return [
+        {
+          source: '/:path((?!api/v1/auth).*)', // Matches all paths except `/api/v1/auth`
+          headers: [
+            {
+              key: 'Cache-Control',
+              value: 'public, s-maxage=86400, stale-while-revalidate=604800', // Cache for 24 hours, invalidate after a week
+            },
+          ],
+        },
+      ];
+    }
+
+    return [];
   },
 }
 //https://github.com/apps/hasti-bot/installations/new?pkg=abc123
