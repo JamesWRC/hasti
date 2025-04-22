@@ -2,7 +2,7 @@ version: "3.8"  # optional since v1.27.0
 services:
   hastidb:
     image: postgres:14-alpine
-    container_name: hastidb-prod
+    container_name: hasti_prod_db
     restart: always
     ports:
       - 5432:5432
@@ -12,9 +12,11 @@ services:
       - /mnt/ssd1/databases/hasti/prod/postgres/data:/var/lib/postgresql/data
     env_file:
       - .env
+    cpus: 2
+    mem_limit: 4096m
 
   hastibackend_prod:
-    container_name: hastibackend_prod
+    container_name: hasti_prod_backend
     restart: always
     depends_on:
       - hastidb
@@ -31,6 +33,8 @@ services:
     networks:
       - cloudflare_hasti-app_tunnel
       - hastinet
+    cpus: 2
+    mem_limit: 4096m
     # labels:
     #   # Enable Traefik to interact with this container
     #   - "traefik.enable=true"
@@ -51,7 +55,7 @@ services:
   ###                                           ###
   #################################################
   hasti-db-backup:
-    container_name: hasti-prod-db-backup
+    container_name: hasti_prod_db-backup
     image: tiredofit/db-backup
     links:
      - hastidb:hastidb
@@ -76,6 +80,8 @@ services:
       - SIZE_VALUE=megabytes
       - BACKUP_LOCATION=S3
     restart: always
+    cpus: 1
+    mem_limit: 500m
 
 
 networks:
