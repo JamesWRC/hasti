@@ -12,3 +12,5 @@ services:
     env_file:
       - .env
     command: '--data-dir /data --api-key=${TYPESENSE_KEY} --enable-cors'
+    cpus: 1
+    mem_limit: 1024m
