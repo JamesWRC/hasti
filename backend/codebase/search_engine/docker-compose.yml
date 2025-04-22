@@ -4,6 +4,7 @@ version: '3.9'
 services:
   typesense:
     image: typesense/typesense:26.0
+    container_name: hasti_prod_typesense
     restart: unless-stopped
     ports:
       - "${TYPESENSE_PORT}:8108"
@@ -12,3 +13,5 @@ services:
     env_file:
       - .env
     command: '--data-dir /data --api-key=${TYPESENSE_API_KEY} --enable-cors'
+    cpus: 1
+    mem_limit: 1024m
