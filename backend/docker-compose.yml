@@ -31,22 +31,22 @@ services:
     ports:
       - 3117:3001
     networks:
-      - cloudflare_hasti-app_tunnel
+      - hasti-app_network
       - hastinet
     cpus: 2
     mem_limit: 4096m
-    # labels:
-    #   # Enable Traefik to interact with this container
-    #   - "traefik.enable=true"
-    #   # Tell Traefik when to route trafic to this container.
-    #   - traefik.http.routers.hastibackend.rule=Host(`${SUBDOMAIN}.${ZONE}`)
-    #   # Tell Traefik to use HTTPS, and set up the certificated needed.
-    #   - "traefik.http.routers.hastibackend.tls.certresolver=tlsresolver"
-    #   - "traefik.http.routers.hastibackend.entrypoints=websecure"
-    #   - "traefik.http.routers.hastibackend.tls=true"
-    #   # Tell Treafik to route to a specific port
-    #   - "traefik.http.services.hastibackend.loadbalancer.server.port=3001"
-    #   - "traefik.docker.network=traefik_default_network"
+    labels:
+      # Enable Traefik to interact with this container
+      - "traefik.enable=true"
+      # Tell Traefik when to route trafic to this container.
+      - traefik.http.routers.hastibackend.rule=Host(`${SUBDOMAIN}.${ZONE}`)
+      # Tell Traefik to use HTTPS, and set up the certificated needed.
+      # - "traefik.http.routers.hastibackend.tls.certresolver=tlsresolver"
+      - "traefik.http.routers.hastibackend.entrypoints=websecure"
+      - "traefik.http.routers.hastibackend.tls=true"
+      # Tell Treafik to route to a specific port
+      - "traefik.http.services.hastibackend.loadbalancer.server.port=3001"
+      - "traefik.docker.network=hasti-app_network"
 
   #################################################
   ###                                           ###
@@ -85,7 +85,7 @@ services:
 
 
 networks:
-  cloudflare_hasti-app_tunnel:
+  hasti-app_network:
     external: true
   hastinet: 
     driver: bridge
