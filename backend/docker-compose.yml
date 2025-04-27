@@ -14,7 +14,8 @@ services:
       - .env
     cpus: 2
     mem_limit: 4096m
-
+    memswap_limit: 4096m
+  
   hastibackend_prod:
     container_name: hasti_prod_backend
     restart: always
@@ -35,6 +36,7 @@ services:
       - hastinet
     cpus: 2
     mem_limit: 4096m
+    memswap_limit: 4096m
     labels:
       # Enable Traefik to interact with this container
       - "traefik.enable=true"
@@ -82,7 +84,7 @@ services:
     restart: always
     cpus: 1
     mem_limit: 500m
-
+    memswap_limit: 500m
 
 networks:
   hasti-app_network:
