@@ -14,3 +14,4 @@ services:
     command: '--data-dir /data --api-key=${TYPESENSE_KEY} --enable-cors'
     cpus: 1
     mem_limit: 1024m
+    memswap_limit: 1024m
