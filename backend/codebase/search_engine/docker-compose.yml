@@ -5,7 +5,7 @@ services:
   typesense:
     image: typesense/typesense:26.0
     container_name: hasti_prod_typesense
-    restart: unless-stopped
+    restart: always
     ports:
       - "${TYPESENSE_PORT}:8108"
     volumes:
